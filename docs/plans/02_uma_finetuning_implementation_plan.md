@@ -3,6 +3,8 @@
 - 文書状態: Gate 1後に開始する実装計画
 - 基準日: 2026-08-22
 - 開始条件: GPU4PySCF Gate 1がGOまたはConditional GO
+  （Gate 1非依存のP2.0/P2.1基盤のみ
+  [decisions/0001](../decisions/0001-start-part2-foundation-before-gate1.md)で前倒し）
 - 初期対象: H/Si/Ge/Clの非周期分子、charge/spin条件付き`omol` fine-tuning
 
 ## 1. 目的

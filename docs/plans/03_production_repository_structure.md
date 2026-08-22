@@ -6,7 +6,10 @@
   [Part II計画](02_uma_finetuning_implementation_plan.md)第5節の粗いレイアウトを、
   実装に着手できる粒度まで具体化する
 - 採用手続き: Gate 1判定時に本書を確定し、変更点があれば`docs/decisions/`へ
-  decision recordを残す。**Gate 1前に`src/`以下を作成しない**
+  decision recordを残す。**Gate 1の結果に依存する部分はGate 1前に作成しない**。
+  Gate 1非依存の基盤（P2.0 core、P2.1 schemas）は
+  [decisions/0001](../decisions/0001-start-part2-foundation-before-gate1.md)により
+  前倒しで実装する
 
 ## 1. 目的と適用条件
 
