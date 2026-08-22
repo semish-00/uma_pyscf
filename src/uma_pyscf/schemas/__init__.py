@@ -1,0 +1,55 @@
+"""Versioned, typed record schemas and their validators.
+
+``schemas`` sits directly above ``core`` in the one-way dependency chain
+``core -> schemas -> (sampling | calculators | qc | datasets | ...) -> cli``.
+It owns what a record *is* -- the field set, the units, the invariants, and the
+``schema`` string that versions all of it -- and owns none of the science that
+fills one in. The fail-closed checks the project requires (charge/spin parity,
+units, required fields) live here at the library's entrance instead of being
+repeated by every module that later handles a record.
+
+Modules exchange records, not imports: a producer writes
+:meth:`LabelRecord.to_dict` through ``core.io.write_json_atomic`` and a consumer
+reads it back through :meth:`LabelRecord.from_dict`.
+"""
+
+from __future__ import annotations
+
+from .cli import configure_validate_records, run_validate_records
+from .crosscode import (
+    CROSSCODE_RESULT_SCHEMA,
+    IMPORT_EVENT,
+    label_record_from_crosscode_result,
+)
+from .label_record import (
+    CANONICAL_UNITS,
+    LABEL_RECORD_SCHEMA,
+    QC_STATUSES,
+    ElectronicState,
+    Engine,
+    LabelRecord,
+    Method,
+    QcState,
+    RawArtifact,
+    Results,
+    Structure,
+)
+
+__all__ = [
+    "CANONICAL_UNITS",
+    "CROSSCODE_RESULT_SCHEMA",
+    "IMPORT_EVENT",
+    "LABEL_RECORD_SCHEMA",
+    "QC_STATUSES",
+    "ElectronicState",
+    "Engine",
+    "LabelRecord",
+    "Method",
+    "QcState",
+    "RawArtifact",
+    "Results",
+    "Structure",
+    "configure_validate_records",
+    "label_record_from_crosscode_result",
+    "run_validate_records",
+]

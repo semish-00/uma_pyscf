@@ -16,6 +16,7 @@ import platform
 import sys
 
 from .. import __version__
+from ..schemas.cli import configure_validate_records, run_validate_records
 
 __all__ = ["SUBCOMMANDS", "Subcommand", "build_parser", "main", "run_info"]
 
@@ -53,6 +54,12 @@ SUBCOMMANDS: tuple[Subcommand, ...] = (
         name="info",
         help="Print the package version, Python version, and platform.",
         handler=run_info,
+    ),
+    Subcommand(
+        name="validate-record",
+        help="Validate canonical label record JSON files against the current schema.",
+        handler=run_validate_records,
+        configure=configure_validate_records,
     ),
 )
 
