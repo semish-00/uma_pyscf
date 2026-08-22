@@ -16,3 +16,10 @@ __pycache__/
 
 # macOS metadata.
 .DS_Store
+
+# Python packaging and tooling caches.
+*.egg-info/
+build/
+dist/
+.mypy_cache/
+.ruff_cache/
