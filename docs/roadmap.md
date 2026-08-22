@@ -31,6 +31,7 @@
 
 - [Part I: GPU4PySCF検証計画](plans/01_gpu4pyscf_validation_plan.md)
 - [Part II: UMAファインチューニング実装計画](plans/02_uma_finetuning_implementation_plan.md)
+- [Part II準備: 本番リポジトリ構成設計](plans/03_production_repository_structure.md)
 
 このファイルは進捗だけを更新する。scope、品質基準、設計を変更するときは、
 `project_plan.md`および該当Part計画も更新し、必要に応じて`docs/decisions/`へ理由を残す。

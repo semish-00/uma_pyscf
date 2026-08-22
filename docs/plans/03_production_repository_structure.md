@@ -1,0 +1,212 @@
+# Part II準備: 本番リポジトリ構成設計
+
+- 文書状態: 設計提案（Gate 1のGO/Conditional GOで採用を確定する）
+- 基準日: 2026-08-22
+- 位置づけ: [プロジェクト計画書](../project_plan.md)第7節と
+  [Part II計画](02_uma_finetuning_implementation_plan.md)第5節の粗いレイアウトを、
+  実装に着手できる粒度まで具体化する
+- 採用手続き: Gate 1判定時に本書を確定し、変更点があれば`docs/decisions/`へ
+  decision recordを残す。**Gate 1前に`src/`以下を作成しない**
+
+## 1. 目的と適用条件
+
+Gate 1がGOまたはConditional GOになった時点で、Part IIのMilestone P2.0以降が
+参照する唯一のディレクトリ・パッケージ設計を与える。本書は「何をどこに置くか」
+「どのMilestoneでどこを作るか」「validation/から何を移植するか」を先に固定し、
+実装時の場当たり的な配置判断をなくすことを目的とする。
+
+Gate 1がNO-GOの場合、本書は失効し、代替案（CPU PySCF縮小dataset、ORCA継続等）の
+検討とあわせて再設計する。
+
+## 2. 設計原則
+
+project_plan第6節の原則を、構成規則として言い換える。
+
+1. **Configuration first** — 科学条件（DFT設定、sampling、split、学習条件）は
+   すべて`configs/`のversioned fileに置く。scriptやCLI引数に科学条件を書かない。
+   全configに`schema_version`と明示単位を必須とする。
+2. **Library / CLI分離** — 再利用ロジックは`src/uma_pyscf/`、実行入口は
+   `scripts/`とconsole entry point。PBS/GPU batch scriptはconfigをlibraryへ
+   渡すだけの薄い層に保つ。
+3. **Fail closed** — charge/spin parity、単位、符号、必須fieldが不明なら停止。
+   この検査はlibraryの入口（schema層）で行い、各所に散らさない。
+4. **空ディレクトリの先行作成禁止** — 各moduleはそれを必要とするMilestoneで、
+   testと同時に作る（第7節の対応表に従う）。
+5. **validation/の隔離** — `validation/orca_gpu4pyscf/`はPart Iの実験として
+   凍結し、`src/`から一切importしない。逆も同様。一般化できる処理は
+   コピーでなく**test付きの再実装として移植**する（第8節）。
+6. **一方向依存** — パッケージ内の依存は
+   `core → schemas → (sampling | calculators | qc | datasets | evaluation | training) → cli`
+   の向きのみ許す。横方向（例: sampling→calculators）の依存を作らない。
+   横断的に必要な定数・変換はすべて`core`に置く。
+7. **Git追跡境界** — source、config、schema、manifest、checksum、集計CSV、
+   決定記録は追跡する。raw出力、trajectory、LMDB本体、checkpoint、logは
+   追跡しない（`data/`、`runs/`、`artifacts/`）。
+
+## 3. 全体レイアウト
+
+```text
+uma_pyscf/
+├── pyproject.toml              # P2.0。src-layout、console entry point定義
+├── README.md                   # P2.0でinstall/test手順を追記
+├── docs/
+│   ├── project_plan.md
+│   ├── roadmap.md
+│   ├── plans/
+│   ├── lab_notes/
+│   └── decisions/              # Gate 1以降の判断記録（ADR形式、連番）
+├── configs/
+│   ├── environments/           # Part I A1から使用中（host inventory）
+│   ├── dft/                    # P2.0: Gate 1で固定したlabel protocol
+│   ├── sampling/               # P2.2: scan/displacement/MD候補生成条件
+│   ├── datasets/               # P2.4–P2.6: dataset定義、QC閾値、split定義
+│   ├── finetune/               # P2.7: checkpoint参照とhyperparameter
+│   └── evaluation/             # P2.7–P2.8: metric、holdout、base比較
+├── src/uma_pyscf/
+│   ├── core/                   # P2.0: units、spin、id、atomic I/O、例外
+│   ├── schemas/                # P2.1: versioned manifest/record schema
+│   ├── calculators/            # P2.3: GPU4PySCF adapter、provenance、retry
+│   ├── sampling/               # P2.2: 決定論的構造候補生成
+│   ├── qc/                     # P2.4: electronic/geometry QC、ledger
+│   ├── datasets/               # P2.5–P2.6: canonical record、ASE/LMDB、split
+│   ├── training/               # P2.7: fairchem config合成、training record
+│   ├── evaluation/             # P2.8: parity、relative energy、retention
+│   └── cli/                    # P2.0〜: thin subcommand（実装は各moduleへ委譲）
+├── scripts/                    # batch/PBS/GPU wrapper。config読込→library呼出のみ
+├── tests/
+│   ├── unit/                   # 依存なしで常時実行（src/をmirror）
+│   ├── integration/            # pyscf/ase/fairchem必要。無ければskip
+│   └── fixtures/               # 小さな versioned fixture（第9節の上限内）
+├── validation/                 # Part I実験。凍結、src非依存を維持
+├── data/                       # Git非追跡: canonical records、LMDB shard
+├── runs/                       # Git非追跡: label計算・training実行の作業領域
+└── artifacts/                  # Git非追跡: checkpoint、大型図表
+```
+
+project_plan第7節との差分は次の2点で、採用時にdecision recordへ理由を残す。
+
+- `src/uma_pyscf/core/`の追加。multiplicity↔spin変換を「一か所に集約する」
+  というproject_plan第6節の要求に対する、その一か所の置き場である。
+- `src/uma_pyscf/cli/`の追加。scripts/を薄く保つ原則を、entry point実装の
+  置き場として明文化するもの。
+
+## 4. src/uma_pyscf モジュール責務
+
+| Module | 責務 | 置かないもの |
+|---|---|---|
+| `core/units.py` | 単位定数と変換（Hartree/eV、Bohr/Å）。数値はCODATA値を一度だけ定義 | 分野固有ロジック |
+| `core/spin.py` | multiplicity↔`2S`変換、electron count/parity検査、`<S^2>`target | SCF実行 |
+| `core/ids.py` | structure ID・fingerprint生成（sha256）、命名規則 | 乱数 |
+| `core/io.py` | atomic write、checksum、JSON/YAML読み書き | schema知識 |
+| `core/errors.py` | fail-closed用の例外階層（`ValidationError`、`ProvenanceError`等） | — |
+| `schemas/` | structure manifest、label record、dataset manifest、split manifestの
+typed schemaとvalidator。`schema_version`の管理と後方互換規則 | 計算・変換の実装 |
+| `calculators/` | GPU4PySCF adapter（Gate 1確定protocolの実行）、provenance収集、
+retry policyの適用、resource見積り | QC判定、dataset書出し |
+| `sampling/` | Tier 1–3の構造候補生成（seed固定）、衝突/重複filter、
+charge/spin sibling展開、親子関係の記録 | DFT実行 |
+| `qc/` | electronic/geometry QC判定、rejection/retry ledger、dataset release gate集計 | 閾値の値（configs/datasets/へ） |
+| `datasets/` | canonical record組立、ASE変換、LMDB書出し、load-back検証、split生成 | 学習実行 |
+| `training/` | fairchem config合成、training record（seed/checksum/commit）保存 | metric計算 |
+| `evaluation/` | label/simulation/retention metric、parity集計、報告表生成 | 図の見た目調整（scripts/notebookへ） |
+| `cli/` | `uma-pyscf <subcommand>`。引数解釈とconfig読込のみで、処理は各moduleへ | 科学ロジック |
+
+## 5. configs/ の規約
+
+- 形式はYAML、file名は`<内容>_v<N>.yaml`（例: `configs/dft/omol_wb97mv_tzvpd_v1.yaml`）。
+- **既存versionは変更しない**。条件を変えるときは`v<N+1>`を追加し、
+  参照側manifestが使ったversionを記録する。
+- 全fileに共通header: `schema_version`、`created`、`derived_from`（任意）、
+  そして数値には単位をkey名で明示（`conv_tol`のような無単位量を除く）。
+- `configs/dft/v1`はGate 1 decision recordから機械的に書き起こす。
+  Conditional GOの制限（元素、原子数、memory上限等）は`configs/dft/`の
+  該当fileと`configs/datasets/`のQC ruleの両方に、機械判定可能な形で置く。
+- `configs/environments/`はPart Iで導入済みの形式を継続する。
+
+## 6. scripts/ と CLI
+
+- console entry pointは`uma-pyscf`一つとし、subcommand（`label`、`qc`、
+  `dataset`、`split`、`train-config`、`evaluate`等）は各Milestoneで追加する。
+- `scripts/`にはhost固有wrapper（PBS投入、GPU host逐次実行、同期）だけを置き、
+  中身は「環境変数/引数を読み、configを指定してCLIを呼ぶ」以上のことをしない。
+- Part Iの`run_suite.py`が持つ運用概念（子プロセス隔離、attempt ledger、
+  stop-on-failure、resume）は、P2.3で`calculators/`＋CLIとして再実装する。
+
+## 7. Milestoneとの対応（作成タイミング）
+
+| Milestone | 新規作成 | 完了時にあるべきtest |
+|---|---|---|
+| P2.0 | `pyproject.toml`、`src/uma_pyscf/{__init__,core/}`、`cli/`骨格、`tests/unit/core/`、`configs/dft/v1`、lint/型チェック設定 | clean環境でinstall→unit test全通過。spin/units/atomic writeのtest |
+| P2.1 | `schemas/`、`tests/unit/schemas/`、`tests/fixtures/`（36構造の正規化結果subset） | round-trip、単位変換、spin parity、旧schema拒否 |
+| P2.2 | `sampling/`、`configs/sampling/` | 同一config/seedで同一manifest再生成。親子関係とfilterのtest |
+| P2.3 | `calculators/`、`scripts/`のGPU/PBS wrapper、`runs/`運用規約 | adapter単体（pyscf mock）、retry ledger、resume。integrationはGPU hostで |
+| P2.4 | `qc/`、`configs/datasets/`のQC閾値 | 各QC ruleの合否fixture、release gate集計 |
+| P2.5 | `datasets/`（ASE/LMDB）、`tests/integration/` | 変換round-trip、shard checksum、破損検出 |
+| P2.6 | `datasets/splits.py`、`configs/datasets/`のsplit定義 | leakage検査（親子・sibling同group）、split再現性 |
+| P2.7 | `training/`、`configs/finetune/`、`configs/evaluation/`のbase評価 | fairchem config合成のsnapshot test、training record完全性 |
+| P2.8 | `evaluation/`、`configs/evaluation/` | metric数学のunit test、category別集計 |
+| P2.9 | 既存moduleの拡張のみ（新directoryなし） | 選択strategyの決定論test |
+
+## 8. validation/ からの移植方針
+
+移植は「Gate 1後、対象Milestoneの実装時に、test付きで再実装」を原則とする。
+validation/側のfileは変更せず凍結する。
+
+| validation/資産 | 移植先 | 扱い |
+|---|---|---|
+| `multiplicity_to_pyscf_spin`、`target_s2`、parity検査 | `core/spin.py` | P2.0で移植。挙動同一をtestで固定 |
+| `write_json`のatomic write | `core/io.py` | P2.0で移植 |
+| manifest/XYZ検証の考え方 | `schemas/` | P2.1で新schemaとして再設計（コード流用しない） |
+| `compare.py`のRMSE/MAE/max数学 | `evaluation/label_metrics.py` | P2.8で移植 |
+| `run_suite.py`のattempt ledger・子プロセス隔離 | `calculators/`＋`qc/ledger.py` | P2.3で概念を移植 |
+| `collect_environment.py` | 当面validation/に残す | 形式は`configs/environments/`で共通 |
+| PBS template類 | `scripts/` | host条件を確認して再作成 |
+| ORCA入出力（`prepare_orca.py`等） | 移植しない | 教師engineはGPU4PySCFに統一。ORCA比較はPart I資産のまま |
+
+## 9. 横断規約
+
+### 単位・符号・スピン
+
+P2.1のschema実装で最終確定する前提で、次を既定とする。
+
+- canonical recordは**計算native単位を保持**する: energy Hartree、
+  gradient Hartree/Bohr、座標Å。key名に単位を含める（現行validationと同じ）。
+- `gradient_*`と`forces_*`は別fieldとし、符号反転は`datasets/`のexport層の
+  **一か所**でのみ行う。fairchem向け出力はeV、eV/Å。
+- source of truthはmultiplicity（`2S+1`）。PySCF `spin=2S`は常に導出値として
+  併記し、逆方向の入力は受け付けない。
+- chargeとmultiplicityは全recordの必須fieldであり、default値を持たない。
+
+### fixtureとtestの規模
+
+- `tests/fixtures/`は1 fileあたり100 KB以下、合計5 MB以下を目安とし、
+  実DFT結果は正規化済みJSONのsubsetのみ置く。
+- `tests/unit/`は追加依存なし（stdlib＋numpy程度）で常時全通過。
+  pyscf/cupy/ase/fairchemを要するtestは`tests/integration/`に置き、
+  依存が無い環境では自動skipする。
+
+### 命名
+
+- dataset ID: `ds_<domain>_<連番3桁>`（例: `ds_sigehcl_001`）。manifestに
+  生成config version、件数、checksumを必須記録。
+- split manifest: `split_<dataset_id>_<axis>_v<N>.json`（axis: parent、
+  composition、charge、multiplicity、reaction、severity）。
+- 学習実行: `runs/train/<dataset_id>/<config_v>/<seed>/`。
+
+## 10. Gate 1で確定してから反映する事項
+
+本書では枠だけ定め、値はGate 1 decision recordから転記する。
+
+1. `configs/dft/v1`の内容（density fitting有無、auxiliary basis、grid、
+   SCF閾値、memory/batch上限）
+2. Conditional GO制約の機械判定rule（対象元素、原子数上限、GPU memory上限）
+3. `calculators/`のresource estimatorが使う実測係数（Part Iの performance
+   table から）
+4. retry policyの許可リスト（Part I C4で観測した失敗モードに基づく）
+
+## 11. 未決事項
+
+- build backend（setuptools src-layoutを既定候補とするが、P2.0着手時に決定）
+- lint/型チェックの採用組合せ（ruff＋mypyを既定候補）
+- LMDB shardの目標サイズとhash方式（P2.5で実測して決定）
+- `docs/decisions/`のADR template（最初のGate 1 recordで様式を固定）

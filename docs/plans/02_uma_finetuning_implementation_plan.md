@@ -110,6 +110,8 @@ src/uma_pyscf/
 ```
 
 最初から全directoryを空で作らず、各milestoneで必要なmoduleとtestを同時に追加する。
+directory・module粒度の詳細設計と作成タイミングは
+[本番リポジトリ構成設計](03_production_repository_structure.md)を参照する。
 
 ## 6. Milestone P2.0: 基盤scaffold
 

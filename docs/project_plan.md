@@ -178,6 +178,10 @@ uma_pyscf/
 `validation/orca_gpu4pyscf/`は採用可否を判断するための実験コードとして独立を維持する。
 そこで確立した一般化可能な処理だけを、Gate 1後にtest付きで`src/uma_pyscf/`へ移植する。
 
+このレイアウトをmodule責務・作成タイミング・移植方針まで具体化した設計は
+[本番リポジトリ構成設計](plans/03_production_repository_structure.md)にあり、
+Gate 1判定時に採用を確定する。
+
 ## 8. 計画の更新方法
 
 - 日々の観察・試行錯誤: `docs/lab_notes/`
