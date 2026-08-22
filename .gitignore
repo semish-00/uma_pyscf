@@ -1,0 +1,18 @@
+# Licensed software, third-party source archives, and user-local installations.
+/installers/
+/software/
+
+# Generated calculation data.
+/validation/orca_gpu4pyscf/runs/*
+!/validation/orca_gpu4pyscf/runs/.gitignore
+
+# Python caches.
+__pycache__/
+*.py[cod]
+
+# OpenPBS stdout/stderr files written at the checkout root.
+/*.o[0-9]*
+/*.e[0-9]*
+
+# macOS metadata.
+.DS_Store

@@ -1,0 +1,547 @@
+{
+  "schema": "crosscode-suite-v1",
+  "suite_id": "si_ge_h_cl_ladder_v1",
+  "description": "Controlled bond scans, neutral doublet radicals, Si-Ge mixed molecules, and deterministic random displacements.",
+  "case_count": 29,
+  "engine_jobs_per_case": [
+    "orca",
+    "pyscf-cpu"
+  ],
+  "cases": [
+    {
+      "case_id": "sih4_bond1_x0p85",
+      "category": "bond_scan",
+      "multiplicity": 1,
+      "config": "configs/sih4_bond1_x0p85.json",
+      "resources": {
+        "ncpus": 8,
+        "memory_gb": 32,
+        "walltime": "06:00:00"
+      },
+      "generation": {
+        "kind": "one_bond_scale",
+        "parent": "sih4_td_seed",
+        "bond_atom_indices_zero_based": [
+          0,
+          1
+        ],
+        "factor": 0.85
+      }
+    },
+    {
+      "case_id": "sih4_bond1_x1p15",
+      "category": "bond_scan",
+      "multiplicity": 1,
+      "config": "configs/sih4_bond1_x1p15.json",
+      "resources": {
+        "ncpus": 8,
+        "memory_gb": 32,
+        "walltime": "06:00:00"
+      },
+      "generation": {
+        "kind": "one_bond_scale",
+        "parent": "sih4_td_seed",
+        "bond_atom_indices_zero_based": [
+          0,
+          1
+        ],
+        "factor": 1.15
+      }
+    },
+    {
+      "case_id": "sih4_bond1_x1p30",
+      "category": "bond_scan",
+      "multiplicity": 1,
+      "config": "configs/sih4_bond1_x1p30.json",
+      "resources": {
+        "ncpus": 8,
+        "memory_gb": 32,
+        "walltime": "06:00:00"
+      },
+      "generation": {
+        "kind": "one_bond_scale",
+        "parent": "sih4_td_seed",
+        "bond_atom_indices_zero_based": [
+          0,
+          1
+        ],
+        "factor": 1.3
+      }
+    },
+    {
+      "case_id": "geh4_bond1_x0p85",
+      "category": "bond_scan",
+      "multiplicity": 1,
+      "config": "configs/geh4_bond1_x0p85.json",
+      "resources": {
+        "ncpus": 8,
+        "memory_gb": 32,
+        "walltime": "06:00:00"
+      },
+      "generation": {
+        "kind": "one_bond_scale",
+        "parent": "geh4_td_seed",
+        "bond_atom_indices_zero_based": [
+          0,
+          1
+        ],
+        "factor": 0.85
+      }
+    },
+    {
+      "case_id": "geh4_bond1_x1p15",
+      "category": "bond_scan",
+      "multiplicity": 1,
+      "config": "configs/geh4_bond1_x1p15.json",
+      "resources": {
+        "ncpus": 8,
+        "memory_gb": 32,
+        "walltime": "06:00:00"
+      },
+      "generation": {
+        "kind": "one_bond_scale",
+        "parent": "geh4_td_seed",
+        "bond_atom_indices_zero_based": [
+          0,
+          1
+        ],
+        "factor": 1.15
+      }
+    },
+    {
+      "case_id": "geh4_bond1_x1p30",
+      "category": "bond_scan",
+      "multiplicity": 1,
+      "config": "configs/geh4_bond1_x1p30.json",
+      "resources": {
+        "ncpus": 8,
+        "memory_gb": 32,
+        "walltime": "06:00:00"
+      },
+      "generation": {
+        "kind": "one_bond_scale",
+        "parent": "geh4_td_seed",
+        "bond_atom_indices_zero_based": [
+          0,
+          1
+        ],
+        "factor": 1.3
+      }
+    },
+    {
+      "case_id": "sicl4_bond1_x0p85",
+      "category": "bond_scan",
+      "multiplicity": 1,
+      "config": "configs/sicl4_bond1_x0p85.json",
+      "resources": {
+        "ncpus": 16,
+        "memory_gb": 64,
+        "walltime": "12:00:00"
+      },
+      "generation": {
+        "kind": "one_bond_scale",
+        "parent": "sicl4_td_seed",
+        "bond_atom_indices_zero_based": [
+          0,
+          1
+        ],
+        "factor": 0.85
+      }
+    },
+    {
+      "case_id": "sicl4_bond1_x1p15",
+      "category": "bond_scan",
+      "multiplicity": 1,
+      "config": "configs/sicl4_bond1_x1p15.json",
+      "resources": {
+        "ncpus": 16,
+        "memory_gb": 64,
+        "walltime": "12:00:00"
+      },
+      "generation": {
+        "kind": "one_bond_scale",
+        "parent": "sicl4_td_seed",
+        "bond_atom_indices_zero_based": [
+          0,
+          1
+        ],
+        "factor": 1.15
+      }
+    },
+    {
+      "case_id": "sicl4_bond1_x1p30",
+      "category": "bond_scan",
+      "multiplicity": 1,
+      "config": "configs/sicl4_bond1_x1p30.json",
+      "resources": {
+        "ncpus": 16,
+        "memory_gb": 64,
+        "walltime": "12:00:00"
+      },
+      "generation": {
+        "kind": "one_bond_scale",
+        "parent": "sicl4_td_seed",
+        "bond_atom_indices_zero_based": [
+          0,
+          1
+        ],
+        "factor": 1.3
+      }
+    },
+    {
+      "case_id": "gecl4_bond1_x0p85",
+      "category": "bond_scan",
+      "multiplicity": 1,
+      "config": "configs/gecl4_bond1_x0p85.json",
+      "resources": {
+        "ncpus": 16,
+        "memory_gb": 64,
+        "walltime": "12:00:00"
+      },
+      "generation": {
+        "kind": "one_bond_scale",
+        "parent": "gecl4_td_seed",
+        "bond_atom_indices_zero_based": [
+          0,
+          1
+        ],
+        "factor": 0.85
+      }
+    },
+    {
+      "case_id": "gecl4_bond1_x1p15",
+      "category": "bond_scan",
+      "multiplicity": 1,
+      "config": "configs/gecl4_bond1_x1p15.json",
+      "resources": {
+        "ncpus": 16,
+        "memory_gb": 64,
+        "walltime": "12:00:00"
+      },
+      "generation": {
+        "kind": "one_bond_scale",
+        "parent": "gecl4_td_seed",
+        "bond_atom_indices_zero_based": [
+          0,
+          1
+        ],
+        "factor": 1.15
+      }
+    },
+    {
+      "case_id": "gecl4_bond1_x1p30",
+      "category": "bond_scan",
+      "multiplicity": 1,
+      "config": "configs/gecl4_bond1_x1p30.json",
+      "resources": {
+        "ncpus": 16,
+        "memory_gb": 64,
+        "walltime": "12:00:00"
+      },
+      "generation": {
+        "kind": "one_bond_scale",
+        "parent": "gecl4_td_seed",
+        "bond_atom_indices_zero_based": [
+          0,
+          1
+        ],
+        "factor": 1.3
+      }
+    },
+    {
+      "case_id": "sih3_doublet_planar_seed",
+      "category": "radical",
+      "multiplicity": 2,
+      "config": "configs/sih3_doublet_planar_seed.json",
+      "resources": {
+        "ncpus": 8,
+        "memory_gb": 32,
+        "walltime": "06:00:00"
+      },
+      "generation": {
+        "kind": "trigonal_planar_seed",
+        "bond_angstrom": 1.48
+      }
+    },
+    {
+      "case_id": "geh3_doublet_planar_seed",
+      "category": "radical",
+      "multiplicity": 2,
+      "config": "configs/geh3_doublet_planar_seed.json",
+      "resources": {
+        "ncpus": 8,
+        "memory_gb": 32,
+        "walltime": "06:00:00"
+      },
+      "generation": {
+        "kind": "trigonal_planar_seed",
+        "bond_angstrom": 1.525
+      }
+    },
+    {
+      "case_id": "sicl3_doublet_planar_seed",
+      "category": "radical",
+      "multiplicity": 2,
+      "config": "configs/sicl3_doublet_planar_seed.json",
+      "resources": {
+        "ncpus": 16,
+        "memory_gb": 64,
+        "walltime": "12:00:00"
+      },
+      "generation": {
+        "kind": "trigonal_planar_seed",
+        "bond_angstrom": 2.02
+      }
+    },
+    {
+      "case_id": "gecl3_doublet_planar_seed",
+      "category": "radical",
+      "multiplicity": 2,
+      "config": "configs/gecl3_doublet_planar_seed.json",
+      "resources": {
+        "ncpus": 16,
+        "memory_gb": 64,
+        "walltime": "12:00:00"
+      },
+      "generation": {
+        "kind": "trigonal_planar_seed",
+        "bond_angstrom": 2.11
+      }
+    },
+    {
+      "case_id": "h3si_geh3_staggered_seed",
+      "category": "mixed_si_ge_h_cl",
+      "multiplicity": 1,
+      "config": "configs/h3si_geh3_staggered_seed.json",
+      "resources": {
+        "ncpus": 16,
+        "memory_gb": 64,
+        "walltime": "12:00:00"
+      },
+      "generation": {
+        "kind": "staggered_si_ge_dimer_seed",
+        "si_ge_angstrom": 2.4
+      }
+    },
+    {
+      "case_id": "h3si_gecl3_staggered_seed",
+      "category": "mixed_si_ge_h_cl",
+      "multiplicity": 1,
+      "config": "configs/h3si_gecl3_staggered_seed.json",
+      "resources": {
+        "ncpus": 16,
+        "memory_gb": 64,
+        "walltime": "12:00:00"
+      },
+      "generation": {
+        "kind": "staggered_si_ge_dimer_seed",
+        "si_ge_angstrom": 2.4
+      }
+    },
+    {
+      "case_id": "cl3si_geh3_staggered_seed",
+      "category": "mixed_si_ge_h_cl",
+      "multiplicity": 1,
+      "config": "configs/cl3si_geh3_staggered_seed.json",
+      "resources": {
+        "ncpus": 16,
+        "memory_gb": 64,
+        "walltime": "12:00:00"
+      },
+      "generation": {
+        "kind": "staggered_si_ge_dimer_seed",
+        "si_ge_angstrom": 2.4
+      }
+    },
+    {
+      "case_id": "sih4_random_sigma0p04_s20260813",
+      "category": "random_displacement",
+      "multiplicity": 1,
+      "config": "configs/sih4_random_sigma0p04_s20260813.json",
+      "resources": {
+        "ncpus": 8,
+        "memory_gb": 32,
+        "walltime": "06:00:00"
+      },
+      "generation": {
+        "kind": "cartesian_gaussian_displacement",
+        "parent": "sih4",
+        "sigma_angstrom": 0.04,
+        "seed": 20260813,
+        "translation_removed": true,
+        "minimum_distance_filter_covalent_radii_factor": 0.65
+      }
+    },
+    {
+      "case_id": "sih4_random_sigma0p12_s20260814",
+      "category": "random_displacement",
+      "multiplicity": 1,
+      "config": "configs/sih4_random_sigma0p12_s20260814.json",
+      "resources": {
+        "ncpus": 8,
+        "memory_gb": 32,
+        "walltime": "06:00:00"
+      },
+      "generation": {
+        "kind": "cartesian_gaussian_displacement",
+        "parent": "sih4",
+        "sigma_angstrom": 0.12,
+        "seed": 20260814,
+        "translation_removed": true,
+        "minimum_distance_filter_covalent_radii_factor": 0.65
+      }
+    },
+    {
+      "case_id": "geh4_random_sigma0p04_s20260913",
+      "category": "random_displacement",
+      "multiplicity": 1,
+      "config": "configs/geh4_random_sigma0p04_s20260913.json",
+      "resources": {
+        "ncpus": 8,
+        "memory_gb": 32,
+        "walltime": "06:00:00"
+      },
+      "generation": {
+        "kind": "cartesian_gaussian_displacement",
+        "parent": "geh4",
+        "sigma_angstrom": 0.04,
+        "seed": 20260913,
+        "translation_removed": true,
+        "minimum_distance_filter_covalent_radii_factor": 0.65
+      }
+    },
+    {
+      "case_id": "geh4_random_sigma0p12_s20260914",
+      "category": "random_displacement",
+      "multiplicity": 1,
+      "config": "configs/geh4_random_sigma0p12_s20260914.json",
+      "resources": {
+        "ncpus": 8,
+        "memory_gb": 32,
+        "walltime": "06:00:00"
+      },
+      "generation": {
+        "kind": "cartesian_gaussian_displacement",
+        "parent": "geh4",
+        "sigma_angstrom": 0.12,
+        "seed": 20260914,
+        "translation_removed": true,
+        "minimum_distance_filter_covalent_radii_factor": 0.65
+      }
+    },
+    {
+      "case_id": "sicl4_random_sigma0p04_s20261013",
+      "category": "random_displacement",
+      "multiplicity": 1,
+      "config": "configs/sicl4_random_sigma0p04_s20261013.json",
+      "resources": {
+        "ncpus": 16,
+        "memory_gb": 64,
+        "walltime": "12:00:00"
+      },
+      "generation": {
+        "kind": "cartesian_gaussian_displacement",
+        "parent": "sicl4",
+        "sigma_angstrom": 0.04,
+        "seed": 20261013,
+        "translation_removed": true,
+        "minimum_distance_filter_covalent_radii_factor": 0.65
+      }
+    },
+    {
+      "case_id": "sicl4_random_sigma0p12_s20261014",
+      "category": "random_displacement",
+      "multiplicity": 1,
+      "config": "configs/sicl4_random_sigma0p12_s20261014.json",
+      "resources": {
+        "ncpus": 16,
+        "memory_gb": 64,
+        "walltime": "12:00:00"
+      },
+      "generation": {
+        "kind": "cartesian_gaussian_displacement",
+        "parent": "sicl4",
+        "sigma_angstrom": 0.12,
+        "seed": 20261014,
+        "translation_removed": true,
+        "minimum_distance_filter_covalent_radii_factor": 0.65
+      }
+    },
+    {
+      "case_id": "gecl4_random_sigma0p04_s20261113",
+      "category": "random_displacement",
+      "multiplicity": 1,
+      "config": "configs/gecl4_random_sigma0p04_s20261113.json",
+      "resources": {
+        "ncpus": 16,
+        "memory_gb": 64,
+        "walltime": "12:00:00"
+      },
+      "generation": {
+        "kind": "cartesian_gaussian_displacement",
+        "parent": "gecl4",
+        "sigma_angstrom": 0.04,
+        "seed": 20261113,
+        "translation_removed": true,
+        "minimum_distance_filter_covalent_radii_factor": 0.65
+      }
+    },
+    {
+      "case_id": "gecl4_random_sigma0p12_s20261114",
+      "category": "random_displacement",
+      "multiplicity": 1,
+      "config": "configs/gecl4_random_sigma0p12_s20261114.json",
+      "resources": {
+        "ncpus": 16,
+        "memory_gb": 64,
+        "walltime": "12:00:00"
+      },
+      "generation": {
+        "kind": "cartesian_gaussian_displacement",
+        "parent": "gecl4",
+        "sigma_angstrom": 0.12,
+        "seed": 20261114,
+        "translation_removed": true,
+        "minimum_distance_filter_covalent_radii_factor": 0.65
+      }
+    },
+    {
+      "case_id": "h3si_gecl3_random_sigma0p04_s20261213",
+      "category": "random_displacement",
+      "multiplicity": 1,
+      "config": "configs/h3si_gecl3_random_sigma0p04_s20261213.json",
+      "resources": {
+        "ncpus": 16,
+        "memory_gb": 64,
+        "walltime": "12:00:00"
+      },
+      "generation": {
+        "kind": "cartesian_gaussian_displacement",
+        "parent": "h3si_gecl3",
+        "sigma_angstrom": 0.04,
+        "seed": 20261213,
+        "translation_removed": true,
+        "minimum_distance_filter_covalent_radii_factor": 0.65
+      }
+    },
+    {
+      "case_id": "h3si_gecl3_random_sigma0p12_s20261214",
+      "category": "random_displacement",
+      "multiplicity": 1,
+      "config": "configs/h3si_gecl3_random_sigma0p12_s20261214.json",
+      "resources": {
+        "ncpus": 16,
+        "memory_gb": 64,
+        "walltime": "12:00:00"
+      },
+      "generation": {
+        "kind": "cartesian_gaussian_displacement",
+        "parent": "h3si_gecl3",
+        "sigma_angstrom": 0.12,
+        "seed": 20261214,
+        "translation_removed": true,
+        "minimum_distance_filter_covalent_radii_factor": 0.65
+      }
+    }
+  ]
+}

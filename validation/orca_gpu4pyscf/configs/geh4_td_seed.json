@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "case_id": "geh4_td_seed",
+  "structure": "../structures/geh4_td_seed.xyz",
+  "charge": 0,
+  "multiplicity": 1,
+  "calculation": "energy_gradient",
+  "method": {"functional": "wb97m-v", "basis": "def2-tzvpd"},
+  "scf": {"conv_tol": 1e-10, "max_cycle": 200},
+  "pyscf": {"verbose": 3, "grid_level": 5, "nlc_grid_level": 5, "grid_response": true, "density_fit": false, "max_memory_mb": 12000},
+  "orca": {"version": "6.0.0", "nprocs": 4, "maxcore_mb_per_process": 2000, "keywords": ["VeryTightSCF", "DEFGRID3", "SCNL", "NORI", "NOCOSX", "NoAutoStart"]},
+  "tolerances": {"energy_abs_hartree": 5e-5, "gradient_rms_hartree_per_bohr": 2e-4, "gradient_max_hartree_per_bohr": 5e-4},
+  "tolerance_status": "provisional_not_scientifically_frozen"
+}
