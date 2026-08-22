@@ -8,13 +8,15 @@ version = "0.1.0.dev0"
 description = "Reproducible UMA fine-tuning on GPU4PySCF wB97M-V/def2-TZVPD labels for H/Si/Ge/Cl gas-phase molecules."
 readme = "README.md"
 requires-python = ">=3.11"
-# The core library is standard library only by design. Scientific dependencies
-# (pyscf, gpu4pyscf, ase, fairchem) belong to the modules that need them and
-# are declared when those modules are added.
-dependencies = []
+# Beyond the config parser the core library is standard library only by design.
+# Scientific dependencies (pyscf, gpu4pyscf, ase, fairchem) belong to the
+# modules that need them and are declared when those modules are added.
+# PyYAML arrives with the sampling milestone: configs are YAML by project
+# convention, and they are read with `yaml.safe_load` only.
+dependencies = ["pyyaml>=6"]
 
 [project.optional-dependencies]
-dev = ["ruff", "mypy"]
+dev = ["ruff", "mypy", "types-PyYAML"]
 
 [project.scripts]
 uma-pyscf = "uma_pyscf.cli.main:main"

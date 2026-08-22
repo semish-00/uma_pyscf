@@ -24,6 +24,10 @@ from uma_pyscf.schemas.label_record import (
     Structure,
 )
 
+REPO_ROOT = Path(__file__).resolve().parents[3]
+EXAMPLE_CONFIG = REPO_ROOT / "configs" / "sampling" / "example_bond_scan_v1.yaml"
+EXAMPLE_XYZ = REPO_ROOT / "configs" / "sampling" / "structures" / "sih4_seed_example.xyz"
+
 
 def run(argv: list[str]) -> tuple[int, str]:
     """Run the CLI with `argv` and capture its exit code and stdout."""
@@ -167,6 +171,71 @@ class ValidateRecordCommandTests(unittest.TestCase):
         with self.assertRaises(SystemExit) as caught:
             with contextlib.redirect_stderr(io.StringIO()):
                 main(["validate-record"])
+        self.assertEqual(caught.exception.code, 2)
+
+
+class SampleCommandTests(unittest.TestCase):
+    def test_the_reference_config_generates_both_files_and_exits_zero(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            code, output = run(["sample", str(EXAMPLE_CONFIG), "--output-dir", directory])
+            manifest = Path(directory) / "example_bond_scan_v1_candidates.json"
+            report = Path(directory) / "example_bond_scan_v1_geometry_qc.json"
+            self.assertEqual(code, 0)
+            self.assertTrue(manifest.is_file())
+            self.assertTrue(report.is_file())
+            self.assertEqual(
+                output.splitlines()[-1],
+                f"accepted=7 rejected=0 manifest={manifest} qc={report}",
+            )
+            self.assertEqual(
+                json.loads(manifest.read_text(encoding="utf-8"))["schema"],
+                "uma-pyscf-candidate-manifest-v1",
+            )
+
+    def test_a_rejected_candidate_is_printed_and_still_exits_zero(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "sih4.xyz").write_text(
+                EXAMPLE_XYZ.read_text(encoding="utf-8"), encoding="utf-8"
+            )
+            config = root / "collapsed.yaml"
+            config.write_text(
+                "schema_version: 1\n"
+                "sampling_id: cli_reject_v1\n"
+                "structures:\n"
+                "  - id: sih4_seed\n"
+                "    xyz_path: sih4.xyz\n"
+                "operations:\n"
+                "  - kind: bond_scan\n"
+                "    structure: sih4_seed\n"
+                "    charge: 0\n"
+                "    multiplicity: 1\n"
+                "    anchor_index: 0\n"
+                "    moved_index: 1\n"
+                "    factors: [0.5]\n",
+                encoding="utf-8",
+            )
+            code, output = run(["sample", str(config), "--output-dir", str(root / "out")])
+        lines = output.splitlines()
+        self.assertEqual(code, 0)
+        self.assertTrue(lines[0].startswith("rejected cli_reject_v1_sih4_seed_bond01_x0p5: "))
+        self.assertIn("minimum distance", lines[0])
+        self.assertTrue(lines[-1].startswith("accepted=0 rejected=1 "))
+
+    def test_a_broken_config_reports_an_error_and_exits_one(self) -> None:
+        stream = io.StringIO()
+        with tempfile.TemporaryDirectory() as directory:
+            missing = Path(directory) / "absent.yaml"
+            with contextlib.redirect_stderr(stream):
+                code, output = run(["sample", str(missing), "--output-dir", directory])
+        self.assertEqual(code, 1)
+        self.assertEqual(output, "")
+        self.assertIn("ERROR", stream.getvalue())
+
+    def test_the_output_directory_is_required(self) -> None:
+        with self.assertRaises(SystemExit) as caught:
+            with contextlib.redirect_stderr(io.StringIO()):
+                main(["sample", str(EXAMPLE_CONFIG)])
         self.assertEqual(caught.exception.code, 2)
 
 

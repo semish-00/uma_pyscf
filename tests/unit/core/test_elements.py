@@ -11,10 +11,12 @@ import unittest
 
 from uma_pyscf.core.elements import (
     ATOMIC_NUMBERS,
+    COVALENT_RADII_ANGSTROM,
     MAX_ATOMIC_NUMBER,
     PERIODIC_SYMBOLS,
     atomic_number,
     canonical_symbol,
+    covalent_radius,
 )
 from uma_pyscf.core.errors import ValidationError
 
@@ -98,6 +100,84 @@ class CanonicalSymbolTests(unittest.TestCase):
             with self.subTest(value=value):
                 with self.assertRaises(ValidationError):
                     canonical_symbol(value)  # type: ignore[arg-type]
+
+
+class CovalentRadiusTests(unittest.TestCase):
+    """The Cordero (2008) radii the geometry filters are built on.
+
+    The values are pinned as literals here for the same reason as the symbol
+    table: `validation/` uses the same four numbers for H, Si, Ge, and Cl, and
+    the agreement has to survive without importing anything from it.
+    """
+
+    def test_the_tabulated_values(self) -> None:
+        expected = {
+            "H": 0.31,
+            "B": 0.84,
+            "C": 0.76,
+            "N": 0.71,
+            "O": 0.66,
+            "F": 0.57,
+            "Si": 1.11,
+            "P": 1.07,
+            "S": 1.05,
+            "Cl": 1.02,
+            "Ge": 1.20,
+            "As": 1.19,
+            "Se": 1.20,
+            "Br": 1.20,
+        }
+        self.assertEqual(COVALENT_RADII_ANGSTROM, expected)
+
+    def test_the_table_covers_only_the_project_elements(self) -> None:
+        self.assertEqual(len(COVALENT_RADII_ANGSTROM), 14)
+        for symbol in COVALENT_RADII_ANGSTROM:
+            with self.subTest(symbol=symbol):
+                self.assertEqual(canonical_symbol(symbol), symbol)
+
+    def test_lookup_by_symbol(self) -> None:
+        for symbol, radius in (("H", 0.31), ("Si", 1.11), ("Cl", 1.02), ("Ge", 1.20)):
+            with self.subTest(symbol=symbol):
+                self.assertEqual(covalent_radius(symbol), radius)
+
+    def test_lookup_by_atomic_number(self) -> None:
+        for number, radius in ((1, 0.31), (14, 1.11), (17, 1.02), (32, 1.20)):
+            with self.subTest(number=number):
+                self.assertEqual(covalent_radius(number), radius)
+
+    def test_lookup_canonicalizes_the_symbol_first(self) -> None:
+        self.assertEqual(covalent_radius("cl "), 1.02)
+        self.assertEqual(covalent_radius(" GE"), 1.20)
+
+    def test_an_element_outside_the_table_fails_closed(self) -> None:
+        for value in ("Fe", "Xe", 26, 54):
+            with self.subTest(value=value):
+                with self.assertRaises(ValidationError):
+                    covalent_radius(value)
+
+    def test_the_error_names_the_element_and_the_source(self) -> None:
+        with self.assertRaises(ValidationError) as caught:
+            covalent_radius("Fe")
+        message = str(caught.exception)
+        self.assertIn("'Fe'", message)
+        self.assertIn("Cordero", message)
+
+    def test_an_unknown_symbol_is_rejected(self) -> None:
+        with self.assertRaises(ValidationError):
+            covalent_radius("Xx")
+
+    def test_an_out_of_range_atomic_number_is_rejected(self) -> None:
+        for number in (0, -1, MAX_ATOMIC_NUMBER + 1):
+            with self.subTest(number=number):
+                with self.assertRaises(ValidationError):
+                    covalent_radius(number)
+
+    def test_a_non_element_input_is_rejected(self) -> None:
+        values: tuple[object, ...] = (None, 1.0, True, ["H"])
+        for value in values:
+            with self.subTest(value=value):
+                with self.assertRaises(ValidationError):
+                    covalent_radius(value)  # type: ignore[arg-type]
 
 
 if __name__ == "__main__":

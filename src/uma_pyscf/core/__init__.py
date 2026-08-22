@@ -11,10 +11,12 @@ from __future__ import annotations
 
 from .elements import (
     ATOMIC_NUMBERS,
+    COVALENT_RADII_ANGSTROM,
     MAX_ATOMIC_NUMBER,
     PERIODIC_SYMBOLS,
     atomic_number,
     canonical_symbol,
+    covalent_radius,
 )
 from .errors import ConfigError, ProvenanceError, UmaPyscfError, ValidationError
 from .ids import (
@@ -50,6 +52,7 @@ __all__ = [
     "ATOMIC_NUMBERS",
     "BOHR_TO_ANGSTROM",
     "CASE_ID_PATTERN",
+    "COVALENT_RADII_ANGSTROM",
     "HARTREE_PER_BOHR_TO_EV_PER_ANGSTROM",
     "HARTREE_TO_EV",
     "HARTREE_TO_KCAL_MOL",
@@ -64,6 +67,7 @@ __all__ = [
     "bohr_to_angstrom",
     "canonical_json_fingerprint",
     "canonical_symbol",
+    "covalent_radius",
     "electron_count",
     "ev_per_angstrom_to_hartree_per_bohr",
     "ev_to_hartree",

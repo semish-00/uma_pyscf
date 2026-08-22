@@ -15,6 +15,14 @@ reads it back through :meth:`LabelRecord.from_dict`.
 
 from __future__ import annotations
 
+from .candidate import (
+    CANDIDATE_MANIFEST_SCHEMA,
+    CANDIDATE_STATUSES,
+    GEOMETRY_QC_SCHEMA,
+    CandidateManifest,
+    CandidateRecord,
+    GeometryQcReport,
+)
 from .cli import configure_validate_records, run_validate_records
 from .crosscode import (
     CROSSCODE_RESULT_SCHEMA,
@@ -36,13 +44,19 @@ from .label_record import (
 )
 
 __all__ = [
+    "CANDIDATE_MANIFEST_SCHEMA",
+    "CANDIDATE_STATUSES",
     "CANONICAL_UNITS",
     "CROSSCODE_RESULT_SCHEMA",
+    "GEOMETRY_QC_SCHEMA",
     "IMPORT_EVENT",
     "LABEL_RECORD_SCHEMA",
     "QC_STATUSES",
+    "CandidateManifest",
+    "CandidateRecord",
     "ElectronicState",
     "Engine",
+    "GeometryQcReport",
     "LabelRecord",
     "Method",
     "QcState",

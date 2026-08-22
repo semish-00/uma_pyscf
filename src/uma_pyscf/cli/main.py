@@ -16,6 +16,7 @@ import platform
 import sys
 
 from .. import __version__
+from ..sampling.cli import configure_sample, run_sample
 from ..schemas.cli import configure_validate_records, run_validate_records
 
 __all__ = ["SUBCOMMANDS", "Subcommand", "build_parser", "main", "run_info"]
@@ -60,6 +61,12 @@ SUBCOMMANDS: tuple[Subcommand, ...] = (
         help="Validate canonical label record JSON files against the current schema.",
         handler=run_validate_records,
         configure=configure_validate_records,
+    ),
+    Subcommand(
+        name="sample",
+        help="Generate structure candidates from a sampling config and QC their geometry.",
+        handler=run_sample,
+        configure=configure_sample,
     ),
 )
 
