@@ -36,9 +36,12 @@ project_plan第6節の原則を、構成規則として言い換える。
    凍結し、`src/`から一切importしない。逆も同様。一般化できる処理は
    コピーでなく**test付きの再実装として移植**する（第8節）。
 6. **一方向依存** — パッケージ内の依存は
-   `core → schemas → (sampling | calculators | qc | datasets | evaluation | training) → cli`
+   `core → schemas → (sampling | calculators | qc | datasets | training | inference | evaluation) → cli`
    の向きのみ許す。横方向（例: sampling→calculators）の依存を作らない。
-   横断的に必要な定数・変換はすべて`core`に置く。
+   横断的に必要な定数・変換はすべて`core`に置く。module間の受け渡しは
+   moduleのimportではなく**recordの受け渡し**で行う（例: inferenceは
+   prediction recordを書き、evaluationはそのfileを読む。evaluation→inference
+   のimportは作らない）。
 7. **Git追跡境界** — source、config、schema、manifest、checksum、集計CSV、
    決定記録は追跡する。raw出力、trajectory、LMDB本体、checkpoint、logは
    追跡しない（`data/`、`runs/`、`artifacts/`）。
@@ -60,7 +63,8 @@ uma_pyscf/
 │   ├── dft/                    # P2.0: Gate 1で固定したlabel protocol
 │   ├── sampling/               # P2.2: scan/displacement/MD候補生成条件
 │   ├── datasets/               # P2.4–P2.6: dataset定義、QC閾値、split定義
-│   ├── finetune/               # P2.7: checkpoint参照とhyperparameter
+│   ├── finetune/               # P2.7: 学習hyperparameterとbase checkpoint参照
+│   ├── models/                 # P2.7: model registry（学習済みmodelの台帳）
 │   └── evaluation/             # P2.7–P2.8: metric、holdout、base比較
 ├── src/uma_pyscf/
 │   ├── core/                   # P2.0: units、spin、id、atomic I/O、例外
@@ -70,6 +74,7 @@ uma_pyscf/
 │   ├── qc/                     # P2.4: electronic/geometry QC、ledger
 │   ├── datasets/               # P2.5–P2.6: canonical record、ASE/LMDB、split
 │   ├── training/               # P2.7: fairchem config合成、training record
+│   ├── inference/              # P2.7: model registry、条件付き推論、prediction record
 │   ├── evaluation/             # P2.8: parity、relative energy、retention
 │   └── cli/                    # P2.0〜: thin subcommand（実装は各moduleへ委譲）
 ├── scripts/                    # batch/PBS/GPU wrapper。config読込→library呼出のみ
@@ -107,9 +112,43 @@ retry policyの適用、resource見積り | QC判定、dataset書出し |
 charge/spin sibling展開、親子関係の記録 | DFT実行 |
 | `qc/` | electronic/geometry QC判定、rejection/retry ledger、dataset release gate集計 | 閾値の値（configs/datasets/へ） |
 | `datasets/` | canonical record組立、ASE変換、LMDB書出し、load-back検証、split生成 | 学習実行 |
-| `training/` | fairchem config合成、training record（seed/checksum/commit）保存 | metric計算 |
-| `evaluation/` | label/simulation/retention metric、parity集計、報告表生成 | 図の見た目調整（scripts/notebookへ） |
+| `training/` | fairchem config合成、training record（seed/checksum/commit）保存、
+学習済みmodelのregistry登録 | metric計算、推論 |
+| `inference/` | model registryの読込とmodel_idによるcheckpoint選択、
+charge/multiplicity条件付きのUMA/fairchem calculator wrapper（単位変換込み）、
+prediction record（構造・条件・energy/forces・model_id・単位）の書出し | metric計算（evaluation/へ）、学習 |
+| `evaluation/` | label/simulation/retention metric、parity集計、報告表生成。
+入力はlabel recordとprediction record | 推論実行（inference/のrecordを読む） |
 | `cli/` | `uma-pyscf <subcommand>`。引数解釈とconfig読込のみで、処理は各moduleへ | 科学ロジック |
+
+### 機能から見た対応
+
+利用者視点の機能と実装の対応を固定する。
+
+| やりたいこと | 入口 | 実装経路 |
+|---|---|---|
+| 教師データ作成 | `uma-pyscf sample` → `label` → `qc` → `dataset` | sampling → calculators → qc → datasets。QCを通らないlabelはdatasetに入らない（fail closed） |
+| 追加学習とmodel保存 | `uma-pyscf train-config` ＋ fairchemの学習CLI | training/がconfig合成とtraining recordを作り、完了したcheckpointを`configs/models/`のregistryへ登録。checkpoint本体は`artifacts/models/<model_id>/`（Git非追跡）、registryにchecksum |
+| modelを選んで推論 | `uma-pyscf infer --model <model_id>` | inference/がregistryからcheckpointを解決し、charge/multiplicityを必須入力としてprediction recordを`runs/infer/<model_id>/`へ書く |
+| 都度の応用計算 | `scripts/`の薄いscript（＋notebook） | libraryのcalculator/推論APIを呼ぶだけの使い捨て。再利用が2回目に見えた時点でtest付きでsrcへ昇格 |
+| 推論結果のDFT検証→追加学習データ化 | `uma-pyscf select` → `label` → `qc` → `dataset` | 下記「active learningの経路」 |
+
+### Active learningの経路（P2.9）
+
+「推論結果のいくつかをPySCFで検証し、追加学習データとして保存する」機能は、
+専用の別pipelineを作らず、既存経路の合成として実装する。
+
+1. `sampling/selection.py`がprediction record（と既存label）を読み、
+   選択基準（ensemble不一致、base/fine-tuned差、force外挿、未充足category等）で
+   検証候補構造を選ぶ。選択configは`configs/sampling/`に置く。
+2. 選ばれた構造は**通常のlabel経路そのまま**（同一versionのDFT config →
+   calculators → qc）でGPU4PySCFにより検証・ラベル化する。
+3. 合格recordは新しいdataset versionとしてdatasets/へ入る。provenanceに
+   「どのmodel_idの推論から、どの選択基準・configで選ばれたか」を必須記録する。
+4. 再学習は新dataset versionに対する通常のtraining/経路。評価は固定holdoutで行う。
+
+検証済み推論結果を別枠のdatasetに貯めない理由: 追加データも通常データと同じ
+QC・split・provenance規則を通らないと、Gate 2の品質保証が二重管理になるため。
 
 ## 5. configs/ の規約
 
@@ -143,9 +182,9 @@ charge/spin sibling展開、親子関係の記録 | DFT実行 |
 | P2.4 | `qc/`、`configs/datasets/`のQC閾値 | 各QC ruleの合否fixture、release gate集計 |
 | P2.5 | `datasets/`（ASE/LMDB）、`tests/integration/` | 変換round-trip、shard checksum、破損検出 |
 | P2.6 | `datasets/splits.py`、`configs/datasets/`のsplit定義 | leakage検査（親子・sibling同group）、split再現性 |
-| P2.7 | `training/`、`configs/finetune/`、`configs/evaluation/`のbase評価 | fairchem config合成のsnapshot test、training record完全性 |
-| P2.8 | `evaluation/`、`configs/evaluation/` | metric数学のunit test、category別集計 |
-| P2.9 | 既存moduleの拡張のみ（新directoryなし） | 選択strategyの決定論test |
+| P2.7 | `training/`、`inference/`、`configs/finetune/`、`configs/models/`（registry）、`configs/evaluation/`のbase評価 | fairchem config合成のsnapshot test、training record完全性、registry round-trip、base UMA推論のfixture検証（単位・charge/multiplicity入力） |
+| P2.8 | `evaluation/`、`configs/evaluation/` | metric数学のunit test、category別集計、prediction record読込 |
+| P2.9 | `sampling/selection.py`の追加のみ（新directoryなし） | 選択strategyの決定論test、選択provenanceの完全性 |
 
 ## 8. validation/ からの移植方針
 
@@ -191,7 +230,12 @@ P2.1のschema実装で最終確定する前提で、次を既定とする。
   生成config version、件数、checksumを必須記録。
 - split manifest: `split_<dataset_id>_<axis>_v<N>.json`（axis: parent、
   composition、charge、multiplicity、reaction、severity）。
+- model ID: `uma_ft_<dataset_id>_<連番3桁>`（例: `uma_ft_ds_sigehcl_001_001`）。
+  registryにbase checkpoint、dataset ID/split、training config version、
+  checkpoint checksum、licenseを必須記録。base modelもregistryに
+  `uma_base_<name>`として登録し、推論・評価のmodel指定を一本化する。
 - 学習実行: `runs/train/<dataset_id>/<config_v>/<seed>/`。
+- 推論実行: `runs/infer/<model_id>/<実行名>/`（prediction record置き場）。
 
 ## 10. Gate 1で確定してから反映する事項
 
