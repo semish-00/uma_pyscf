@@ -132,6 +132,7 @@ prediction record（構造・条件・energy/forces・model_id・単位）の書
 | modelを選んで推論 | `uma-pyscf infer --model <model_id>` | inference/がregistryからcheckpointを解決し、charge/multiplicityを必須入力としてprediction recordを`runs/infer/<model_id>/`へ書く |
 | 都度の応用計算 | `scripts/`の薄いscript（＋notebook） | libraryのcalculator/推論APIを呼ぶだけの使い捨て。再利用が2回目に見えた時点でtest付きでsrcへ昇格 |
 | 推論結果のDFT検証→追加学習データ化 | `uma-pyscf select` → `label` → `qc` → `dataset` | 下記「active learningの経路」 |
+| 応用計算しながら学習候補を収集（on-the-fly収集） | `scripts/`のMD/opt script＋`MonitoredCalculator` | inference/の監視wrapperがflagしたframeを、下記「on-the-fly収集」経由でactive learning経路へ（非同期） |
 
 ### Active learningの経路（P2.9）
 
@@ -149,6 +150,54 @@ prediction record（構造・条件・energy/forces・model_id・単位）の書
 
 検証済み推論結果を別枠のdatasetに貯めない理由: 追加データも通常データと同じ
 QC・split・provenance規則を通らないと、Gate 2の品質保証が二重管理になるため。
+
+### On-the-fly収集（P2.9の拡張mode）
+
+応用計算（MD、opt、scan）の実行中に学習候補を拾う機能は、
+**「収集はon-the-fly、再学習は非同期のbatch」**として実装する。
+
+1. `inference/`に`MonitoredCalculator`（通常calculatorのwrapper）を置く。
+   各stepで監視信号 — force外れ値、energy不連続、base modelとの乖離
+   （2 model並走）、最近接原子間距離、学習分布からの組成・座標外挿指標 —
+   をstep logへ記録し、trigger閾値を超えたframeをflagする。
+2. flagされたframeは、Tier 3 sampling候補と同じcandidate manifest形式で
+   `runs/infer/<model_id>/<実行名>/flagged/`へ書かれる。simulation自体は
+   止めない（trigger発火はlogとflagのみ）。
+3. 以後は通常のactive learning経路（selection → label → QC → dataset新version
+   → 再学習）へ合流する。provenanceには軌道ID・step・発火したtrigger・
+   使用model_idを必須記録する。
+4. trigger閾値・記録間隔・flag上限は`configs/sampling/otf_*.yaml`で管理する。
+   高温衝突frameの上限（Part II計画Tier 3と同じ制約）を適用する。
+
+**軌道内での即時再学習（VASP MLFF/FLARE型の真のon-the-fly）は初期scope外**
+とする。理由:
+
+- UMA規模のfine-tuningは分〜時間単位で、fs刻みのMD loopに同期できない。
+- GPU4PySCFのsingle point（ωB97M-V/def2-TZVPD）も分単位で、step内で
+  ラベルを返せない。
+- 軌道の途中でmodelが替わると、その軌道の再現性とprovenanceが壊れる。
+- QC・reviewを飛ばしてdatasetへ入る経路を作らない（fail closed）。
+
+将来必要になった場合は、step毎にmodel versionを記録する明示的なmodeとして、
+decision record付きで別途導入する。
+
+### 利便性の規約
+
+都度の応用計算から使いやすいことを、次のAPI/CLI規約で担保する。
+
+- **1行で使えるcalculator**: `from uma_pyscf.inference import load_calculator`
+  → `calc = load_calculator("recommended")`でASE calculatorが返る。
+  chargeとmultiplicityは`Atoms.info`の必須keyとし、無ければ例外（fail closed）。
+- **model alias**: registryに`recommended`と`latest`のaliasを持つ。実体は
+  model_idへの参照で、評価（P2.8）に合格したmodelだけを`recommended`へ
+  昇格させる。昇格は人のreviewを挟み、自動化しない。
+- **一覧CLI**: `uma-pyscf models list` / `uma-pyscf datasets list`で
+  registry・dataset manifestを表形式で確認できる。
+- **入力形式**: 構造入力はxyz/extxyz/ASE Atomsを受け付け、入口で
+  canonical schemaへ正規化する。応用scriptが独自parserを持たない。
+- **cycle orchestrator**: `uma-pyscf al-cycle --config`はselect→label→qc→
+  datasetを順に呼ぶ薄い合成commandとする。再学習の開始と`recommended`昇格は
+  含めない（人の判断点として残す）。
 
 ## 5. configs/ の規約
 
@@ -184,7 +233,7 @@ QC・split・provenance規則を通らないと、Gate 2の品質保証が二重
 | P2.6 | `datasets/splits.py`、`configs/datasets/`のsplit定義 | leakage検査（親子・sibling同group）、split再現性 |
 | P2.7 | `training/`、`inference/`、`configs/finetune/`、`configs/models/`（registry）、`configs/evaluation/`のbase評価 | fairchem config合成のsnapshot test、training record完全性、registry round-trip、base UMA推論のfixture検証（単位・charge/multiplicity入力） |
 | P2.8 | `evaluation/`、`configs/evaluation/` | metric数学のunit test、category別集計、prediction record読込 |
-| P2.9 | `sampling/selection.py`の追加のみ（新directoryなし） | 選択strategyの決定論test、選択provenanceの完全性 |
+| P2.9 | `sampling/selection.py`と`inference/`の`MonitoredCalculator`の追加のみ（新directoryなし） | 選択strategyの決定論test、選択provenanceの完全性、trigger発火とflag書出しのunit test |
 
 ## 8. validation/ からの移植方針
 
