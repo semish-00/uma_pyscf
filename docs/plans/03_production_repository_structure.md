@@ -45,6 +45,12 @@ project_plan第6節の原則を、構成規則として言い換える。
    moduleのimportではなく**recordの受け渡し**で行う（例: inferenceは
    prediction recordを書き、evaluationはそのfileを読む。evaluation→inference
    のimportは作らない）。
+
+   明文化された唯一の例外: 幾何filter数学（最近接距離、fragment、重複
+   fingerprint）の実装は`sampling/filters.py`の一箇所とし、`qc/`はこれを
+   importする。同じ構造が計算前（sampling QC）と計算後（dataset QC）で
+   異なる幾何判定を受けることは、依存規則違反より重大な欠陥であるため。
+   `sampling/filters.py`はcore＋schemasにのみ依存するleafに保つ。
 7. **Git追跡境界** — source、config、schema、manifest、checksum、集計CSV、
    決定記録は追跡する。raw出力、trajectory、LMDB本体、checkpoint、logは
    追跡しない（`data/`、`runs/`、`artifacts/`）。

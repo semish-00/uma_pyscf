@@ -42,6 +42,11 @@ from .label_record import (
     Results,
     Structure,
 )
+from .qc_report import (
+    QC_REPORT_SCHEMA,
+    QC_REPORT_STATUSES,
+    QcReport,
+)
 from .split_manifest import (
     FRACTION_SUM_TOLERANCE,
     SPLIT_AXES,
@@ -60,6 +65,8 @@ __all__ = [
     "GEOMETRY_QC_SCHEMA",
     "IMPORT_EVENT",
     "LABEL_RECORD_SCHEMA",
+    "QC_REPORT_SCHEMA",
+    "QC_REPORT_STATUSES",
     "QC_STATUSES",
     "SPLIT_AXES",
     "SPLIT_MANIFEST_SCHEMA",
@@ -70,6 +77,7 @@ __all__ = [
     "GeometryQcReport",
     "LabelRecord",
     "Method",
+    "QcReport",
     "QcState",
     "RawArtifact",
     "Results",

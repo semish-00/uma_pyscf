@@ -3,8 +3,8 @@
 
 The CLI stays thin on purpose: it parses arguments, and the work belongs to the
 module that owns it. Subcommands are declared once in ``SUBCOMMANDS``, so a
-later milestone adds ``label``, ``qc``, ``dataset``, and the rest by appending
-an entry and pointing it at that module's handler.
+later milestone adds ``label``, ``dataset``, and the rest by appending an entry
+and pointing it at that module's handler.
 """
 
 from __future__ import annotations
@@ -17,6 +17,7 @@ import sys
 
 from .. import __version__
 from ..datasets.cli import configure_split, run_split
+from ..qc.cli import configure_qc, run_qc
 from ..sampling.cli import configure_sample, run_sample
 from ..schemas.cli import configure_validate_records, run_validate_records
 
@@ -68,6 +69,12 @@ SUBCOMMANDS: tuple[Subcommand, ...] = (
         help="Generate structure candidates from a sampling config and QC their geometry.",
         handler=run_sample,
         configure=configure_sample,
+    ),
+    Subcommand(
+        name="qc",
+        help="Judge pending label records against a QC config and write the verdicts.",
+        handler=run_qc,
+        configure=configure_qc,
     ),
     Subcommand(
         name="split",

@@ -23,12 +23,14 @@ from uma_pyscf.schemas.label_record import (
     Results,
     Structure,
 )
+from uma_pyscf.schemas.qc_report import QcReport
 from uma_pyscf.schemas.split_manifest import SplitManifest
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 EXAMPLE_CONFIG = REPO_ROOT / "configs" / "sampling" / "example_bond_scan_v1.yaml"
 EXAMPLE_XYZ = REPO_ROOT / "configs" / "sampling" / "structures" / "sih4_seed_example.xyz"
 EXAMPLE_SPLIT_CONFIG = REPO_ROOT / "configs" / "datasets" / "example_parent_split_v1.yaml"
+EXAMPLE_QC_CONFIG = REPO_ROOT / "configs" / "datasets" / "example_qc_v1.yaml"
 EXAMPLE_CANDIDATES = "example_bond_scan_v1_candidates.json"
 MULTIPLICITY_SPLIT_CONFIG = (
     "schema_version: 1\n"
@@ -87,6 +89,21 @@ def h2_record_dict() -> dict[str, object]:
         raw=RawArtifact(),
         qc=QcState(status="pending"),
     ).to_dict()
+
+
+def pending_h2_record(
+    record_id: str, *, distance: float = 0.74144, gradient: float = 0.0123456
+) -> dict[str, object]:
+    """Return the H2 record with a chosen id, bond length, and gradient magnitude."""
+    record = h2_record_dict()
+    record["record_id"] = record_id
+    structure = dict(record["structure"])  # type: ignore[call-overload]
+    structure["positions_angstrom"] = [[0.0, 0.0, 0.0], [0.0, 0.0, distance]]
+    record["structure"] = structure
+    results = dict(record["results"])  # type: ignore[call-overload]
+    results["gradient_hartree_per_bohr"] = [[0.0, 0.0, -gradient], [0.0, 0.0, gradient]]
+    record["results"] = results
+    return record
 
 
 class InfoCommandTests(unittest.TestCase):
@@ -257,6 +274,134 @@ class SampleCommandTests(unittest.TestCase):
             with contextlib.redirect_stderr(io.StringIO()):
                 main(["sample", str(EXAMPLE_CONFIG)])
         self.assertEqual(caught.exception.code, 2)
+
+
+class QcCommandTests(unittest.TestCase):
+    """The `qc` subcommand, run end to end against the committed example config.
+
+    A rejection is a normal outcome: the run exits 0, names the record and the
+    checks it failed, and writes the judged record like any other. Exit code 1
+    is reserved for a run that could not be trusted -- a config or a record file
+    that does not validate.
+    """
+
+    def inputs(self, root: Path) -> Path:
+        """Write two clean records and one with an impossible gradient."""
+        directory = root / "in"
+        write_json_atomic(directory / "a.json", pending_h2_record("h2_clean"))
+        write_json_atomic(directory / "b.json", pending_h2_record("h2_stretched", distance=0.78))
+        write_json_atomic(
+            directory / "c.json",
+            pending_h2_record("h2_forceful", distance=0.76, gradient=3.0),
+        )
+        return directory
+
+    def argv(
+        self, records: list[Path], output: Path, config: Path = EXAMPLE_QC_CONFIG
+    ) -> list[str]:
+        """Return the argument vector of one `qc` run."""
+        return [
+            "qc",
+            "--config",
+            str(config),
+            "--records",
+            *(str(path) for path in records),
+            "--output-dir",
+            str(output),
+        ]
+
+    def test_a_mixed_batch_is_judged_and_the_run_still_exits_zero(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            code, output = run(self.argv([self.inputs(root)], root / "out"))
+            report_path = root / "out" / "example_qc_v1_report.json"
+            lines = output.splitlines()
+            self.assertEqual(code, 0)
+            self.assertEqual(
+                lines[0], "rejected h2_forceful: gradient_max_component, gradient_norm"
+            )
+            self.assertEqual(lines[-1], f"accepted=2 rejected=1 report={report_path}")
+            self.assertTrue(report_path.is_file())
+            self.assertEqual(
+                sorted(path.name for path in (root / "out" / "records").iterdir()),
+                ["h2_clean.json", "h2_forceful.json", "h2_stretched.json"],
+            )
+            report = QcReport.from_dict(json.loads(report_path.read_text(encoding="utf-8")))
+        self.assertEqual(report.qc_id, "example_qc_v1")
+        self.assertEqual(report.counts, {"accepted": 2, "rejected": 1, "total": 3})
+
+    def test_the_judged_records_carry_the_verdict_and_the_inputs_are_untouched(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = self.inputs(root)
+            before = {path.name: path.read_bytes() for path in sorted(source.iterdir())}
+            run(self.argv([source], root / "out"))
+            after = {path.name: path.read_bytes() for path in sorted(source.iterdir())}
+            self.assertEqual(before, after)
+            judged = json.loads(
+                (root / "out" / "records" / "h2_forceful.json").read_text(encoding="utf-8")
+            )
+        self.assertEqual(judged["qc"]["status"], "rejected")
+        entry = judged["qc"]["history"][-1]
+        self.assertEqual(entry["event"], "qc_evaluated")
+        self.assertEqual(entry["qc_id"], "example_qc_v1")
+        self.assertEqual(entry["failed_checks"], ["gradient_max_component", "gradient_norm"])
+
+    def test_named_record_files_are_accepted_as_well_as_a_directory(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = self.inputs(root)
+            code, output = run(self.argv([source / "a.json", source / "b.json"], root / "out"))
+        self.assertEqual(code, 0)
+        self.assertTrue(output.splitlines()[-1].startswith("accepted=2 rejected=0 "))
+
+    def test_a_corrupt_input_file_reports_an_error_and_exits_one(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = self.inputs(root)
+            (source / "d.json").write_text("{not json", encoding="utf-8")
+            code, output, errors = run_capturing_stderr(self.argv([source], root / "out"))
+            self.assertEqual(code, 1)
+            self.assertEqual(output, "")
+            self.assertIn("ERROR", errors)
+            self.assertIn("d.json", errors)
+            self.assertFalse((root / "out").exists())
+
+    def test_a_record_that_already_has_a_verdict_is_refused(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "in"
+            judged = pending_h2_record("h2_done")
+            judged["qc"] = {
+                "status": "accepted",
+                "history": [{"utc": "2026-08-22T00:00:00+00:00", "event": "qc_evaluated"}],
+            }
+            write_json_atomic(source / "a.json", judged)
+            code, _, errors = run_capturing_stderr(self.argv([source], root / "out"))
+        self.assertEqual(code, 1)
+        self.assertIn("h2_done", errors)
+        self.assertIn("pending", errors)
+
+    def test_a_broken_config_reports_an_error_and_exits_one(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            code, _, errors = run_capturing_stderr(
+                self.argv([self.inputs(root)], root / "out", config=root / "absent.yaml")
+            )
+        self.assertEqual(code, 1)
+        self.assertIn("ERROR", errors)
+
+    def test_every_argument_is_required(self) -> None:
+        for argv in (
+            ["qc", "--records", "r.json", "--output-dir", "out"],
+            ["qc", "--config", "qc.yaml", "--output-dir", "out"],
+            ["qc", "--config", "qc.yaml", "--records", "r.json"],
+        ):
+            with self.subTest(argv=argv):
+                with self.assertRaises(SystemExit) as caught:
+                    with contextlib.redirect_stderr(io.StringIO()):
+                        main(argv)
+                self.assertEqual(caught.exception.code, 2)
 
 
 class SplitCommandTests(unittest.TestCase):
