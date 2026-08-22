@@ -44,9 +44,10 @@ CPU PySCFおよびORCA 6.0.0と十分に整合するかである。この確認�
 Part IIは設計計画として先に固定するが、実装開始条件はGate 1のGOである。Gate 1が
 条件付きGOの場合は、採用したGPU4PySCF設定と制限事項をPart IIへ反映してから着手する。
 
-例外として、Gate 1の結果に依存しない基盤部分（P2.0のpackage scaffold/core、
-P2.1のcanonical schema）は前倒しで実装する
-（[decisions/0001](decisions/0001-start-part2-foundation-before-gate1.md)）。
+例外として、Gate 1の結果に依存しない基盤・機構は前倒しで実装する
+（[decisions/0001](decisions/0001-start-part2-foundation-before-gate1.md)、
+[decisions/0002](decisions/0002-extend-early-start-to-gate-independent-machinery.md)。
+判定原則: 機構は前倒し可、実行と科学条件の確定はGateに従う）。
 大量label生成、calculatorsの本番protocol、学習実行はGate 1通過まで開始しない。
 
 ## 3. 現在までに完了したこと

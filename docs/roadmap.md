@@ -21,7 +21,7 @@
 | 29-case三者比較 | 未着手 | CPU–GPUを優先して評価 |
 | Production DFT protocol | 未着手 | grid/density fitting収束 |
 | Gate 1 | 未着手 | GO / Conditional GO / NO-GO |
-| Package基盤（P2.0–P2.1、Gate 1非依存部分） | 進行中 | core/schemas実装とtest（decisions/0001） |
+| Package基盤（Gate 1非依存部分） | P2.0–P2.1完了、P2.2進行中 | sampling/geometry QC実装（decisions/0001, 0002） |
 | Dataset/QC実装 | Gate 1後 | label pipeline MVP |
 | 1,000–5,000構造pilot | Gate 1後 | H/Si/Ge/Cl、charge/spin |
 | UMA fine-tuning | Gate 1後 | base評価→overfit smoke→pilot |
