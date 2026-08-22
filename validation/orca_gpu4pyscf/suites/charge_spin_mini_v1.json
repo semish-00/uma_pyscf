@@ -1,0 +1,205 @@
+{
+  "schema": "crosscode-suite-v1",
+  "suite_id": "charge_spin_mini_v1",
+  "description": "SiH3 and GeH3 charge/spin mini matrix on the existing neutral doublet seed geometries. These cases probe CPU-GPU numerical parity across charge and spin states at a fixed geometry and are NOT yet approved as training-label states; the scientific state selection is still under review.",
+  "state_selection_status": "pending_scientific_review",
+  "case_count": 12,
+  "engine_jobs_per_case": [
+    "pyscf-cpu",
+    "gpu4pyscf"
+  ],
+  "cases": [
+    {
+      "case_id": "sih3_doublet_planar_seed",
+      "category": "charge_spin_matrix",
+      "charge": 0,
+      "multiplicity": 2,
+      "config": "configs/sih3_doublet_planar_seed.json",
+      "resources": {
+        "ncpus": 8,
+        "memory_gb": 32,
+        "walltime": "06:00:00"
+      },
+      "state": {
+        "base": "sih3",
+        "label": "neutral_doublet_reference"
+      }
+    },
+    {
+      "case_id": "sih3_neutral_quartet",
+      "category": "charge_spin_matrix",
+      "charge": 0,
+      "multiplicity": 4,
+      "config": "configs/sih3_neutral_quartet.json",
+      "resources": {
+        "ncpus": 8,
+        "memory_gb": 32,
+        "walltime": "06:00:00"
+      },
+      "state": {
+        "base": "sih3",
+        "label": "neutral_quartet"
+      }
+    },
+    {
+      "case_id": "sih3_cation_singlet",
+      "category": "charge_spin_matrix",
+      "charge": 1,
+      "multiplicity": 1,
+      "config": "configs/sih3_cation_singlet.json",
+      "resources": {
+        "ncpus": 8,
+        "memory_gb": 32,
+        "walltime": "06:00:00"
+      },
+      "state": {
+        "base": "sih3",
+        "label": "cation_singlet"
+      }
+    },
+    {
+      "case_id": "sih3_cation_triplet",
+      "category": "charge_spin_matrix",
+      "charge": 1,
+      "multiplicity": 3,
+      "config": "configs/sih3_cation_triplet.json",
+      "resources": {
+        "ncpus": 8,
+        "memory_gb": 32,
+        "walltime": "06:00:00"
+      },
+      "state": {
+        "base": "sih3",
+        "label": "cation_triplet"
+      }
+    },
+    {
+      "case_id": "sih3_anion_singlet",
+      "category": "charge_spin_matrix",
+      "charge": -1,
+      "multiplicity": 1,
+      "config": "configs/sih3_anion_singlet.json",
+      "resources": {
+        "ncpus": 8,
+        "memory_gb": 32,
+        "walltime": "06:00:00"
+      },
+      "state": {
+        "base": "sih3",
+        "label": "anion_singlet"
+      }
+    },
+    {
+      "case_id": "sih3_anion_triplet",
+      "category": "charge_spin_matrix",
+      "charge": -1,
+      "multiplicity": 3,
+      "config": "configs/sih3_anion_triplet.json",
+      "resources": {
+        "ncpus": 8,
+        "memory_gb": 32,
+        "walltime": "06:00:00"
+      },
+      "state": {
+        "base": "sih3",
+        "label": "anion_triplet"
+      }
+    },
+    {
+      "case_id": "geh3_doublet_planar_seed",
+      "category": "charge_spin_matrix",
+      "charge": 0,
+      "multiplicity": 2,
+      "config": "configs/geh3_doublet_planar_seed.json",
+      "resources": {
+        "ncpus": 8,
+        "memory_gb": 32,
+        "walltime": "06:00:00"
+      },
+      "state": {
+        "base": "geh3",
+        "label": "neutral_doublet_reference"
+      }
+    },
+    {
+      "case_id": "geh3_neutral_quartet",
+      "category": "charge_spin_matrix",
+      "charge": 0,
+      "multiplicity": 4,
+      "config": "configs/geh3_neutral_quartet.json",
+      "resources": {
+        "ncpus": 8,
+        "memory_gb": 32,
+        "walltime": "06:00:00"
+      },
+      "state": {
+        "base": "geh3",
+        "label": "neutral_quartet"
+      }
+    },
+    {
+      "case_id": "geh3_cation_singlet",
+      "category": "charge_spin_matrix",
+      "charge": 1,
+      "multiplicity": 1,
+      "config": "configs/geh3_cation_singlet.json",
+      "resources": {
+        "ncpus": 8,
+        "memory_gb": 32,
+        "walltime": "06:00:00"
+      },
+      "state": {
+        "base": "geh3",
+        "label": "cation_singlet"
+      }
+    },
+    {
+      "case_id": "geh3_cation_triplet",
+      "category": "charge_spin_matrix",
+      "charge": 1,
+      "multiplicity": 3,
+      "config": "configs/geh3_cation_triplet.json",
+      "resources": {
+        "ncpus": 8,
+        "memory_gb": 32,
+        "walltime": "06:00:00"
+      },
+      "state": {
+        "base": "geh3",
+        "label": "cation_triplet"
+      }
+    },
+    {
+      "case_id": "geh3_anion_singlet",
+      "category": "charge_spin_matrix",
+      "charge": -1,
+      "multiplicity": 1,
+      "config": "configs/geh3_anion_singlet.json",
+      "resources": {
+        "ncpus": 8,
+        "memory_gb": 32,
+        "walltime": "06:00:00"
+      },
+      "state": {
+        "base": "geh3",
+        "label": "anion_singlet"
+      }
+    },
+    {
+      "case_id": "geh3_anion_triplet",
+      "category": "charge_spin_matrix",
+      "charge": -1,
+      "multiplicity": 3,
+      "config": "configs/geh3_anion_triplet.json",
+      "resources": {
+        "ncpus": 8,
+        "memory_gb": 32,
+        "walltime": "06:00:00"
+      },
+      "state": {
+        "base": "geh3",
+        "label": "anion_triplet"
+      }
+    }
+  ]
+}

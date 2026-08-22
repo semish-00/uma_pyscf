@@ -74,8 +74,10 @@ CPU側の`runs/<case>/pyscf-cpu/result.json`は既存のUjilab計算をGPUホス
 - A1/A2の実際の実行とversion固定、lock file作成
 - C2 diagnostic lane（density fittingなしのGPU実行可否確認を含む）
 - C3 production-candidate laneの設定比較
-- charge/spin mini-matrix（科学的状態選択のreviewも未実施）
-- Gate 1 decision record
+- charge/spin mini-matrixの計算実行と科学的状態選択のreview
+  （候補suite `charge_spin_mini_v1`と生成器は同日追加済み。
+  `state_selection_status: pending_scientific_review`）
+- Gate 1 decision record（metric集計は`gate1_metrics.py`を同日追加済み）
 
 Part II（`src/uma_pyscf/`のscaffold、canonical schema実装）はGate 1がGOに
 なるまで着手しない方針を維持する。

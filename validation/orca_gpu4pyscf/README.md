@@ -18,7 +18,8 @@ Geometry optimization is outside the first validation phase.
 ```text
 configs/                versioned calculation manifests
 structures/             small, versioned XYZ inputs
-suites/                 versioned case collections (29-case ladder, GPU smoke)
+suites/                 versioned case collections (29-case ladder, GPU smoke,
+                        charge/spin mini matrix)
 jobs/                   PBS templates for ujilab CPU calculations
 setup/                  versioned installation and environment guidance
 tests/                  parser and validation tests without ORCA/PySCF
@@ -28,6 +29,7 @@ run_pyscf.py            CPU PySCF or GPU4PySCF energy/gradient runner
 run_suite.py            sequential non-PBS suite runner with attempt ledger
 submit_suite.py         PBS submission of a suite on ujilab
 generate_ladder_suite.py  deterministic 29-case ladder generator
+generate_charge_spin_mini_suite.py  deterministic charge/spin mini matrix
 collect_environment.py  Workstream A1 host inventory (GPU/driver/CUDA/packages)
 gpu_smoke_check.py      Workstream A2 installation smoke test
 prepare_orca.py         deterministic ORCA input generator
@@ -35,6 +37,7 @@ parse_orca.py           ORCA .engrad normalizer
 compare.py              normalized-result comparison and acceptance report
 summarize_suite.py      suite-level comparison summary for any engine pair
 export_parity_csv.py    parity-plot CSV export for any engine pair
+gate1_metrics.py        Gate 1 metric tables and provisional CPU–GPU gate
 protocol.md             scientific comparison protocol and staged test set
 ```
 
@@ -118,6 +121,27 @@ python run_suite.py suites/gpu_smoke_v1.json --device gpu
 python run_suite.py suites/si_ge_h_cl_ladder_v1.json --device gpu
 ```
 
+### Charge/spin mini matrix
+
+`suites/charge_spin_mini_v1.json` is the plan's additional scope: SiH3 and GeH3
+held at their existing neutral doublet seed geometries in five further
+charge/multiplicity states each, twelve cases in total. Because the geometry is
+fixed, the suite isolates CPU–GPU numerical parity across charge and spin
+states. `generate_charge_spin_mini_suite.py` regenerates it deterministically
+and creates no structure file.
+
+Its `state_selection_status` is `pending_scientific_review`. These states are
+numerical-parity probes, not approved training labels; do not promote their
+results to teacher data before the scientific state selection is reviewed. Run
+it only after the five-case smoke suite passes:
+
+```bash
+python generate_charge_spin_mini_suite.py                                  # regenerate
+python run_suite.py suites/charge_spin_mini_v1.json --device gpu --dry-run
+python run_suite.py suites/charge_spin_mini_v1.json --device cpu
+python run_suite.py suites/charge_spin_mini_v1.json --device gpu
+```
+
 ## ORCA
 
 Generate an input file, then run ORCA in a node-local scratch directory. ORCA
@@ -180,6 +204,27 @@ python summarize_suite.py suites/si_ge_h_cl_ladder_v1.json \
 
 python export_parity_csv.py --left-engine gpu4pyscf --right-engine pyscf-cpu
 ```
+
+`gate1_metrics.py` aggregates the Gate 1 metric table for a whole suite across
+all three engine pairs at once and evaluates the provisional CPU–GPU numeric
+gate:
+
+```bash
+python gate1_metrics.py suites/si_ge_h_cl_ladder_v1.json
+```
+
+It writes three files into `analysis/`: `gate1_case_metrics_<suite>.csv`, one
+row per case and engine pair with the signed and absolute energy difference,
+the gradient component RMSE/MAE/max, and where the max sits;
+`gate1_performance_<suite>.csv`, one row per case and engine with `<S^2>`, wall
+time, and the SCF/gradient split where a result records it; and
+`gate1_summary_<suite>.json`, holding the worst offender per pair, the per-case
+verdict against the provisional 5e-6 Eh, 2e-5 Eh/bohr, and 1e-4 Eh/bohr
+thresholds, the "CPU–GPU difference stays below the ORCA–CPU difference"
+relative check, and the missing results per engine. Two results are only
+compared when their case id, input fingerprint, and convergence agree;
+anything else raises rather than reporting a difference that is really an input
+difference. The tool always exits 0 — it reports, it does not enforce.
 
 Thresholds in the example manifest are provisional engineering gates, not a
 claim that different codes must agree to those values. Freeze final thresholds
