@@ -16,6 +16,7 @@ import platform
 import sys
 
 from .. import __version__
+from ..datasets.cli import configure_split, run_split
 from ..sampling.cli import configure_sample, run_sample
 from ..schemas.cli import configure_validate_records, run_validate_records
 
@@ -67,6 +68,12 @@ SUBCOMMANDS: tuple[Subcommand, ...] = (
         help="Generate structure candidates from a sampling config and QC their geometry.",
         handler=run_sample,
         configure=configure_sample,
+    ),
+    Subcommand(
+        name="split",
+        help="Assign a candidate manifest's records to partitions by whole groups.",
+        handler=run_split,
+        configure=configure_split,
     ),
 )
 

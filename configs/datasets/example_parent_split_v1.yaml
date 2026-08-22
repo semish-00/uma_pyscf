@@ -1,0 +1,46 @@
+# P2.6 reference example: a parent/scaffold holdout, the default leakage guard.
+#
+# The parent axis groups every record by the seed structure it came from, so a
+# bond scan, its displaced frames, and its charge/spin siblings all move to one
+# partition together. That is the rule of implementation plan section 12 for the
+# ordinary splits; only the charge and multiplicity axes separate siblings, and
+# only because measuring generalization to an unseen electronic state is what
+# those splits are for.
+#
+# READ THIS BEFORE PAIRING IT WITH THE P2.2 EXAMPLE. This config is written
+# against a multi-parent candidate set. The committed P2.2 example
+# (configs/sampling/example_bond_scan_v1.yaml) has a single seed structure,
+# sih4_seed, so all seven of its candidates form exactly ONE parent group, and
+# running this split on it is refused: three partitions cannot be cut from one
+# indivisible group. The refusal is not a defect to route around. It is the
+# leakage guarantee working -- a parent holdout that "succeeded" there would
+# have had to divide the group, which is precisely the near-duplicate leakage
+# the axis exists to prevent. A parent split needs more seed structures; the
+# unit tests exercise the refusal on purpose, and use a multiplicity split when
+# they need this candidate set to divide.
+#
+# Existing versions are never edited. A different set of conditions becomes
+# example_parent_split_v2.yaml, and the split manifest records which version
+# produced it.
+schema_version: 1
+split_id: example_parent_split_v1
+created: "2026-08-22"
+description: >-
+  Parent/scaffold holdout used as the P2.6 reference example. Fractions are of
+  the record count, not of the group count, because groups differ in size.
+
+axis: parent
+
+# The seed only orders the groups; it never draws a random number. The group
+# order is sha256("<split_id>|<seed>|<group_key>"), so changing the seed
+# reshuffles which parent lands where and changing nothing reproduces the split
+# byte for byte.
+seed: 20260822
+
+# Declaration order matters in exactly one place: two partitions that are
+# equally far behind their target count are tied, and the tie goes to the one
+# named first here.
+partitions:
+  train: 0.6
+  val: 0.2
+  test: 0.2

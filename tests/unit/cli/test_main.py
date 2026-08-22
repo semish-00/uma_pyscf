@@ -23,10 +23,22 @@ from uma_pyscf.schemas.label_record import (
     Results,
     Structure,
 )
+from uma_pyscf.schemas.split_manifest import SplitManifest
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 EXAMPLE_CONFIG = REPO_ROOT / "configs" / "sampling" / "example_bond_scan_v1.yaml"
 EXAMPLE_XYZ = REPO_ROOT / "configs" / "sampling" / "structures" / "sih4_seed_example.xyz"
+EXAMPLE_SPLIT_CONFIG = REPO_ROOT / "configs" / "datasets" / "example_parent_split_v1.yaml"
+EXAMPLE_CANDIDATES = "example_bond_scan_v1_candidates.json"
+MULTIPLICITY_SPLIT_CONFIG = (
+    "schema_version: 1\n"
+    "split_id: example_multiplicity_split_v1\n"
+    "axis: multiplicity\n"
+    "seed: 20260822\n"
+    "partitions:\n"
+    "  train: 0.5\n"
+    "  holdout: 0.5\n"
+)
 
 
 def run(argv: list[str]) -> tuple[int, str]:
@@ -35,6 +47,14 @@ def run(argv: list[str]) -> tuple[int, str]:
     with contextlib.redirect_stdout(stream):
         code = main(argv)
     return code, stream.getvalue()
+
+
+def run_capturing_stderr(argv: list[str]) -> tuple[int, str, str]:
+    """Run the CLI with `argv` and capture its exit code, stdout, and stderr."""
+    out, err = io.StringIO(), io.StringIO()
+    with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
+        code = main(argv)
+    return code, out.getvalue(), err.getvalue()
 
 
 def h2_record_dict() -> dict[str, object]:
@@ -237,6 +257,140 @@ class SampleCommandTests(unittest.TestCase):
             with contextlib.redirect_stderr(io.StringIO()):
                 main(["sample", str(EXAMPLE_CONFIG)])
         self.assertEqual(caught.exception.code, 2)
+
+
+class SplitCommandTests(unittest.TestCase):
+    """The `split` subcommand, run against the committed P2.2 example candidates.
+
+    Both outcomes are exercised on purpose. The committed parent split config
+    is *refused* on this candidate set, because its seven records all descend
+    from one seed structure and therefore form one indivisible parent group;
+    that refusal is the leakage guarantee working, not a bug to route around.
+    A multiplicity split of the same records succeeds, and separates the
+    charge/spin siblings deliberately, which is what a spin holdout is for.
+    """
+
+    def candidates(self, directory: Path) -> Path:
+        """Generate the P2.2 example candidates into `directory`."""
+        code, _ = run(["sample", str(EXAMPLE_CONFIG), "--output-dir", str(directory)])
+        self.assertEqual(code, 0)
+        return directory / EXAMPLE_CANDIDATES
+
+    def test_the_example_parent_split_is_refused_because_there_is_one_parent(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            candidates = self.candidates(root)
+            code, output, errors = run_capturing_stderr(
+                [
+                    "split",
+                    "--config",
+                    str(EXAMPLE_SPLIT_CONFIG),
+                    "--candidates",
+                    str(candidates),
+                    "--output-dir",
+                    str(root / "splits"),
+                ]
+            )
+        self.assertEqual(code, 1)
+        self.assertEqual(output, "")
+        self.assertIn("1 distinct group", errors)
+        self.assertIn("'sih4_seed'", errors)
+        self.assertIn("3 partitions", errors)
+        self.assertIn("more distinct groups", errors)
+        self.assertFalse((Path(directory) / "splits").exists())
+
+    def test_a_multiplicity_split_of_the_same_candidates_succeeds(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            candidates = self.candidates(root)
+            config = root / "multiplicity_split.yaml"
+            config.write_text(MULTIPLICITY_SPLIT_CONFIG, encoding="utf-8")
+            code, output = run(
+                [
+                    "split",
+                    "--config",
+                    str(config),
+                    "--candidates",
+                    str(candidates),
+                    "--output-dir",
+                    str(root / "splits"),
+                ]
+            )
+            written = root / "splits" / "example_multiplicity_split_v1.json"
+            self.assertEqual(code, 0)
+            self.assertTrue(written.is_file())
+            split = SplitManifest.from_dict(json.loads(written.read_text(encoding="utf-8")))
+        lines = output.splitlines()
+        self.assertEqual(lines[-1], f"split={written}")
+        self.assertIn("axis=multiplicity groups=2 records=7", lines)
+        self.assertTrue(any(line.startswith("partition=train ") for line in lines))
+        self.assertTrue(any(line.startswith("partition=holdout ") for line in lines))
+
+        assigned = sorted(record for ids in split.record_assignments.values() for record in ids)
+        self.assertEqual(len(assigned), 7)
+        self.assertEqual(len(set(assigned)), 7)
+        self.assertEqual(sorted(split.group_assignments), ["1", "2"])
+
+        # The six singlets -- the scan, the displacements, the neutral state --
+        # travel together; the cation doublet is the deliberate holdout.
+        singlets = split.record_assignments[split.group_assignments["1"]]
+        doublets = split.record_assignments[split.group_assignments["2"]]
+        self.assertEqual(len(singlets), 6)
+        self.assertEqual(doublets, ("example_bond_scan_v1_sih4_seed_q1m2",))
+        self.assertNotEqual(split.group_assignments["1"], split.group_assignments["2"])
+
+    def test_the_split_manifest_is_byte_identical_on_a_rerun(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            candidates = self.candidates(root)
+            config = root / "multiplicity_split.yaml"
+            config.write_text(MULTIPLICITY_SPLIT_CONFIG, encoding="utf-8")
+            argv = [
+                "split",
+                "--config",
+                str(config),
+                "--candidates",
+                str(candidates),
+                "--output-dir",
+                str(root / "splits"),
+            ]
+            written = root / "splits" / "example_multiplicity_split_v1.json"
+            run(argv)
+            first = written.read_bytes()
+            run(argv)
+            second = written.read_bytes()
+        self.assertEqual(first, second)
+        self.assertNotIn(b"timestamp", first)
+
+    def test_a_missing_candidate_file_is_reported_and_exits_one(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            code, output, errors = run_capturing_stderr(
+                [
+                    "split",
+                    "--config",
+                    str(EXAMPLE_SPLIT_CONFIG),
+                    "--candidates",
+                    str(root / "absent.json"),
+                    "--output-dir",
+                    str(root),
+                ]
+            )
+        self.assertEqual(code, 1)
+        self.assertEqual(output, "")
+        self.assertIn("ERROR", errors)
+
+    def test_every_argument_is_required(self) -> None:
+        for argv in (
+            ["split", "--candidates", "c.json", "--output-dir", "out"],
+            ["split", "--config", "s.yaml", "--output-dir", "out"],
+            ["split", "--config", "s.yaml", "--candidates", "c.json"],
+        ):
+            with self.subTest(argv=argv):
+                with self.assertRaises(SystemExit) as caught:
+                    with contextlib.redirect_stderr(io.StringIO()):
+                        main(argv)
+                self.assertEqual(caught.exception.code, 2)
 
 
 class RegistryTests(unittest.TestCase):

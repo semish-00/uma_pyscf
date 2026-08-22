@@ -42,16 +42,27 @@ from .label_record import (
     Results,
     Structure,
 )
+from .split_manifest import (
+    FRACTION_SUM_TOLERANCE,
+    SPLIT_AXES,
+    SPLIT_MANIFEST_SCHEMA,
+    SplitManifest,
+    validate_axis,
+    validate_partitions,
+)
 
 __all__ = [
     "CANDIDATE_MANIFEST_SCHEMA",
     "CANDIDATE_STATUSES",
     "CANONICAL_UNITS",
     "CROSSCODE_RESULT_SCHEMA",
+    "FRACTION_SUM_TOLERANCE",
     "GEOMETRY_QC_SCHEMA",
     "IMPORT_EVENT",
     "LABEL_RECORD_SCHEMA",
     "QC_STATUSES",
+    "SPLIT_AXES",
+    "SPLIT_MANIFEST_SCHEMA",
     "CandidateManifest",
     "CandidateRecord",
     "ElectronicState",
@@ -62,8 +73,11 @@ __all__ = [
     "QcState",
     "RawArtifact",
     "Results",
+    "SplitManifest",
     "Structure",
     "configure_validate_records",
     "label_record_from_crosscode_result",
     "run_validate_records",
+    "validate_axis",
+    "validate_partitions",
 ]
