@@ -16,18 +16,26 @@ Geometry optimization is outside the first validation phase.
 ## Layout
 
 ```text
-configs/          versioned calculation manifests
-structures/       small, versioned XYZ inputs
-jobs/             PBS templates for ujilab CPU calculations
-setup/            versioned installation and environment guidance
-tests/            parser and validation tests without ORCA/PySCF
-runs/             generated inputs and results; ignored by Git
-common.py         manifest, XYZ, and charge/spin validation
-run_pyscf.py      CPU PySCF or GPU4PySCF energy/gradient runner
-prepare_orca.py   deterministic ORCA input generator
-parse_orca.py     ORCA .engrad normalizer
-compare.py        normalized-result comparison and acceptance report
-protocol.md       scientific comparison protocol and staged test set
+configs/                versioned calculation manifests
+structures/             small, versioned XYZ inputs
+suites/                 versioned case collections (29-case ladder, GPU smoke)
+jobs/                   PBS templates for ujilab CPU calculations
+setup/                  versioned installation and environment guidance
+tests/                  parser and validation tests without ORCA/PySCF
+runs/                   generated inputs and results; ignored by Git
+common.py               manifest, XYZ, and charge/spin validation
+run_pyscf.py            CPU PySCF or GPU4PySCF energy/gradient runner
+run_suite.py            sequential non-PBS suite runner with attempt ledger
+submit_suite.py         PBS submission of a suite on ujilab
+generate_ladder_suite.py  deterministic 29-case ladder generator
+collect_environment.py  Workstream A1 host inventory (GPU/driver/CUDA/packages)
+gpu_smoke_check.py      Workstream A2 installation smoke test
+prepare_orca.py         deterministic ORCA input generator
+parse_orca.py           ORCA .engrad normalizer
+compare.py              normalized-result comparison and acceptance report
+summarize_suite.py      suite-level comparison summary for any engine pair
+export_parity_csv.py    parity-plot CSV export for any engine pair
+protocol.md             scientific comparison protocol and staged test set
 ```
 
 ## Local dry run
@@ -72,7 +80,20 @@ overridable through `PYTHON_EXECUTABLE`.
 
 ## GPU4PySCF
 
-Run the same manifest in a compatible CUDA environment:
+On the GPU host, first record the environment and verify the installed stack.
+Both commands are batch-safe and need no login shell:
+
+```bash
+python collect_environment.py   # writes configs/environments/gpu4pyscf-<host>.yaml
+python gpu_smoke_check.py --output runs/gpu_smoke_check.json
+```
+
+`gpu_smoke_check.py` walks the stack in order — CuPy import, GPU visibility,
+kernel launch, PySCF/GPU4PySCF import, then a tiny ωB97M-V/def2-TZVPD RKS and
+UKS energy plus analytic gradient on the GPU — and stops at the first broken
+layer so driver/CUDA/CuPy/GPU4PySCF boundaries stay separable.
+
+Run a single manifest in a compatible CUDA environment:
 
 ```bash
 python run_pyscf.py configs/h2_wb97mv_def2tzvpd.json \
@@ -82,7 +103,20 @@ python run_pyscf.py configs/h2_wb97mv_def2tzvpd.json \
 
 The GPU runner intentionally starts from a normal PySCF DFT object and calls
 `to_gpu()`. Both the ordinary DFT grid and the separate VV10 nonlocal grid are
-set before conversion.
+set before conversion, and the runner refuses to continue if the conversion
+changed either grid level.
+
+Suites run sequentially without PBS through `run_suite.py`. Each case runs in
+its own child process; results are written atomically on success only, and
+every attempt is appended to `runs/<case>/gpu4pyscf/attempts.jsonl`, which is
+never overwritten. The five-case C1 smoke ladder stops at the first failure by
+design — do not start the 29-case ladder until it passes:
+
+```bash
+python run_suite.py suites/gpu_smoke_v1.json --device gpu --dry-run   # validate only
+python run_suite.py suites/gpu_smoke_v1.json --device gpu
+python run_suite.py suites/si_ge_h_cl_ladder_v1.json --device gpu
+```
 
 ## ORCA
 
@@ -133,6 +167,18 @@ python compare.py \
   runs/h2_wb97mv_def2tzvpd/pyscf-cpu/result.json \
   runs/h2_wb97mv_def2tzvpd/orca/result.json \
   --output runs/h2_wb97mv_def2tzvpd/cpu-vs-orca.json
+```
+
+Suite-level summaries and parity CSVs accept any engine pair. The Part I
+priority comparison is GPU4PySCF against CPU PySCF:
+
+```bash
+python summarize_suite.py suites/si_ge_h_cl_ladder_v1.json \
+  --root ../.. \
+  --left-engine gpu4pyscf --right-engine pyscf-cpu \
+  --write-comparisons --output runs/gpu_vs_cpu_summary.json
+
+python export_parity_csv.py --left-engine gpu4pyscf --right-engine pyscf-cpu
 ```
 
 Thresholds in the example manifest are provisional engineering gates, not a

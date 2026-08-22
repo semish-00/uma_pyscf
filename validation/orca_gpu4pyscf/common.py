@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from hashlib import sha256
 import json
+import os
 from pathlib import Path
 import re
 from typing import Any
@@ -267,12 +268,17 @@ def case_record(case: Case) -> dict[str, Any]:
 
 
 def write_json(path: str | Path, data: dict[str, Any]) -> None:
+    """Serialize first, then publish atomically so an interrupted run can never
+    leave a truncated JSON file at the destination path."""
     destination = Path(path)
     destination.parent.mkdir(parents=True, exist_ok=True)
-    destination.write_text(
-        json.dumps(data, indent=2, sort_keys=True, ensure_ascii=False) + "\n",
-        encoding="utf-8",
-    )
+    text = json.dumps(data, indent=2, sort_keys=True, ensure_ascii=False) + "\n"
+    scratch = destination.with_name(f".{destination.name}.tmp-{os.getpid()}")
+    try:
+        scratch.write_text(text, encoding="utf-8")
+        os.replace(scratch, destination)
+    finally:
+        scratch.unlink(missing_ok=True)
 
 
 def load_result(path: str | Path) -> dict[str, Any]:

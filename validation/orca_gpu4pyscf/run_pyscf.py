@@ -78,9 +78,19 @@ def run(config_path: str | Path, device: str) -> dict[str, Any]:
         if not hasattr(mf, "to_gpu"):
             raise RuntimeError("This PySCF installation does not expose to_gpu().")
         mf = mf.to_gpu()
+        for attribute, key in (("grids", "grid_level"), ("nlcgrids", "nlc_grid_level")):
+            requested_level = int(case.raw["pyscf"][key])
+            converted_level = getattr(getattr(mf, attribute), "level", None)
+            if converted_level != requested_level:
+                raise RuntimeError(
+                    f"to_gpu() changed {attribute}.level from {requested_level} to "
+                    f"{converted_level!r} for {case.case_id}; refusing to run with "
+                    "an unintended grid."
+                )
 
     started = time.perf_counter()
     energy = float(mf.kernel())
+    scf_wall_time = time.perf_counter() - started
     if not bool(mf.converged):
         raise RuntimeError(f"SCF did not converge for {case.case_id}.")
 
@@ -95,8 +105,12 @@ def run(config_path: str | Path, device: str) -> dict[str, Any]:
         )
     if hasattr(gradients, "grid_response"):
         gradients.grid_response = requested_grid_response
+    gradient_started = time.perf_counter()
     gradient = gradients.kernel()
+    gradient_wall_time = time.perf_counter() - gradient_started
     wall_time = time.perf_counter() - started
+    if hasattr(gradient, "get"):  # CuPy array from the GPU gradient path
+        gradient = gradient.get()
 
     s2 = None
     multiplicity_from_s2 = None
@@ -118,8 +132,20 @@ def run(config_path: str | Path, device: str) -> dict[str, Any]:
         try:
             import cupy
 
-            runtime["cuda_device"] = int(cupy.cuda.runtime.getDevice())
+            device_index = int(cupy.cuda.runtime.getDevice())
+            runtime["cuda_device"] = device_index
             runtime["cuda_runtime_version"] = int(cupy.cuda.runtime.runtimeGetVersion())
+            properties = cupy.cuda.runtime.getDeviceProperties(device_index)
+            name = properties.get("name")
+            runtime["cuda_device_name"] = (
+                name.decode() if isinstance(name, bytes) else name
+            )
+            runtime["cuda_device_total_memory_bytes"] = int(properties["totalGlobalMem"])
+            runtime["cuda_free_memory_bytes_after_run"] = int(
+                cupy.cuda.runtime.memGetInfo()[0]
+            )
+            pool = cupy.get_default_memory_pool()
+            runtime["cupy_pool_total_bytes_after_run"] = int(pool.total_bytes())
         except Exception as exc:  # provenance should not invalidate a completed result
             runtime["cuda_probe_error"] = f"{type(exc).__name__}: {exc}"
 
@@ -143,6 +169,8 @@ def run(config_path: str | Path, device: str) -> dict[str, Any]:
         "s2_deviation": None if s2 is None else s2 - target_s2(case.spin_2s),
         "multiplicity_from_spin_square": multiplicity_from_s2,
         "wall_time_seconds": wall_time,
+        "scf_wall_time_seconds": scf_wall_time,
+        "gradient_wall_time_seconds": gradient_wall_time,
         "tolerances": case.tolerances,
         "tolerance_status": case.raw.get("tolerance_status"),
     }

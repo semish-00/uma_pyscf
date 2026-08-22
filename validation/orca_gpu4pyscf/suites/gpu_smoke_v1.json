@@ -1,0 +1,75 @@
+{
+  "schema": "crosscode-suite-v1",
+  "suite_id": "gpu_smoke_v1",
+  "description": "Part I / C1 minimal GPU4PySCF smoke ladder. Run strictly in listed order, one case at a time, and stop at the first failure. Do not launch the 29-case ladder until all five cases succeed.",
+  "case_count": 5,
+  "engine_jobs_per_case": [
+    "gpu4pyscf"
+  ],
+  "execution_policy": {
+    "sequential": true,
+    "stop_on_first_failure": true
+  },
+  "cases": [
+    {
+      "case_id": "h2_wb97mv_def2tzvpd",
+      "category": "gpu_smoke",
+      "purpose": "smallest closed-shell RKS sanity check",
+      "multiplicity": 1,
+      "config": "configs/h2_wb97mv_def2tzvpd.json",
+      "resources": {
+        "ncpus": 4,
+        "memory_gb": 16,
+        "walltime": "02:00:00"
+      }
+    },
+    {
+      "case_id": "sih4_td_seed",
+      "category": "gpu_smoke",
+      "purpose": "closed-shell Si hydride",
+      "multiplicity": 1,
+      "config": "configs/sih4_td_seed.json",
+      "resources": {
+        "ncpus": 8,
+        "memory_gb": 32,
+        "walltime": "06:00:00"
+      }
+    },
+    {
+      "case_id": "sicl4_td_seed",
+      "category": "gpu_smoke",
+      "purpose": "closed-shell chlorine-heavy basis load",
+      "multiplicity": 1,
+      "config": "configs/sicl4_td_seed.json",
+      "resources": {
+        "ncpus": 16,
+        "memory_gb": 64,
+        "walltime": "12:00:00"
+      }
+    },
+    {
+      "case_id": "sih3_doublet_planar_seed",
+      "category": "gpu_smoke",
+      "purpose": "neutral doublet UKS with <S^2> readout",
+      "multiplicity": 2,
+      "config": "configs/sih3_doublet_planar_seed.json",
+      "resources": {
+        "ncpus": 8,
+        "memory_gb": 32,
+        "walltime": "06:00:00"
+      }
+    },
+    {
+      "case_id": "h3si_gecl3_staggered_seed",
+      "category": "gpu_smoke",
+      "purpose": "mixed Si-Ge-H-Cl molecule",
+      "multiplicity": 1,
+      "config": "configs/h3si_gecl3_staggered_seed.json",
+      "resources": {
+        "ncpus": 16,
+        "memory_gb": 64,
+        "walltime": "12:00:00"
+      }
+    }
+  ]
+}
