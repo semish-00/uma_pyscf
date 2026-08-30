@@ -1,0 +1,18 @@
+schema_version: 1
+evaluation_id: engineering_50_base_uma_s_1p2_v1
+created: "2026-08-31"
+description: >-
+  Engineering-only base UMA evaluation on the fixed 40/10 split. This records
+  the pre-fine-tuning reference and does not approve a scientific release.
+dataset_id: ds_sigehcl_001
+model_name: uma-s-1p2
+model_source: https://huggingface.co/facebook/UMA
+model_license: FAIR Chemistry License v1 (2025-05-14)
+task: omol
+device: cuda
+inference_settings: default
+seed: 41
+fairchem_core_version: "2.22.0"
+partitions:
+  - train
+  - holdout

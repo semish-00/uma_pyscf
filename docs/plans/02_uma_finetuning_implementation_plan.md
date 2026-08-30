@@ -445,6 +445,7 @@ loop:
 - [x] versioned charge/spin state registry機構（12 state登録、科学承認はpending）
 - [x] ASE/fairchem変換とload-back test（50件ASE-LMDB、job 1797318）
 - [x] split generatorとleakage test
+- [x] fairchem 2.22.0 GPU環境固定とbase評価器（実model評価はHF認証待ち）
 - [ ] base UMA evaluation
 - [ ] overfit smoke
 - [ ] 1,000–5,000構造pilot

@@ -2,7 +2,7 @@
 
 - 日付: 2026-08-30
 - SSH alias: `sb-gpu`
-- 状態: SSH、Git、Slurm、固定container、A1/A2/C0/C1/C3まで実機確認済み
+- 状態: SSH、Git、Slurm、GPU4PySCF・fairchem固定containerまで実機確認済み
 - 認証情報: この文書には保存しない
 
 ## 接続
@@ -39,7 +39,7 @@ ssh sb-gpu
 | main storage | `/lustre`、契約領域500 GB |
 | home storage | `/home/user140002`、20 GB |
 | repository | `/lustre/user140002/uma_pyscf` |
-| checkout | `claude/plan-review-implementation-iwwtp6`、`cd13735` |
+| checkout | `claude/plan-review-implementation-iwwtp6`（計算前に`pull --ff-only`） |
 
 GitHub HTTPSへの接続、対象branchのclone、Slurmによる1 GPU割当、公式CUDA containerの
 Pyxis import、container内からのGPUとrepositoryの可視性を確認した。確認ジョブ3件は
@@ -83,6 +83,11 @@ git pull --ff-only
 
 GPU側で開発commitやforce操作を行わない。ローカルで実装・test・commit・pushし、
 GPU側は`pull --ff-only`で同期する。
+
+UMA評価用の固定環境は
+[fairchem GPU環境固定記録](2026-08-31_fairchem_gpu_environment.md)と
+[P2.7 base UMA評価運用](../operations/p2_7_uma_baseline.md)を参照する。Hugging Face tokenは
+認証端末へ利用者が直接入力し、この接続メモやrepositoryには保存しない。
 
 ## Storageとcontainerの運用
 

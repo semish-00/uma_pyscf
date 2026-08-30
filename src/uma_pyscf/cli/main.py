@@ -25,6 +25,7 @@ from ..datasets.ase_lmdb_cli import (
 )
 from ..datasets.baseline_cli import configure_fit_baseline, run_fit_baseline
 from ..datasets.cli import configure_split, run_split
+from ..inference.cli import configure_evaluate_uma, run_evaluate_uma
 from ..qc.cli import configure_qc, run_qc
 from ..sampling.cli import configure_sample, run_sample
 from ..schemas.cli import configure_validate_records, run_validate_records
@@ -113,6 +114,12 @@ SUBCOMMANDS: tuple[Subcommand, ...] = (
         help="Fit a train-only atomic composition energy baseline.",
         handler=run_fit_baseline,
         configure=configure_fit_baseline,
+    ),
+    Subcommand(
+        name="evaluate-uma",
+        help="Evaluate a base UMA model on verified ASE-LMDB partitions.",
+        handler=run_evaluate_uma,
+        configure=configure_evaluate_uma,
     ),
 )
 
