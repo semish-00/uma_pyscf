@@ -443,7 +443,7 @@ loop:
 - [x] 50–200構造engineering dataset（50構造、job 1797134）
 - [x] train-only composition baseline機構（50構造でrank/checksum/holdout実測）
 - [x] versioned charge/spin state registry機構（12 state登録、科学承認はpending）
-- [ ] ASE/fairchem変換とload-back test
+- [x] ASE/fairchem変換とload-back test（50件ASE-LMDB、job 1797318）
 - [x] split generatorとleakage test
 - [ ] base UMA evaluation
 - [ ] overfit smoke

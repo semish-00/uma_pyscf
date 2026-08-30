@@ -116,3 +116,6 @@ python3 -m uma_pyscf.cli.main fit-baseline \
 
 rank不足、splitとrecord集合の不一致、非accepted record、trainにない元素への外挿は失敗する。
 artifactのpartition別metricはanalysis evidenceであり、それだけでdataset releaseを許可しない。
+
+QC accepted recordからASE-LMDBを作る次工程は
+[P2.5 ASE-LMDB dataset運用](p2_5_ase_lmdb_dataset.md)を参照する。
