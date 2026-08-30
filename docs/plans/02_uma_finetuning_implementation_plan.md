@@ -440,7 +440,7 @@ loop:
 - [x] GPU4PySCF batch label MVP（unit test・local dry-run）
 - [x] QC/retry/provenance（engineering QC、releaseはfail closed）
 - [x] SoftBank GPU sample→label→QC integration smoke（job 1797122）
-- [ ] 50–200構造engineering dataset
+- [x] 50–200構造engineering dataset（50構造、job 1797134）
 - [ ] ASE/fairchem変換とload-back test
 - [x] split generatorとleakage test
 - [ ] base UMA evaluation

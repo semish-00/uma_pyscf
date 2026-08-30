@@ -75,3 +75,20 @@ Slurm clientはlogin shell初期化に依存するため、Codexからは対話P
 raw label、ledger、QC reportは削除しない。SoftBank GPU機では `/raid`直下にユーザ用
 directoryを作成できないため、現行のSlurm jobは各candidateの一時ファイルに
 compute nodeのcontainer-local `/tmp`を使う。`TemporaryDirectory`がworker終了時に自動削除する。
+
+## 50構造engineering set
+
+```bash
+sbatch scripts/slurm/run_label_engineering_50_softbank_slurm.sh
+```
+
+SoftBank nodeはSlurm上で`RealMemory=1`を広告するため、`#SBATCH --mem`を付けない。
+candidateごとの24/48 GB上限はDFT configからPySCFの`max_memory`へ適用し、recordへ記録する。
+
+job中の進捗は、atomic replaceされるledgerをlogin nodeから連続読みするよりも、
+次のように発行済みrecord数で確認する。
+
+```bash
+find /lustre/user140002/runs/label/engineering_50_v1/<job-id>/label/records \
+  -maxdepth 1 -type f | wc -l
+```

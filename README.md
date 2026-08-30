@@ -10,7 +10,8 @@ production library that generates, quality-checks, and trains on those labels.
 Gate 1 concluded with a Conditional GO. Part II now provides deterministic
 sampling, the canonical label schema, a resumable GPU4PySCF label pipeline,
 engineering QC, and leakage-safe splits. The one-structure SoftBank Slurm
-engineering smoke completed successfully. Dataset release remains fail closed
+smoke and the 50-structure engineering run completed successfully. Dataset
+release remains fail closed
 until the scientific thresholds, composition baseline, and non-default state
 registry are approved.
 
