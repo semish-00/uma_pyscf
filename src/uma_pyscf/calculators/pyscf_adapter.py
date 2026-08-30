@@ -113,6 +113,21 @@ def _enforce_frozen_runtime(runtime: Mapping[str, str], config: Mapping[str, Any
         )
 
 
+def _configure_pyscf_resources(
+    pyscf: Any, resource: Mapping[str, Any]
+) -> tuple[int, int]:
+    """Apply the selected CPU-thread and memory tier to the isolated worker."""
+    ncpus = int(resource["ncpus"])
+    max_memory_mb = int(resource["max_memory_mb"])
+    actual_threads = int(pyscf.lib.num_threads(ncpus))
+    if actual_threads != ncpus:
+        raise CalculationFailure(
+            "runtime_environment",
+            f"PySCF configured {actual_threads} threads; resource tier requires {ncpus}.",
+        )
+    return actual_threads, max_memory_mb
+
+
 class Gpu4PyscfAdapter:
     """Calculate one energy/gradient label with GPU4PySCF."""
 
@@ -137,6 +152,13 @@ class Gpu4PyscfAdapter:
 
         runtime = _runtime_provenance(config, cupy)
         _enforce_frozen_runtime(runtime, config)
+        ncpus, max_memory_mb = _configure_pyscf_resources(pyscf, resource)
+        runtime.update(
+            {
+                "pyscf_num_threads": str(ncpus),
+                "pyscf_max_memory_mb": str(max_memory_mb),
+            }
+        )
         atoms = [
             (
                 PERIODIC_SYMBOLS[atomic_number],
@@ -144,7 +166,6 @@ class Gpu4PyscfAdapter:
             )
             for index, atomic_number in enumerate(candidate.structure.atomic_numbers)
         ]
-        max_memory_mb = int(resource["max_memory_mb"])
         mol = gto.M(
             atom=atoms,
             basis=method.basis,
@@ -229,6 +250,8 @@ class Gpu4PyscfAdapter:
             "cupy_free_memory_bytes_after_run": int(cupy.cuda.runtime.memGetInfo()[0]),
             "cupy_pool_total_bytes_after_run": int(cupy.get_default_memory_pool().total_bytes()),
             "pyscf_module_version": str(pyscf.__version__),
+            "pyscf_num_threads": ncpus,
+            "pyscf_max_memory_mb": max_memory_mb,
         }
         cycles_value = getattr(mf, "cycles", None)
         n_iterations = int(cycles_value) if isinstance(cycles_value, int) else None
