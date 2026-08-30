@@ -33,6 +33,8 @@ from ..schemas._fields import (
 )
 from ..schemas.candidate import CandidateRecord
 from ..schemas.label_record import Method
+from ..schemas.state_registry import StateRegistry
+from ..states.registry import state_registry_violations
 
 __all__ = [
     "DFT_CONFIG_SCHEMA_VERSION",
@@ -377,7 +379,11 @@ def method_from_config(config: Mapping[str, Any], *, density_fit: bool | None = 
     return Method.from_dict(values)
 
 
-def scope_violations(candidate: CandidateRecord, config: Mapping[str, Any]) -> tuple[str, ...]:
+def scope_violations(
+    candidate: CandidateRecord,
+    config: Mapping[str, Any],
+    state_registry: StateRegistry | None = None,
+) -> tuple[str, ...]:
     """Return every Conditional GO scope violation for ``candidate``."""
     if not isinstance(candidate, CandidateRecord):
         raise ValidationError(
@@ -415,8 +421,9 @@ def scope_violations(candidate: CandidateRecord, config: Mapping[str, Any]) -> t
             scope["approved_state_provenance_prefix"],
             "config.scope.approved_state_provenance_prefix",
         )
-        if provenance is None or not provenance.startswith(prefix):
-            violations.append("non_default_state_missing_approved_registry_provenance")
+        if prefix != "state_registry:":
+            violations.append(f"unsupported_state_registry_provenance_prefix:{prefix}")
+        violations.extend(state_registry_violations(candidate, state_registry))
     return tuple(violations)
 
 

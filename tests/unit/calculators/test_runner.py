@@ -22,6 +22,8 @@ from uma_pyscf.schemas.label_record import (
     Results,
     Structure,
 )
+from uma_pyscf.schemas.state_registry import StateRegistry, StateRegistryEntry
+from uma_pyscf.states.registry import registry_identity
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 DFT_CONFIG = REPO_ROOT / "configs" / "dft" / "omol_wb97mv_tzvpd_v1.yaml"
@@ -52,6 +54,26 @@ def manifest(*records: CandidateRecord) -> CandidateManifest:
         config_sha256=canonical_json_fingerprint(source),
         config=source,
         records=records,
+    )
+
+
+def approved_h2_cation_registry() -> StateRegistry:
+    return StateRegistry(
+        registry_id="unit_h2_states_v1",
+        created="2026-08-31",
+        description="Approved runner fixture.",
+        entries=(
+            StateRegistryEntry(
+                entry_id="h2_cation_doublet",
+                composition="H2",
+                charge=1,
+                multiplicity=2,
+                status="approved",
+                evidence=("unit-reference",),
+                reviewer="unit-reviewer",
+                decision="unit-decision",
+            ),
+        ),
     )
 
 
@@ -208,6 +230,44 @@ class RunnerTests(unittest.TestCase):
         self.assertEqual(adapter.calls, [])
         self.assertEqual(summary["counts"]["blocked"], 1)
         self.assertEqual(ledger["records"]["h2_charged"]["status"], "blocked")
+
+    def test_approved_state_binds_registry_identity_to_ledger_and_record(self) -> None:
+        base = h2_candidate("h2_charged")
+        charged = CandidateRecord(
+            record_id=base.record_id,
+            structure=base.structure,
+            state=ElectronicState(
+                charge=1,
+                multiplicity=2,
+                spin_2s=1,
+                state_provenance=(
+                    "state_registry:unit_h2_states_v1:h2_cation_doublet"
+                ),
+            ),
+        )
+        registry = approved_h2_cation_registry()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            summary = run_label_batch(
+                manifest(charged),
+                self.config,
+                root,
+                FakeAdapter(self.config),
+                now=clock(),
+                state_registry=registry,
+            )
+            ledger = read_json(root / "attempt_ledger.json")
+            output = LabelRecord.from_dict(read_json(root / "records" / "h2_charged.json"))
+        identity = registry_identity(registry)
+        assert identity is not None
+        self.assertEqual(summary["counts"]["completed"], 1)
+        self.assertEqual(ledger["state_registry"], identity)
+        self.assertTrue(
+            all(
+                output.engine.versions[key] == value
+                for key, value in identity.items()
+            )
+        )
 
     def test_non_retryable_failure_is_terminal_and_resume_does_not_repeat_it(self) -> None:
         first = FakeAdapter(self.config, failures=("runtime_environment",))

@@ -1,0 +1,14 @@
+# Engineering-only composition baseline configuration.
+#
+# This config exercises the release mechanism but does not approve its
+# scientific use. The referenced split keeps the holdout entirely out of fit.
+schema_version: 1
+baseline_id: engineering_50_atomic_baseline_v1
+created: "2026-08-31"
+derived_from: docs/decisions/0003-gate1-gpu4pyscf-conditional-go-proposal.md
+description: >-
+  Fit one least-squares reference energy per element on the train partition of
+  engineering_50_baseline_split_v1 and report residual metrics separately for
+  train and holdout.
+method: per_element_least_squares_v1
+fit_partition: train

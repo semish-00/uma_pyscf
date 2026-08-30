@@ -14,6 +14,8 @@ from ..schemas._fields import (
     require_str,
 )
 from ..schemas.label_record import LabelRecord
+from ..schemas.state_registry import StateRegistry
+from ..states.registry import registry_identity, state_registry_violations
 
 __all__ = [
     "PROTOCOL_CHECK_NAMES",
@@ -36,7 +38,10 @@ def _check(name: str, passed: bool, observed: Any, threshold: Any) -> dict[str, 
 
 
 def protocol_checks(
-    record: LabelRecord, section: Mapping[str, Any]
+    record: LabelRecord,
+    section: Mapping[str, Any],
+    *,
+    state_registry: StateRegistry | None = None,
 ) -> tuple[dict[str, Any], ...]:
     """Run every machine-checkable Conditional GO rule on one record."""
     allowed_symbols = tuple(
@@ -120,10 +125,26 @@ def protocol_checks(
     )
     non_default = record.state.charge != 0 or record.state.multiplicity != 1
     state_provenance = record.state.state_provenance
+    registry_violations = (
+        state_registry_violations(record, state_registry)
+        if registry_required and non_default
+        else ()
+    )
+    identity = registry_identity(state_registry)
+    registry_observed_identity = {
+        "state_registry_id": record.engine.versions.get("state_registry_id"),
+        "state_registry_sha256": record.engine.versions.get("state_registry_sha256"),
+    }
     registry_passed = (
         not registry_required
         or not non_default
-        or (state_provenance is not None and state_provenance.startswith(prefix))
+        or (
+            not registry_violations
+            and identity is not None
+            and registry_observed_identity == identity
+            and state_provenance is not None
+            and state_provenance.startswith(prefix)
+        )
     )
 
     return (
@@ -161,7 +182,16 @@ def protocol_checks(
         _check(
             "state_registry",
             registry_passed,
-            {"non_default": non_default, "state_provenance": state_provenance},
-            {"required_for_non_default": registry_required, "approved_prefix": prefix},
+            {
+                "non_default": non_default,
+                "state_provenance": state_provenance,
+                "registry_identity": registry_observed_identity,
+                "violations": list(registry_violations),
+            },
+            {
+                "required_for_non_default": registry_required,
+                "approved_prefix": prefix,
+                "registry_identity": identity,
+            },
         ),
     )

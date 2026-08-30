@@ -19,6 +19,8 @@ from ..schemas.label_record import (
     QcState,
     RawArtifact,
 )
+from ..schemas.state_registry import StateRegistry
+from ..states.registry import registry_identity
 from .config import method_from_config, resource_for_candidate, scope_violations
 from .model import CalculationFailure, CalculationOutput, CalculatorAdapter
 
@@ -110,9 +112,12 @@ def _validate_runtime(output: CalculationOutput, config: Mapping[str, Any]) -> N
 
 
 def _new_ledger(
-    manifest: CandidateManifest, config: Mapping[str, Any], protocol_sha256: str
+    manifest: CandidateManifest,
+    config: Mapping[str, Any],
+    protocol_sha256: str,
+    state_registry: StateRegistry | None,
 ) -> dict[str, Any]:
-    return {
+    ledger: dict[str, Any] = {
         "schema": LABEL_LEDGER_SCHEMA,
         "run_id": f"{manifest.sampling_id}__{_protocol_id(config)}",
         "sampling_id": manifest.sampling_id,
@@ -121,6 +126,10 @@ def _new_ledger(
         "protocol_sha256": protocol_sha256,
         "records": {},
     }
+    identity = registry_identity(state_registry)
+    if identity is not None:
+        ledger["state_registry"] = identity
+    return ledger
 
 
 def _load_or_create_ledger(
@@ -128,8 +137,9 @@ def _load_or_create_ledger(
     manifest: CandidateManifest,
     config: Mapping[str, Any],
     protocol_sha256: str,
+    state_registry: StateRegistry | None,
 ) -> dict[str, Any]:
-    expected = _new_ledger(manifest, config, protocol_sha256)
+    expected = _new_ledger(manifest, config, protocol_sha256, state_registry)
     if not path.exists():
         return expected
     ledger = require_mapping(read_json(path), "ledger")
@@ -140,6 +150,7 @@ def _load_or_create_ledger(
         "manifest_sha256",
         "protocol_id",
         "protocol_sha256",
+        "state_registry",
         "records",
     ):
         if ledger.get(key) != expected.get(key) and key != "records":
@@ -168,13 +179,16 @@ def _record_matches_protocol(path: Path, protocol_sha256: str) -> LabelRecord:
 
 
 def build_label_plan(
-    manifest: CandidateManifest, config: Mapping[str, Any]
+    manifest: CandidateManifest,
+    config: Mapping[str, Any],
+    *,
+    state_registry: StateRegistry | None = None,
 ) -> dict[str, Any]:
     """Return a deterministic dry-run plan without importing PySCF."""
     protocol_sha256 = canonical_json_fingerprint(config)
     records: list[dict[str, Any]] = []
     for candidate in manifest.records:
-        violations = scope_violations(candidate, config)
+        violations = scope_violations(candidate, config, state_registry)
         records.append(
             {
                 "record_id": candidate.record_id,
@@ -192,7 +206,7 @@ def build_label_plan(
                 ],
             }
         )
-    return {
+    plan = {
         "schema": "uma-pyscf-label-plan-v1",
         "sampling_id": manifest.sampling_id,
         "manifest_sha256": canonical_json_fingerprint(manifest.to_dict()),
@@ -205,6 +219,10 @@ def build_label_plan(
         },
         "records": records,
     }
+    identity = registry_identity(state_registry)
+    if identity is not None:
+        plan["state_registry"] = identity
+    return plan
 
 
 def _completed_record(
@@ -219,6 +237,7 @@ def _completed_record(
     raw_location: str,
     raw_sha256: str,
     utc: str,
+    state_registry: StateRegistry | None,
 ) -> LabelRecord:
     guess, generated_on = _initial_guess(config)
     versions: dict[str, str | None] = dict(output.engine_versions)
@@ -233,6 +252,11 @@ def _completed_record(
             "density_fit": str(method_density_fit).lower(),
         }
     )
+    identity = registry_identity(state_registry)
+    if identity is not None and (
+        candidate.state.charge != 0 or candidate.state.multiplicity != 1
+    ):
+        versions.update(identity)
     return LabelRecord(
         record_id=candidate.record_id,
         structure=candidate.structure,
@@ -268,6 +292,7 @@ def run_label_batch(
     *,
     now: Callable[[], str] = _utc_now,
     retry_failed: bool = False,
+    state_registry: StateRegistry | None = None,
 ) -> dict[str, Any]:
     """Label a manifest, publishing progress after every attempt for safe resume."""
     if not isinstance(manifest, CandidateManifest):
@@ -278,7 +303,9 @@ def run_label_batch(
     ledger_path = root / "attempt_ledger.json"
     summary_path = root / "summary.json"
     protocol_sha256 = canonical_json_fingerprint(config)
-    ledger = _load_or_create_ledger(ledger_path, manifest, config, protocol_sha256)
+    ledger = _load_or_create_ledger(
+        ledger_path, manifest, config, protocol_sha256, state_registry
+    )
     ledger_records = require_mapping(ledger["records"], "ledger.records")
     ledger["records"] = ledger_records
     counts = {"completed": 0, "skipped": 0, "failed": 0, "blocked": 0}
@@ -314,7 +341,7 @@ def run_label_batch(
             counts["failed"] += 1
             continue
 
-        violations = scope_violations(candidate, config)
+        violations = scope_violations(candidate, config, state_registry)
         if violations:
             existing.update(
                 {
@@ -385,6 +412,11 @@ def run_label_batch(
                     "results": output.results.to_dict(),
                     "engine_payload": output.raw_payload,
                 }
+                identity = registry_identity(state_registry)
+                if identity is not None and (
+                    candidate.state.charge != 0 or candidate.state.multiplicity != 1
+                ):
+                    raw_document["state_registry"] = identity
                 write_json_atomic(raw_path, raw_document)
                 raw_sha256 = sha256_of_file(raw_path)
                 record = _completed_record(
@@ -398,6 +430,7 @@ def run_label_batch(
                     raw_location=raw_relative.as_posix(),
                     raw_sha256=raw_sha256,
                     utc=now(),
+                    state_registry=state_registry,
                 )
                 record_relative = Path("records") / f"{candidate.record_id}.json"
                 record_path = root / record_relative
@@ -483,5 +516,8 @@ def run_label_batch(
             "state_registry_required_for_non_default_states",
         ],
     }
+    identity = registry_identity(state_registry)
+    if identity is not None:
+        summary["state_registry"] = identity
     write_json_atomic(summary_path, summary)
     return summary

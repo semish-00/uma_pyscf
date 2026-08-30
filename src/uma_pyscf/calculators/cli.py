@@ -10,6 +10,7 @@ import sys
 from ..core.errors import UmaPyscfError
 from ..core.io import read_json
 from ..schemas.candidate import CandidateManifest
+from ..states.registry import load_state_registry
 from .config import load_dft_config
 from .runner import build_label_plan, run_label_batch
 from .subprocess_adapter import SubprocessGpu4PyscfAdapter
@@ -44,6 +45,11 @@ def configure_label(parser: argparse.ArgumentParser) -> None:
         action="store_true",
         help="Retry records already terminally failed in an existing ledger.",
     )
+    parser.add_argument(
+        "--state-registry",
+        metavar="<registry>",
+        help="Versioned state registry required when the manifest has non-default states.",
+    )
 
 
 def run_label(args: argparse.Namespace) -> int:
@@ -51,8 +57,11 @@ def run_label(args: argparse.Namespace) -> int:
     try:
         config = load_dft_config(Path(args.config))
         manifest = CandidateManifest.from_dict(read_json(Path(args.manifest)))
+        state_registry = (
+            load_state_registry(Path(args.state_registry)) if args.state_registry else None
+        )
         if args.dry_run:
-            plan = build_label_plan(manifest, config)
+            plan = build_label_plan(manifest, config, state_registry=state_registry)
             print(json.dumps(plan, indent=2, sort_keys=True, ensure_ascii=False))
             return 1 if plan["counts"]["blocked"] else 0
         summary = run_label_batch(
@@ -61,6 +70,7 @@ def run_label(args: argparse.Namespace) -> int:
             Path(args.output_dir),
             SubprocessGpu4PyscfAdapter(),
             retry_failed=bool(args.retry_failed),
+            state_registry=state_registry,
         )
     except (UmaPyscfError, OSError, ValueError) as exc:
         print(f"{args.manifest}: ERROR {exc}", file=sys.stderr)

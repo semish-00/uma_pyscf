@@ -24,6 +24,11 @@ from .candidate import (
     GeometryQcReport,
 )
 from .cli import configure_validate_records, run_validate_records
+from .composition_baseline import (
+    COMPOSITION_BASELINE_METHOD,
+    COMPOSITION_BASELINE_SCHEMA,
+    CompositionBaseline,
+)
 from .crosscode import (
     CROSSCODE_RESULT_SCHEMA,
     IMPORT_EVENT,
@@ -55,10 +60,18 @@ from .split_manifest import (
     validate_axis,
     validate_partitions,
 )
+from .state_registry import (
+    STATE_REGISTRY_SCHEMA,
+    STATE_REGISTRY_STATUSES,
+    StateRegistry,
+    StateRegistryEntry,
+)
 
 __all__ = [
     "CANDIDATE_MANIFEST_SCHEMA",
     "CANDIDATE_STATUSES",
+    "COMPOSITION_BASELINE_METHOD",
+    "COMPOSITION_BASELINE_SCHEMA",
     "CANONICAL_UNITS",
     "CROSSCODE_RESULT_SCHEMA",
     "FRACTION_SUM_TOLERANCE",
@@ -70,8 +83,11 @@ __all__ = [
     "QC_STATUSES",
     "SPLIT_AXES",
     "SPLIT_MANIFEST_SCHEMA",
+    "STATE_REGISTRY_SCHEMA",
+    "STATE_REGISTRY_STATUSES",
     "CandidateManifest",
     "CandidateRecord",
+    "CompositionBaseline",
     "ElectronicState",
     "Engine",
     "GeometryQcReport",
@@ -82,6 +98,8 @@ __all__ = [
     "RawArtifact",
     "Results",
     "SplitManifest",
+    "StateRegistry",
+    "StateRegistryEntry",
     "Structure",
     "configure_validate_records",
     "label_record_from_crosscode_result",

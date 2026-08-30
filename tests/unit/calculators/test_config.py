@@ -16,6 +16,7 @@ from uma_pyscf.calculators.config import (
 from uma_pyscf.core.errors import ValidationError
 from uma_pyscf.schemas.candidate import CandidateRecord
 from uma_pyscf.schemas.label_record import ElectronicState, Structure
+from uma_pyscf.schemas.state_registry import StateRegistry, StateRegistryEntry
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 DFT_CONFIG = REPO_ROOT / "configs" / "dft" / "omol_wb97mv_tzvpd_v1.yaml"
@@ -122,15 +123,32 @@ class ScopeTests(unittest.TestCase):
             self.config,
         )
         self.assertIn("state_provenance_blocked:pending_scientific_review", violations)
-        self.assertIn("non_default_state_missing_approved_registry_provenance", violations)
+        self.assertIn("non_default_state_registry_not_supplied", violations)
 
     def test_registered_non_default_state_is_ready(self) -> None:
+        registry = StateRegistry(
+            registry_id="unit_states_v1",
+            created="2026-08-31",
+            description="Unit-test approval.",
+            entries=(
+                StateRegistryEntry(
+                    entry_id="sih3_doublet",
+                    composition="H3Si",
+                    charge=0,
+                    multiplicity=2,
+                    status="approved",
+                    evidence=("unit-reference",),
+                    reviewer="unit-reviewer",
+                    decision="unit-decision",
+                ),
+            ),
+        )
         value = candidate(
             atomic_numbers=(14, 1, 1, 1),
             multiplicity=2,
-            state_provenance="state_registry:sih3_doublet_v1",
+            state_provenance="state_registry:unit_states_v1:sih3_doublet",
         )
-        self.assertEqual(scope_violations(value, self.config), ())
+        self.assertEqual(scope_violations(value, self.config, registry), ())
 
     def test_resource_tiers_match_the_validated_ladder(self) -> None:
         small = resource_for_candidate(candidate(atomic_numbers=(14, 1, 1, 1, 1)), self.config)

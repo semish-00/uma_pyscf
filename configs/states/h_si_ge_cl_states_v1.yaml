@@ -1,0 +1,111 @@
+# Candidate non-default states observed in the Part I numerical parity probes.
+#
+# Every entry intentionally remains pending_scientific_review. The 12 probes
+# establish CPU/GPU numerical agreement at one geometry; they do not establish
+# state ordering, stability across geometries, or scientific suitability for a
+# released training set. Therefore this registry documents the candidates but
+# approves none of them.
+schema: uma-pyscf-state-registry-v1
+registry_id: h_si_ge_cl_states_v1
+created: "2026-08-31"
+description: >-
+  Versioned review queue for the SiH3 and GeH3 charge/spin states exercised by
+  the GPU4PySCF explicit-MINAO parity suite. All entries remain fail-closed
+  pending multi-geometry scientific review and an accountable reviewer.
+entries:
+  - entry_id: sih3_neutral_doublet
+    composition: H3Si
+    charge: 0
+    multiplicity: 2
+    status: pending_scientific_review
+    evidence: [docs/lab_notes/2026-08-30_gpu4pyscf_charge_spin.md]
+    reviewer: null
+    decision: null
+  - entry_id: sih3_neutral_quartet
+    composition: H3Si
+    charge: 0
+    multiplicity: 4
+    status: pending_scientific_review
+    evidence: [docs/lab_notes/2026-08-30_gpu4pyscf_charge_spin.md]
+    reviewer: null
+    decision: null
+  - entry_id: sih3_cation_singlet
+    composition: H3Si
+    charge: 1
+    multiplicity: 1
+    status: pending_scientific_review
+    evidence: [docs/lab_notes/2026-08-30_gpu4pyscf_charge_spin.md]
+    reviewer: null
+    decision: null
+  - entry_id: sih3_cation_triplet
+    composition: H3Si
+    charge: 1
+    multiplicity: 3
+    status: pending_scientific_review
+    evidence: [docs/lab_notes/2026-08-30_gpu4pyscf_charge_spin.md]
+    reviewer: null
+    decision: null
+  - entry_id: sih3_anion_singlet
+    composition: H3Si
+    charge: -1
+    multiplicity: 1
+    status: pending_scientific_review
+    evidence: [docs/lab_notes/2026-08-30_gpu4pyscf_charge_spin.md]
+    reviewer: null
+    decision: null
+  - entry_id: sih3_anion_triplet
+    composition: H3Si
+    charge: -1
+    multiplicity: 3
+    status: pending_scientific_review
+    evidence: [docs/lab_notes/2026-08-30_gpu4pyscf_charge_spin.md]
+    reviewer: null
+    decision: null
+  - entry_id: geh3_neutral_doublet
+    composition: GeH3
+    charge: 0
+    multiplicity: 2
+    status: pending_scientific_review
+    evidence: [docs/lab_notes/2026-08-30_gpu4pyscf_charge_spin.md]
+    reviewer: null
+    decision: null
+  - entry_id: geh3_neutral_quartet
+    composition: GeH3
+    charge: 0
+    multiplicity: 4
+    status: pending_scientific_review
+    evidence: [docs/lab_notes/2026-08-30_gpu4pyscf_charge_spin.md]
+    reviewer: null
+    decision: null
+  - entry_id: geh3_cation_singlet
+    composition: GeH3
+    charge: 1
+    multiplicity: 1
+    status: pending_scientific_review
+    evidence: [docs/lab_notes/2026-08-30_gpu4pyscf_charge_spin.md]
+    reviewer: null
+    decision: null
+  - entry_id: geh3_cation_triplet
+    composition: GeH3
+    charge: 1
+    multiplicity: 3
+    status: pending_scientific_review
+    evidence: [docs/lab_notes/2026-08-30_gpu4pyscf_charge_spin.md]
+    reviewer: null
+    decision: null
+  - entry_id: geh3_anion_singlet
+    composition: GeH3
+    charge: -1
+    multiplicity: 1
+    status: pending_scientific_review
+    evidence: [docs/lab_notes/2026-08-30_gpu4pyscf_charge_spin.md]
+    reviewer: null
+    decision: null
+  - entry_id: geh3_anion_triplet
+    composition: GeH3
+    charge: -1
+    multiplicity: 3
+    status: pending_scientific_review
+    evidence: [docs/lab_notes/2026-08-30_gpu4pyscf_charge_spin.md]
+    reviewer: null
+    decision: null

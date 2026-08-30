@@ -1,0 +1,18 @@
+# Leakage-safe engineering split for the first composition-baseline exercise.
+#
+# Four complete parent/composition groups are used for fitting and one complete
+# parent group is held out. Seed 1 deterministically assigns sicl4_seed to the
+# holdout while retaining a full-rank H/Si/Ge/Cl composition design in train.
+schema_version: 1
+split_id: engineering_50_baseline_split_v1
+created: "2026-08-31"
+derived_from: configs/sampling/engineering_50_v1.yaml
+description: >-
+  Parent-grouped 40/10 split for evaluating the train-only atomic composition
+  baseline mechanism on the engineering_50_v1 labels.
+
+axis: parent
+seed: 1
+partitions:
+  train: 0.8
+  holdout: 0.2

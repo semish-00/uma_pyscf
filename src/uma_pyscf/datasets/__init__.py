@@ -16,6 +16,17 @@ here.
 
 from __future__ import annotations
 
+from .baseline import (
+    atomic_counts,
+    fit_atomic_composition_baseline,
+    predict_baseline_energy,
+)
+from .baseline_cli import (
+    BASELINE_CONFIG_SCHEMA_VERSION,
+    configure_fit_baseline,
+    load_baseline_config,
+    run_fit_baseline,
+)
 from .cli import (
     SPLIT_CONFIG_SCHEMA_VERSION,
     configure_split,
@@ -37,14 +48,21 @@ from .splits import (
 
 __all__ = [
     "AXES",
+    "BASELINE_CONFIG_SCHEMA_VERSION",
     "SPLIT_CONFIG_SCHEMA_VERSION",
     "SplitItem",
+    "atomic_counts",
     "assign_groups",
     "composition_formula",
+    "configure_fit_baseline",
     "configure_split",
     "generate_split",
     "group_key_for",
     "load_split_config",
+    "load_baseline_config",
+    "fit_atomic_composition_baseline",
+    "predict_baseline_energy",
+    "run_fit_baseline",
     "run_split",
     "split_from_candidates",
     "split_item_from_label_record",

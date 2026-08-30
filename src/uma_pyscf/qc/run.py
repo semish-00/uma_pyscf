@@ -41,6 +41,7 @@ from ..core.ids import canonical_json_fingerprint
 from ..schemas._fields import require_str
 from ..schemas.label_record import LabelRecord, QcState
 from ..schemas.qc_report import QcReport
+from ..schemas.state_registry import StateRegistry
 from .config import validate_qc_config
 from .electronic import electronic_checks, gradient_max_abs
 from .geometry import duplicate_map, geometry_checks
@@ -104,7 +105,11 @@ def _validated_batch(records: Sequence[LabelRecord]) -> tuple[LabelRecord, ...]:
 
 
 def apply_qc(
-    records: Sequence[LabelRecord], config: dict[str, Any], *, utc: str
+    records: Sequence[LabelRecord],
+    config: dict[str, Any],
+    *,
+    utc: str,
+    state_registry: StateRegistry | None = None,
 ) -> tuple[tuple[LabelRecord, ...], QcReport]:
     """Judge every record against ``config`` and return the verdicts.
 
@@ -132,7 +137,11 @@ def apply_qc(
     entries: list[dict[str, Any]] = []
     for record in batch:
         checks = [
-            *(protocol_checks(record, protocol) if protocol is not None else ()),
+            *(
+                protocol_checks(record, protocol, state_registry=state_registry)
+                if protocol is not None
+                else ()
+            ),
             *electronic_checks(record, electronic),
             *geometry_checks(record, geometry, duplicates.get(record.record_id)),
         ]

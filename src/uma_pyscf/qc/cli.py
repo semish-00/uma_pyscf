@@ -30,6 +30,7 @@ from ..core.errors import UmaPyscfError, ValidationError
 from ..core.io import read_json, write_json_atomic
 from ..schemas.label_record import LabelRecord
 from ..schemas.qc_report import QcReport
+from ..states.registry import load_state_registry
 from .config import load_qc_config
 from .run import apply_qc
 
@@ -127,6 +128,11 @@ def configure_qc(parser: argparse.ArgumentParser) -> None:
         metavar="<dir>",
         help="Directory to write the judged records and the QC report into.",
     )
+    parser.add_argument(
+        "--state-registry",
+        metavar="<registry>",
+        help="Versioned registry used to validate any non-default electronic states.",
+    )
 
 
 def run_qc(args: argparse.Namespace) -> int:
@@ -135,7 +141,15 @@ def run_qc(args: argparse.Namespace) -> int:
         config = load_qc_config(Path(args.config))
         paths = resolve_record_paths(args.records)
         records = load_records(paths)
-        judged, report = apply_qc(records, config, utc=datetime.now(timezone.utc).isoformat())
+        state_registry = (
+            load_state_registry(Path(args.state_registry)) if args.state_registry else None
+        )
+        judged, report = apply_qc(
+            records,
+            config,
+            utc=datetime.now(timezone.utc).isoformat(),
+            state_registry=state_registry,
+        )
         _, report_path = write_qc_outputs(judged, report, Path(args.output_dir), inputs=paths)
     except (UmaPyscfError, OSError, ValueError) as exc:
         print(f"{args.config}: ERROR {exc}", file=sys.stderr)

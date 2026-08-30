@@ -20,6 +20,8 @@ from uma_pyscf.schemas.label_record import (
     Results,
     Structure,
 )
+from uma_pyscf.schemas.state_registry import StateRegistry, StateRegistryEntry
+from uma_pyscf.states.registry import registry_identity
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 DFT_CONFIG = REPO_ROOT / "configs" / "dft" / "omol_wb97mv_tzvpd_v1.yaml"
@@ -137,6 +139,60 @@ class ProtocolCheckTests(unittest.TestCase):
             ),
         )
         self.assertEqual(self.failed(changed), ["state_registry"])
+
+    def test_approved_non_default_state_requires_matching_registry_checksum(self) -> None:
+        registry = StateRegistry(
+            registry_id="unit_h2_states_v1",
+            created="2026-08-31",
+            description="Approved QC fixture.",
+            entries=(
+                StateRegistryEntry(
+                    entry_id="h2_cation_doublet",
+                    composition="H2",
+                    charge=1,
+                    multiplicity=2,
+                    status="approved",
+                    evidence=("unit-reference",),
+                    reviewer="unit-reviewer",
+                    decision="unit-decision",
+                ),
+            ),
+        )
+        record = production_h2()
+        identity = registry_identity(registry)
+        assert identity is not None
+        versions = dict(record.engine.versions) | identity
+        changed = replace(
+            record,
+            state=ElectronicState(
+                charge=1,
+                multiplicity=2,
+                spin_2s=1,
+                initial_guess="minao",
+                state_provenance=(
+                    "state_registry:unit_h2_states_v1:h2_cation_doublet"
+                ),
+            ),
+            engine=replace(record.engine, versions=versions),
+            results=replace(
+                record.results,
+                s2=0.75,
+                s2_target=0.75,
+                s2_deviation=0.0,
+            ),
+        )
+        checks = protocol_checks(changed, self.section, state_registry=registry)
+        registry_check = next(check for check in checks if check["name"] == "state_registry")
+        self.assertTrue(registry_check["passed"])
+        forged_versions = dict(versions)
+        forged_versions["state_registry_sha256"] = "0" * 64
+        forged = replace(changed, engine=replace(changed.engine, versions=forged_versions))
+        forged_check = next(
+            check
+            for check in protocol_checks(forged, self.section, state_registry=registry)
+            if check["name"] == "state_registry"
+        )
+        self.assertFalse(forged_check["passed"])
 
     def test_full_qc_accepts_engineering_record_without_changing_release_status(
         self,
