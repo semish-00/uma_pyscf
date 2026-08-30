@@ -20,7 +20,6 @@ SAMPLE_CONFIG="${SAMPLE_CONFIG:-$REPO_ROOT/configs/sampling/gpu_label_smoke_v1.y
 DFT_CONFIG="${DFT_CONFIG:-$REPO_ROOT/configs/dft/omol_wb97mv_tzvpd_v1.yaml}"
 QC_CONFIG="${QC_CONFIG:-$REPO_ROOT/configs/datasets/omol_wb97mv_tzvpd_conditional_qc_v1.yaml}"
 RUN_ROOT="${RUN_ROOT:-/lustre/user140002/runs/label/gpu_label_smoke_v1/$SLURM_JOB_ID}"
-SCRATCH_ROOT="${SCRATCH_ROOT:-/raid/user140002/uma-pyscf-label-$SLURM_JOB_ID}"
 
 for path in \
   "$REPO_ROOT/src/uma_pyscf" \
@@ -35,20 +34,7 @@ for path in \
   fi
 done
 
-case "$SCRATCH_ROOT" in
-  /raid/user140002/uma-pyscf-label-*) ;;
-  *)
-    echo "refusing unsafe scratch path: $SCRATCH_ROOT" >&2
-    exit 2
-    ;;
-esac
-
-cleanup() {
-  rm -rf -- "$SCRATCH_ROOT"
-}
-trap cleanup EXIT
-
-mkdir -p "$RUN_ROOT/provenance" "$SCRATCH_ROOT" /lustre/user140002/logs
+mkdir -p "$RUN_ROOT/provenance" /lustre/user140002/logs
 git -C "$REPO_ROOT" status --short --branch > "$RUN_ROOT/provenance/git_status.txt"
 git -C "$REPO_ROOT" rev-parse HEAD > "$RUN_ROOT/provenance/git_commit.txt"
 sha256sum \
@@ -59,17 +45,19 @@ sha256sum \
   "$PACKAGE_ROOT.lock.txt" \
   > "$RUN_ROOT/provenance/inputs.sha256"
 
-export REPO_ROOT PACKAGE_ROOT SAMPLE_CONFIG DFT_CONFIG QC_CONFIG RUN_ROOT SCRATCH_ROOT
+export REPO_ROOT PACKAGE_ROOT SAMPLE_CONFIG DFT_CONFIG QC_CONFIG RUN_ROOT
 export PYTHONPATH="$PACKAGE_ROOT:$REPO_ROOT/src"
 export PYTHONUNBUFFERED=1
 export CUPY_ACCELERATORS=cutensor
 export CUPY_CACHE_DIR=/lustre/user140002/.cache/cupy
 export OMP_NUM_THREADS="${SLURM_CPUS_PER_TASK:-1}"
-export UMA_PYSCF_SCRATCH="$SCRATCH_ROOT"
+# Each candidate uses an automatically cleaned TemporaryDirectory under the
+# container-local /tmp on the allocated GPU node.
+unset UMA_PYSCF_SCRATCH
 
 srun \
   --container-image="$CONTAINER_IMAGE" \
-  --container-mounts=/lustre:/lustre,/raid:/raid \
+  --container-mounts=/lustre:/lustre \
   --container-workdir="$REPO_ROOT" \
   bash -lc '
     set -euo pipefail

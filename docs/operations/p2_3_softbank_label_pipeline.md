@@ -72,5 +72,6 @@ Slurm clientはlogin shell初期化に依存するため、Codexからは対話P
 再試行するときだけlabel CLIへ`--retry-failed`を付ける。config、manifest、protocol fingerprint
 が既存ledgerと違う場合は同じrun directoryを再利用せず、新しい`RUN_ROOT`を使う。
 
-raw label、ledger、QC reportは削除しない。`/raid`上のscratchだけをjob終了時に安全なprefixを
-確認して削除する。
+raw label、ledger、QC reportは削除しない。SoftBank GPU機では `/raid`直下にユーザ用
+directoryを作成できないため、現行のSlurm jobは各candidateの一時ファイルに
+compute nodeのcontainer-local `/tmp`を使う。`TemporaryDirectory`がworker終了時に自動削除する。
