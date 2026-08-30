@@ -31,7 +31,10 @@ uma-pyscf label \
 ```
 
 dry-runはPySCF/CUDAをimportせず、scope、resource tier、primary/fallback計画を表示する。
-非default charge/multiplicityは`state_registry:`で始まる承認provenanceがなければblockする。
+非default charge/multiplicityでは`--state-registry configs/states/<registry>.yaml`も指定する。
+prefixだけでは承認されず、registry内のcomposition/charge/multiplicity、exact provenance、
+`approved` statusが一致しなければblockする。label ledger、record、QCはregistry IDとchecksumを
+保存・照合する。
 
 ## SoftBank engineering smoke
 
@@ -92,3 +95,24 @@ job中の進捗は、atomic replaceされるledgerをlogin nodeから連続読�
 find /lustre/user140002/runs/label/engineering_50_v1/<job-id>/label/records \
   -maxdepth 1 -type f | wc -l
 ```
+
+## Train-only composition baseline
+
+baselineはQC accepted recordを入力とし、candidate manifestから作ったgroup splitの`train`だけで
+fitする。holdoutをfitへ混ぜない。次はjob 1797134で検証済みの例である。
+
+```bash
+python3 -m uma_pyscf.cli.main split \
+  --config configs/datasets/engineering_50_baseline_split_v1.yaml \
+  --candidates /lustre/user140002/runs/label/engineering_50_v1/1797134/input/engineering_50_v1_candidates.json \
+  --output-dir /lustre/user140002/runs/label/engineering_50_v1/1797134/baseline/splits
+
+python3 -m uma_pyscf.cli.main fit-baseline \
+  --config configs/datasets/engineering_50_atomic_baseline_v1.yaml \
+  --split /lustre/user140002/runs/label/engineering_50_v1/1797134/baseline/splits/engineering_50_baseline_split_v1.json \
+  --records /lustre/user140002/runs/label/engineering_50_v1/1797134/qc/records \
+  --output-dir /lustre/user140002/runs/label/engineering_50_v1/1797134/baseline/artifacts
+```
+
+rank不足、splitとrecord集合の不一致、非accepted record、trainにない元素への外挿は失敗する。
+artifactのpartition別metricはanalysis evidenceであり、それだけでdataset releaseを許可しない。

@@ -21,9 +21,10 @@
 | 29-case三者比較 | 完了 | density-fitting + explicit MINAO候補29/29初回成功、CPU direct比20.96x |
 | Production DFT protocol | v1固定 | density fitting + explicit MINAO、direct fallback、scope/QC ruleをconfig化 |
 | Gate 1 | Conditional GO採択 | decision 0003。release条件はoffset、科学閾値、state registry |
-| Package基盤 | P2.0–P2.2、P2.4、P2.6完了 | 577 unit test、schema/QC/split実装済み |
+| Package基盤 | P2.0–P2.2、P2.4、P2.6完了 | 646 test、schema/QC/split実装済み |
 | P2.3 label pipeline | 完了 | SoftBank Slurm job 1797122。1件completed、QC accepted、checksum一致 |
 | 50–200構造engineering set | 完了 | job 1797134、50/50初回収束、resume 50/50 skip、QC 50/50 accepted |
+| Release controls | 機構完了・科学review継続 | train-only baseline実測済み、state registry 12件は全てpending、decision 0004 |
 | 1,000–5,000構造pilot | release条件のreview後 | H/Si/Ge/Cl、8原子以内から開始 |
 | UMA fine-tuning | Gate 2後 | base評価→overfit smoke→pilot |
 | 科学的・retention評価 | Gate 2後 | relative energy、forces、forgetting |

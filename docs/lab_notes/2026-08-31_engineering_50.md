@@ -93,4 +93,6 @@ attempt ledgerおよびrecord内の記録値と比較した。不一致は0件�
 50構造engineering setは完了。P2.3のbatch実行、resume、resource tier、QC、
 checksum integrityは実機で正常に動作した。ただし、今回はneutral singlet限定で、
 自然発生の失敗やdirect fallbackはなかった。dataset releaseは引き続きfail closedとし、
-次はcomposition baseline、production QC閾値、non-default state registryを科学reviewする。
+後続の[release条件review](2026-08-31_release_conditions_review.md)でtrain-only composition
+baselineと厳格なstate registryを実装・実測した。production QC閾値とnon-default stateの
+科学承認は引き続きpendingである。

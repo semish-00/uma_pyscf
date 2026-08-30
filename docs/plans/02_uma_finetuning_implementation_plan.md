@@ -441,6 +441,8 @@ loop:
 - [x] QC/retry/provenance（engineering QC、releaseはfail closed）
 - [x] SoftBank GPU sample→label→QC integration smoke（job 1797122）
 - [x] 50–200構造engineering dataset（50構造、job 1797134）
+- [x] train-only composition baseline機構（50構造でrank/checksum/holdout実測）
+- [x] versioned charge/spin state registry機構（12 state登録、科学承認はpending）
 - [ ] ASE/fairchem変換とload-back test
 - [x] split generatorとleakage test
 - [ ] base UMA evaluation

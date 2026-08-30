@@ -201,9 +201,11 @@ Gate判定時には、日付、対象commit、計算環境、入力suite、metri
 
 ## 9. 直近の次アクション
 
-1. composition baselineとproduction QC閾値を科学reviewする。
-2. non-default charge/spinのstate registryを作成・承認する。
-3. release条件を満たしてから1,000–5,000構造pilotとGate 2へ進む。
+1. train-only atomic composition baseline機構は実装済み。未知組成を含む独立calibration setで
+   baseline residualとgradient分布をseverity別に評価する。
+2. versioned state registry機構と12件のpending entryは実装済み。SiH3/GeH3を複数geometryで
+   検証し、evidence・reviewer・decisionが揃ったstateだけを承認する。
+3. production QC v2の科学閾値をfreezeしてから1,000–5,000構造pilotとGate 2へ進む。
 
 詳細は[Part II](plans/02_uma_finetuning_implementation_plan.md)に従う。
 
@@ -213,5 +215,6 @@ Gate判定時には、日付、対象commit、計算環境、入力suite、metri
 - [クロスコード検証protocol](../validation/orca_gpu4pyscf/protocol.md)
 - [P2.3 GPU label smoke実行記録](lab_notes/2026-08-31_p2_3_gpu_label_smoke.md)
 - [50構造engineering set実行記録](lab_notes/2026-08-31_engineering_50.md)
+- [release条件review実行記録](lab_notes/2026-08-31_release_conditions_review.md)
 - [CPU PySCF–ORCA総括](lab_notes/2026-08-13_orca_pyscf_validation_summary_and_finetuning_assessment.md)
 - [Si/Ge/H/Cl suite投入記録](lab_notes/2026-08-13_si_ge_h_cl_ladder_submission.md)

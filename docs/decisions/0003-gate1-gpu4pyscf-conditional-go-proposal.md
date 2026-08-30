@@ -100,3 +100,7 @@ charge/spinは12/12で再現し、速度も実用上十分だった。
 
 これらが完了するまでproduction configの`release_allowed`はfalse、QC configの
 `release_status`は`engineering_only_pending_scientific_freeze`とする。
+
+2026-08-31の[decision 0004](0004-release-controls-mechanized-release-remains-closed.md)で
+composition baselineとstate registryの機構は採択・実装した。科学閾値とstate承認は未完了の
+ため、release flagは引き続き変更しない。
