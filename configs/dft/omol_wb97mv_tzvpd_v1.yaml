@@ -1,0 +1,98 @@
+# Gate 1 Conditional GO production protocol.
+#
+# This file is the executable form of decision 0003. Existing versions are
+# immutable: changing any scientific setting or scope rule requires v2.
+schema_version: 1
+protocol_id: omol_wb97mv_tzvpd_v1
+created: "2026-08-31"
+derived_from: docs/decisions/0003-gate1-gpu4pyscf-conditional-go-proposal.md
+decision: conditional_go
+description: >-
+  GPU4PySCF label protocol validated on non-periodic H/Si/Ge/Cl molecules with
+  at most eight atoms. Density fitting is the primary path and the identical
+  direct method is the controlled fallback.
+
+engine:
+  name: gpu4pyscf
+  required_versions:
+    python: "3.10.12"
+    pyscf: "2.14.0"
+    gpu4pyscf: "1.8.1"
+    cupy: "13.4.1"
+    cutensor: "2.2.0"
+  required_gpu_name: NVIDIA A100-SXM4-80GB
+  container_image: /lustre/user140002/containers/nvidia-pytorch_23.10-py3.sqsh
+  container_sha256_file: /lustre/user140002/containers/nvidia-pytorch_23.10-py3.sqsh.sha256
+  python_overlay: /lustre/user140002/python/gpu4pyscf-cu122-py310-v1.8.1
+  python_lock_file: /lustre/user140002/python/gpu4pyscf-cu122-py310-v1.8.1.lock.txt
+
+method:
+  functional: wb97m-v
+  basis: def2-tzvpd
+  ecp: null
+  aux_basis: null
+  grid_level: 5
+  nlc_grid_level: 5
+  grid_response: true
+  density_fit: true
+  scf_conv_tol: 1.0e-10
+  scf_max_cycle: 250
+
+initial_density:
+  guess: minao
+  generated_on: cpu_before_device_conversion
+  pass_explicit_dm0: true
+
+scope:
+  allowed_elements: [H, Si, Ge, Cl]
+  max_atoms: 8
+  periodic: false
+  calculation: energy_gradient
+  blocked_state_provenance: [pending_scientific_review]
+  require_state_registry_for_non_default: true
+  approved_state_provenance_prefix: "state_registry:"
+
+resources:
+  gpu_count: 1
+  candidates_per_process: 1
+  tiers:
+    - max_atoms: 5
+      ncpus: 8
+      max_memory_mb: 24000
+      walltime: "06:00:00"
+    - max_atoms: 8
+      ncpus: 16
+      max_memory_mb: 48000
+      walltime: "12:00:00"
+
+retry:
+  stop_on_first_failure: false
+  attempts:
+    - id: primary_density_fit
+      density_fit: true
+      retry_on: []
+    - id: direct_fallback
+      density_fit: false
+      retry_on: [scf_not_converged, scf_root_mismatch]
+
+provenance:
+  required_runtime_keys:
+    - python
+    - pyscf
+    - gpu4pyscf
+    - cupy
+    - cutensor
+    - cuda_runtime_version
+    - cuda_driver_version
+    - cuda_device_name
+    - container_image_sha256
+    - python_lock_sha256
+  require_protocol_sha256: true
+  require_input_fingerprint_sha256: true
+  require_raw_checksum_sha256: true
+
+release_controls:
+  thresholds_status: pending_scientific_freeze
+  composition_baseline_required: true
+  state_registry_required_for_non_default: true
+  release_allowed: false

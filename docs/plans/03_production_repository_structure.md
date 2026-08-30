@@ -1,12 +1,13 @@
 # Part II準備: 本番リポジトリ構成設計
 
-- 文書状態: 設計提案（Gate 1のGO/Conditional GOで採用を確定する）
-- 基準日: 2026-08-22
+- 文書状態: 採用済み（Gate 1 Conditional GO、decision 0003）
+- 基準日: 2026-08-31
 - 位置づけ: [プロジェクト計画書](../project_plan.md)第7節と
   [Part II計画](02_uma_finetuning_implementation_plan.md)第5節の粗いレイアウトを、
   実装に着手できる粒度まで具体化する
 - 採用手続き: Gate 1判定時に本書を確定し、変更点があれば`docs/decisions/`へ
-  decision recordを残す。**Gate 1の結果に依存する部分はGate 1前に作成しない**。
+  decision recordを残す。本書はdecision 0003のConditional GOにより採用した。
+  **Gate 1の結果に依存する部分はGate 1前に作成しない**。
   Gate 1非依存の基盤（P2.0 core、P2.1 schemas）は
   [decisions/0001](../decisions/0001-start-part2-foundation-before-gate1.md)により
   前倒しで実装する

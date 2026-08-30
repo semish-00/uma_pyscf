@@ -16,11 +16,11 @@ Geometry optimization is outside the first validation phase.
 ## Layout
 
 ```text
-configs/                versioned calculation manifests
+configs/                versioned calculation manifests and GPU inventories
 structures/             small, versioned XYZ inputs
 suites/                 versioned case collections (29-case ladder, GPU smoke,
                         charge/spin mini matrix)
-jobs/                   PBS templates for ujilab CPU calculations
+jobs/                   PBS templates for ujilab and Slurm templates for SoftBank GPU
 setup/                  versioned installation and environment guidance
 tests/                  parser and validation tests without ORCA/PySCF
 runs/                   generated inputs and results; ignored by Git
@@ -30,6 +30,12 @@ run_suite.py            sequential non-PBS suite runner with attempt ledger
 submit_suite.py         PBS submission of a suite on ujilab
 generate_ladder_suite.py  deterministic 29-case ladder generator
 generate_charge_spin_mini_suite.py  deterministic charge/spin mini matrix
+generate_c3_matrix.py    deterministic one-axis C3 setting matrix
+analyze_c3_matrix.py     C3 setting error and speed aggregation
+generate_c3_relative_suite.py  density-fitting relative-energy sentinels
+analyze_c3_relative.py   relative-energy cancellation analysis
+generate_c4_density_fit_suite.py  conditional 29-case GPU candidate
+analyze_c4_candidate.py  C4 comparison with direct CPU/ORCA
 collect_environment.py  Workstream A1 host inventory (GPU/driver/CUDA/packages)
 gpu_smoke_check.py      Workstream A2 installation smoke test
 prepare_orca.py         deterministic ORCA input generator
@@ -91,10 +97,81 @@ python collect_environment.py   # writes configs/environments/gpu4pyscf-<host>.y
 python gpu_smoke_check.py --output runs/gpu_smoke_check.json
 ```
 
+The SoftBank A100/Slurm/Enroot deployment is documented in
+[`setup/softbank_gpu.md`](setup/softbank_gpu.md), including the pinned container,
+Python requirements, and the A1/A2 batch jobs.
+The verified host inventory is
+[`configs/environments/gpu4pyscf-fcdgx00081.yaml`](configs/environments/gpu4pyscf-fcdgx00081.yaml),
+and the fully resolved overlay is
+[`setup/requirements-gpu-cu122.lock.txt`](setup/requirements-gpu-cu122.lock.txt).
+
 `gpu_smoke_check.py` walks the stack in order — CuPy import, GPU visibility,
 kernel launch, PySCF/GPU4PySCF import, then a tiny ωB97M-V/def2-TZVPD RKS and
 UKS energy plus analytic gradient on the GPU — and stops at the first broken
 layer so driver/CUDA/CuPy/GPU4PySCF boundaries stay separable.
+
+After A1/A2/C0 passes, `jobs/run_gpu_c1_softbank_slurm.sh` executes the
+five-case `gpu_smoke_v1` suite sequentially and stops after the first failure.
+
+After C1, the C3 generator creates 20 one-axis variants over four sentinel
+cases and a separate four-case CPU–GPU density-fitting suite:
+
+```bash
+python generate_c3_matrix.py
+python run_suite.py suites/gpu_c3_settings_matrix_v1.json --device gpu --dry-run
+```
+
+On SoftBank, submit `jobs/run_gpu_c3_softbank_slurm.sh`. Analyze the completed
+GPU matrix against each direct baseline with:
+
+```bash
+python analyze_c3_matrix.py suites/gpu_c3_settings_matrix_v1.json \
+  --output analysis/c3/gpu_c3_settings_matrix_v1.json \
+  --csv-output analysis/c3/gpu_c3_settings_matrix_v1.csv
+```
+
+`suites/c3_density_fit_cpu_gpu_v1.json` is intentionally diagnostic. Run its
+CPU side through `jobs/run_pyscf_cpu_c3_pbs.sh`, then use `gate1_metrics.py` to
+separate GPU-port differences from the density-fitting approximation.
+
+After that check passes, `generate_c3_relative_suite.py` creates eight
+same-composition distortion cases for a CPU-only approximation check. It uses
+the corresponding direct CPU results and three density-fitting seed results as
+references. Generate and validate the suite with:
+
+```bash
+python generate_c3_relative_suite.py
+python run_suite.py suites/c3_density_fit_relative_v1.json --device cpu --dry-run
+```
+
+Submit each manifest through `jobs/run_pyscf_cpu_c3_pbs.sh`. Once all eight
+results are present, measure the error after the common composition-dependent
+energy shift cancels:
+
+```bash
+python analyze_c3_relative.py suites/c3_density_fit_relative_v1.json \
+  --output analysis/c3/c3_density_fit_relative_v1.json \
+  --csv-output analysis/c3/c3_density_fit_relative_v1.csv
+```
+
+If the C3 evidence supports density fitting, generate the conditional C4
+candidate without modifying the direct source manifests:
+
+```bash
+python generate_c4_density_fit_suite.py
+python run_suite.py suites/gpu_c4_density_fit_minao_ladder_v1.json --device gpu --dry-run
+```
+
+On SoftBank, submit `jobs/run_gpu_c4_softbank_slurm.sh`. After all 29 GPU
+results are copied into `runs/`, compare them with the existing direct CPU and
+ORCA results:
+
+```bash
+python analyze_c4_candidate.py suites/gpu_c4_density_fit_minao_ladder_v1.json \
+  --output analysis/c4/minao/gpu_c4_density_fit_minao_ladder_v1.json \
+  --csv-output analysis/c4/minao/gpu_c4_density_fit_minao_ladder_v1.csv \
+  --performance-csv-output analysis/c4/minao/gpu_c4_density_fit_minao_performance_v1.csv
+```
 
 Run a single manifest in a compatible CUDA environment:
 
@@ -108,6 +185,13 @@ The GPU runner intentionally starts from a normal PySCF DFT object and calls
 `to_gpu()`. Both the ordinary DFT grid and the separate VV10 nonlocal grid are
 set before conversion, and the runner refuses to continue if the conversion
 changed either grid level.
+
+The runner also generates the initial density on the CPU PySCF object before
+device conversion and passes that same matrix explicitly to both CPU and GPU
+SCF kernels. The default is MINAO and can be made explicit with
+`pyscf.init_guess: "minao"`. This prevents open-shell cases from selecting
+different SCF roots merely because each engine generated its own implicit
+initial guess.
 
 Suites run sequentially without PBS through `run_suite.py`. Each case runs in
 its own child process; results are written atomically on success only, and
@@ -140,6 +224,17 @@ python generate_charge_spin_mini_suite.py                                  # reg
 python run_suite.py suites/charge_spin_mini_v1.json --device gpu --dry-run
 python run_suite.py suites/charge_spin_mini_v1.json --device cpu
 python run_suite.py suites/charge_spin_mini_v1.json --device gpu
+```
+
+For the conditional density-fitting candidate, use
+`generate_charge_spin_density_fit_suite.py`. The explicit-MINAO suite is the
+final parity probe; the implicit suite is retained as the SCF-root diagnostic
+history:
+
+```bash
+python generate_charge_spin_density_fit_suite.py
+python run_suite.py suites/charge_spin_density_fit_minao_probe_v1.json \
+  --device gpu --dry-run
 ```
 
 ## ORCA

@@ -1,0 +1,120 @@
+{
+  "schema": "crosscode-suite-v1",
+  "suite_id": "c3_density_fit_relative_v1",
+  "description": "CPU PySCF density-fitting sentinel for relative-energy error. Each distorted structure is compared with a same-composition seed; the suite is diagnostic and does not freeze a production protocol.",
+  "selection_status": "diagnostic_not_production_frozen",
+  "case_count": 8,
+  "engine_jobs_per_case": [
+    "pyscf-cpu"
+  ],
+  "execution_policy": {
+    "sequential": false,
+    "stop_on_first_failure": false
+  },
+  "cases": [
+    {
+      "case_id": "sih4_bond1_x0p85_c3_density_fit",
+      "category": "c3_density_fit_relative",
+      "structure_case_id": "sih4_bond1_x0p85",
+      "reference_case_id": "sih4_td_seed",
+      "reference_density_fit_case_id": "sih4_td_seed_c3_density_fit",
+      "config": "configs/sih4_bond1_x0p85_c3_density_fit.json",
+      "resources": {
+        "ncpus": 8,
+        "memory_gb": 32,
+        "walltime": "06:00:00"
+      }
+    },
+    {
+      "case_id": "sih4_bond1_x1p30_c3_density_fit",
+      "category": "c3_density_fit_relative",
+      "structure_case_id": "sih4_bond1_x1p30",
+      "reference_case_id": "sih4_td_seed",
+      "reference_density_fit_case_id": "sih4_td_seed_c3_density_fit",
+      "config": "configs/sih4_bond1_x1p30_c3_density_fit.json",
+      "resources": {
+        "ncpus": 8,
+        "memory_gb": 32,
+        "walltime": "06:00:00"
+      }
+    },
+    {
+      "case_id": "sih4_random_sigma0p12_s20260814_c3_density_fit",
+      "category": "c3_density_fit_relative",
+      "structure_case_id": "sih4_random_sigma0p12_s20260814",
+      "reference_case_id": "sih4_td_seed",
+      "reference_density_fit_case_id": "sih4_td_seed_c3_density_fit",
+      "config": "configs/sih4_random_sigma0p12_s20260814_c3_density_fit.json",
+      "resources": {
+        "ncpus": 8,
+        "memory_gb": 32,
+        "walltime": "06:00:00"
+      }
+    },
+    {
+      "case_id": "sicl4_bond1_x0p85_c3_density_fit",
+      "category": "c3_density_fit_relative",
+      "structure_case_id": "sicl4_bond1_x0p85",
+      "reference_case_id": "sicl4_td_seed",
+      "reference_density_fit_case_id": "sicl4_td_seed_c3_density_fit",
+      "config": "configs/sicl4_bond1_x0p85_c3_density_fit.json",
+      "resources": {
+        "ncpus": 16,
+        "memory_gb": 64,
+        "walltime": "12:00:00"
+      }
+    },
+    {
+      "case_id": "sicl4_bond1_x1p30_c3_density_fit",
+      "category": "c3_density_fit_relative",
+      "structure_case_id": "sicl4_bond1_x1p30",
+      "reference_case_id": "sicl4_td_seed",
+      "reference_density_fit_case_id": "sicl4_td_seed_c3_density_fit",
+      "config": "configs/sicl4_bond1_x1p30_c3_density_fit.json",
+      "resources": {
+        "ncpus": 16,
+        "memory_gb": 64,
+        "walltime": "12:00:00"
+      }
+    },
+    {
+      "case_id": "sicl4_random_sigma0p12_s20261014_c3_density_fit",
+      "category": "c3_density_fit_relative",
+      "structure_case_id": "sicl4_random_sigma0p12_s20261014",
+      "reference_case_id": "sicl4_td_seed",
+      "reference_density_fit_case_id": "sicl4_td_seed_c3_density_fit",
+      "config": "configs/sicl4_random_sigma0p12_s20261014_c3_density_fit.json",
+      "resources": {
+        "ncpus": 16,
+        "memory_gb": 64,
+        "walltime": "12:00:00"
+      }
+    },
+    {
+      "case_id": "h3si_gecl3_random_sigma0p04_s20261213_c3_density_fit",
+      "category": "c3_density_fit_relative",
+      "structure_case_id": "h3si_gecl3_random_sigma0p04_s20261213",
+      "reference_case_id": "h3si_gecl3_staggered_seed",
+      "reference_density_fit_case_id": "h3si_gecl3_staggered_seed_c3_density_fit",
+      "config": "configs/h3si_gecl3_random_sigma0p04_s20261213_c3_density_fit.json",
+      "resources": {
+        "ncpus": 16,
+        "memory_gb": 64,
+        "walltime": "12:00:00"
+      }
+    },
+    {
+      "case_id": "h3si_gecl3_random_sigma0p12_s20261214_c3_density_fit",
+      "category": "c3_density_fit_relative",
+      "structure_case_id": "h3si_gecl3_random_sigma0p12_s20261214",
+      "reference_case_id": "h3si_gecl3_staggered_seed",
+      "reference_density_fit_case_id": "h3si_gecl3_staggered_seed_c3_density_fit",
+      "config": "configs/h3si_gecl3_random_sigma0p12_s20261214_c3_density_fit.json",
+      "resources": {
+        "ncpus": 16,
+        "memory_gb": 64,
+        "walltime": "12:00:00"
+      }
+    }
+  ]
+}

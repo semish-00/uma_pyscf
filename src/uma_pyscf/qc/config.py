@@ -31,6 +31,7 @@ from typing import Any
 
 import yaml
 
+from ..core.elements import atomic_number
 from ..core.errors import ValidationError
 from ..core.ids import validate_record_id
 from ..schemas._fields import (
@@ -40,14 +41,17 @@ from ..schemas._fields import (
     require_int,
     require_key,
     require_mapping,
+    require_sequence,
     require_str,
     validated_json_object,
 )
+from ..schemas.label_record import Method
 
 __all__ = [
     "ELECTRONIC_KEYS",
     "GEOMETRY_KEYS",
     "QC_CONFIG_SCHEMA_VERSION",
+    "PROTOCOL_KEYS",
     "flag",
     "load_qc_config",
     "non_negative_int",
@@ -80,6 +84,8 @@ _TOP_LEVEL_KEYS = (
     "created",
     "derived_from",
     "description",
+    "release_status",
+    "protocol",
     "electronic",
     "geometry",
 )
@@ -92,6 +98,107 @@ _ELECTRONIC_THRESHOLDS = (
     "gradient_norm_max_hartree_per_bohr",
 )
 _GEOMETRY_THRESHOLDS = ("covalent_factor", "bond_factor")
+
+PROTOCOL_KEYS: tuple[str, ...] = (
+    "protocol_id",
+    "protocol_sha256",
+    "engine_name",
+    "required_versions",
+    "required_runtime_keys",
+    "allowed_elements",
+    "max_atoms",
+    "method",
+    "allowed_density_fit",
+    "initial_density",
+    "initial_density_generated_on",
+    "require_raw_checksum_sha256",
+    "require_state_registry_for_non_default",
+    "approved_state_provenance_prefix",
+)
+_PROTOCOL_METHOD_KEYS = (
+    "functional",
+    "basis",
+    "ecp",
+    "aux_basis",
+    "grid_level",
+    "nlc_grid_level",
+    "grid_response",
+    "scf_conv_tol",
+    "scf_max_cycle",
+)
+_HEX_DIGITS = frozenset("0123456789abcdef")
+
+
+def _validate_protocol_section(value: object) -> None:
+    """Validate the optional production-protocol QC section."""
+    protocol = require_mapping(value, "config.protocol")
+    reject_unknown_keys(protocol, PROTOCOL_KEYS, "config.protocol")
+    for key in PROTOCOL_KEYS:
+        require_key(protocol, key, "config.protocol")
+    validate_record_id(require_str(protocol["protocol_id"], "config.protocol.protocol_id"))
+    digest = require_str(protocol["protocol_sha256"], "config.protocol.protocol_sha256")
+    if len(digest) != 64 or not set(digest.lower()) <= _HEX_DIGITS:
+        raise ValidationError("config.protocol.protocol_sha256 must be 64 hexadecimal characters.")
+    require_str(protocol["engine_name"], "config.protocol.engine_name")
+    versions = require_mapping(protocol["required_versions"], "config.protocol.required_versions")
+    if not versions:
+        raise ValidationError("config.protocol.required_versions must not be empty.")
+    for name, version in versions.items():
+        require_str(name, "config.protocol.required_versions key")
+        require_str(version, f"config.protocol.required_versions.{name}")
+    runtime_keys = require_sequence(
+        protocol["required_runtime_keys"], "config.protocol.required_runtime_keys"
+    )
+    if not runtime_keys:
+        raise ValidationError("config.protocol.required_runtime_keys must not be empty.")
+    checked_runtime_keys = [
+        require_str(value, f"config.protocol.required_runtime_keys[{index}]")
+        for index, value in enumerate(runtime_keys)
+    ]
+    if len(set(checked_runtime_keys)) != len(checked_runtime_keys):
+        raise ValidationError("config.protocol.required_runtime_keys must not repeat values.")
+    symbols = require_sequence(protocol["allowed_elements"], "config.protocol.allowed_elements")
+    if not symbols:
+        raise ValidationError("config.protocol.allowed_elements must not be empty.")
+    seen_symbols: set[str] = set()
+    for index, symbol in enumerate(symbols):
+        name = require_str(symbol, f"config.protocol.allowed_elements[{index}]")
+        atomic_number(name)
+        if name in seen_symbols:
+            raise ValidationError(f"config.protocol.allowed_elements repeats {name!r}.")
+        seen_symbols.add(name)
+    max_atoms = require_int(protocol["max_atoms"], "config.protocol.max_atoms")
+    if max_atoms < 1:
+        raise ValidationError("config.protocol.max_atoms must be at least 1.")
+    method = require_mapping(protocol["method"], "config.protocol.method")
+    reject_unknown_keys(method, _PROTOCOL_METHOD_KEYS, "config.protocol.method")
+    for key in _PROTOCOL_METHOD_KEYS:
+        require_key(method, key, "config.protocol.method")
+    # Reuse the canonical Method validation by adding the separately stated
+    # density-fitting value only for validation.
+    Method.from_dict(dict(method) | {"density_fit": True})
+    density_values = require_sequence(
+        protocol["allowed_density_fit"], "config.protocol.allowed_density_fit"
+    )
+    if not density_values:
+        raise ValidationError("config.protocol.allowed_density_fit must not be empty.")
+    checked_density = [
+        require_bool(value, f"config.protocol.allowed_density_fit[{index}]")
+        for index, value in enumerate(density_values)
+    ]
+    if len(set(checked_density)) != len(checked_density):
+        raise ValidationError("config.protocol.allowed_density_fit must not repeat values.")
+    require_str(protocol["initial_density"], "config.protocol.initial_density")
+    require_str(
+        protocol["initial_density_generated_on"],
+        "config.protocol.initial_density_generated_on",
+    )
+    for key in ("require_raw_checksum_sha256", "require_state_registry_for_non_default"):
+        require_bool(protocol[key], f"config.protocol.{key}")
+    require_str(
+        protocol["approved_state_provenance_prefix"],
+        "config.protocol.approved_state_provenance_prefix",
+    )
 
 
 def positive_threshold(section: Mapping[str, Any], key: str, path: str) -> float:
@@ -143,6 +250,14 @@ def validate_qc_config(data: Any) -> dict[str, Any]:
             f"config.schema_version must be {QC_CONFIG_SCHEMA_VERSION}; got {version}."
         )
     validate_record_id(require_str(config["qc_id"], "config.qc_id"))
+    if "release_status" in config:
+        require_str(config["release_status"], "config.release_status")
+    if "protocol" in config:
+        if "release_status" not in config:
+            raise ValidationError(
+                "config.release_status is required when config.protocol is present."
+            )
+        _validate_protocol_section(config["protocol"])
 
     electronic = require_mapping(config["electronic"], "config.electronic")
     reject_unknown_keys(electronic, ELECTRONIC_KEYS, "config.electronic")

@@ -4,10 +4,10 @@
 
 ## 現在地
 
-- 基準日: 2026-08-22
-- 現在のphase: **Part I — GPU4PySCF validation**
-- 次のGate: **Gate 1 — GPU4PySCFを教師label engineとして採用できるか**
-- 大量dataset生成・UMA fine-tuning: Gate 1まで保留
+- 基準日: 2026-08-31
+- 現在のphase: **Part II — P2.3 GPU4PySCF label pipeline engineering smoke**
+- 次のGate: **Gate 2 — pilot dataset品質**
+- dataset release・UMA fine-tuning: 科学閾値、composition baseline、state registryまで保留
 
 ## Roadmap
 
@@ -16,16 +16,17 @@
 | 実現性調査 | 完了 | — |
 | ORCA/Ujilab計算基盤 | 完了 | — |
 | CPU PySCF–ORCA検証 | 完了 | — |
-| GPU環境固定 | 未着手 | GPU/driver/CUDA/package inventory |
-| 5-case GPU smoke | 未着手 | H2、SiH4、SiCl4、SiH3、混合分子 |
-| 29-case三者比較 | 未着手 | CPU–GPUを優先して評価 |
-| Production DFT protocol | 未着手 | grid/density fitting収束 |
-| Gate 1 | 未着手 | GO / Conditional GO / NO-GO |
-| Package基盤（Gate 1非依存部分） | P2.0–P2.2、QC・split機構完了 | Gate 1結果待ち（decisions/0001, 0002） |
-| Dataset/QC実装 | Gate 1後 | label pipeline MVP |
-| 1,000–5,000構造pilot | Gate 1後 | H/Si/Ge/Cl、charge/spin |
-| UMA fine-tuning | Gate 1後 | base評価→overfit smoke→pilot |
-| 科学的・retention評価 | Gate 1後 | relative energy、forces、forgetting |
+| GPU環境固定 | 完了 | A1/A2/C0完了。固定container、lock、inventoryを保存済み |
+| 5-case GPU smoke | 完了 | 5/5初回成功、暫定CPU–GPU数値gate通過 |
+| 29-case三者比較 | 完了 | density-fitting + explicit MINAO候補29/29初回成功、CPU direct比20.96x |
+| Production DFT protocol | v1固定 | density fitting + explicit MINAO、direct fallback、scope/QC ruleをconfig化 |
+| Gate 1 | Conditional GO採択 | decision 0003。release条件はoffset、科学閾値、state registry |
+| Package基盤 | P2.0–P2.2、P2.4、P2.6完了 | 577 unit test、schema/QC/split実装済み |
+| P2.3 label pipeline | MVP実装・GPU smoke待ち | sample→label→QCをSoftBank Slurmで1件実行 |
+| 50–200構造engineering set | P2.3 smoke後 | 中断・resume、failure率、memory tierを確認 |
+| 1,000–5,000構造pilot | release条件のreview後 | H/Si/Ge/Cl、8原子以内から開始 |
+| UMA fine-tuning | Gate 2後 | base評価→overfit smoke→pilot |
+| 科学的・retention評価 | Gate 2後 | relative energy、forces、forgetting |
 | Active learning / cluster拡張 | 後続 | fixed holdoutの改善で判断 |
 
 ## 詳細計画

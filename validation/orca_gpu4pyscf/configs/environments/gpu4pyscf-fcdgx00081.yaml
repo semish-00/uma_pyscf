@@ -1,0 +1,43 @@
+schema: "gpu4pyscf-environment-v1"
+collected_utc: "2026-08-30T09:15:26.063399+00:00"
+host: "fcdgx00081"
+os:
+  pretty_name: "Ubuntu 22.04.3 LTS"
+  kernel: "5.15.0-1053-nvidia"
+  machine: "x86_64"
+cpu:
+  model: "AMD EPYC 7742 64-Core Processor"
+  logical_cores: 256
+ram_gb: 2015.66
+python:
+  version: "3.10.12"
+  executable: "/usr/bin/python3"
+packages:
+  pyscf:
+    distribution: "pyscf"
+    version: "2.14.0"
+  gpu4pyscf:
+    distribution: "gpu4pyscf-cuda12x"
+    version: "1.8.1"
+  cupy:
+    distribution: "cupy-cuda12x"
+    version: "13.4.1"
+  cutensor:
+    distribution: "cutensor-cu12"
+    version: "2.2.0"
+  geometric:
+    distribution: "geometric"
+    version: "1.1"
+nvidia_driver: "535.161.08"
+cuda:
+  runtime_version: 12080
+gpus:
+  - index: 0
+    name: "NVIDIA A100-SXM4-80GB"
+    memory_total_mib: 81050
+    compute_capability: "8.0"
+libxc: "7.0.0"
+environment_variables:
+  CUDA_VISIBLE_DEVICES: "0"
+  CUPY_ACCELERATORS: "cutensor"
+collection_errors: null

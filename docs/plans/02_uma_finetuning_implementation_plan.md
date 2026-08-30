@@ -1,8 +1,8 @@
 # Part II: UMAファインチューニング実装計画
 
-- 文書状態: Gate 1後に開始する実装計画
-- 基準日: 2026-08-22
-- 開始条件: GPU4PySCF Gate 1がGOまたはConditional GO
+- 文書状態: 実行中（Gate 1 Conditional GO採択済み）
+- 基準日: 2026-08-31
+- 開始条件: GPU4PySCF Gate 1がGOまたはConditional GO（2026-08-31に充足）
   （Gate 1非依存のP2.0/P2.1基盤のみ
   [decisions/0001](../decisions/0001-start-part2-foundation-before-gate1.md)で前倒し）
 - 初期対象: H/Si/Ge/Clの非周期分子、charge/spin条件付き`omol` fine-tuning
@@ -28,7 +28,7 @@ UMA fine-tuning、科学的評価までを再現可能なpipelineとして実装
 - 主要分子: SiHx、GeHx、SiClx、GeClx、Si–Ge–H–Cl混合
 - state: neutral/cation/anion、singlet/doubletを中心に科学的に妥当なmultiplicity
 - geometry: minimum近傍、結合scan、角度変形、解離方向、反応候補、分子間配置
-- 規模: 最初はおおむね2–30原子、安定後に有限surface clusterへ拡張
+- 規模: Gate 1で検証済みの最大8原子。8原子超と有限surface clusterは別gateで拡張
 
 ### 初期dataset規模
 
@@ -433,15 +433,16 @@ loop:
 
 ## 19. 実装順序チェックリスト
 
-- [ ] Gate 1の採用protocolを本計画へ反映
-- [ ] package/config/schema scaffold
-- [ ] canonical recordとunit/spin test
-- [ ] deterministic structure generation
-- [ ] GPU4PySCF batch label MVP
-- [ ] QC/retry/provenance
+- [x] Gate 1の採用protocolを本計画へ反映
+- [x] package/config/schema scaffold
+- [x] canonical recordとunit/spin test
+- [x] deterministic structure generation
+- [x] GPU4PySCF batch label MVP（unit test・local dry-run）
+- [x] QC/retry/provenance（engineering QC、releaseはfail closed）
+- [ ] SoftBank GPU sample→label→QC integration smoke
 - [ ] 50–200構造engineering dataset
 - [ ] ASE/fairchem変換とload-back test
-- [ ] split generatorとleakage test
+- [x] split generatorとleakage test
 - [ ] base UMA evaluation
 - [ ] overfit smoke
 - [ ] 1,000–5,000構造pilot

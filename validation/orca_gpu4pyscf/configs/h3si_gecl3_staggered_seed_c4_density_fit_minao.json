@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "case_id": "h3si_gecl3_staggered_seed_c4_density_fit_minao",
+  "structure": "../structures/h3si_gecl3_staggered_seed.xyz",
+  "charge": 0,
+  "multiplicity": 1,
+  "calculation": "energy_gradient",
+  "method": {
+    "functional": "wb97m-v",
+    "basis": "def2-tzvpd"
+  },
+  "scf": {
+    "conv_tol": 1e-10,
+    "max_cycle": 250
+  },
+  "pyscf": {
+    "verbose": 3,
+    "grid_level": 5,
+    "nlc_grid_level": 5,
+    "grid_response": true,
+    "density_fit": true,
+    "max_memory_mb": 48000,
+    "init_guess": "minao"
+  },
+  "orca": {
+    "version": "6.0.0",
+    "nprocs": 16,
+    "maxcore_mb_per_process": 3000,
+    "keywords": [
+      "VeryTightSCF",
+      "DEFGRID3",
+      "SCNL",
+      "NORI",
+      "NOCOSX",
+      "NoAutoStart"
+    ]
+  },
+  "tolerances": {
+    "energy_abs_hartree": 5e-05,
+    "gradient_rms_hartree_per_bohr": 0.0002,
+    "gradient_max_hartree_per_bohr": 0.0005
+  },
+  "tolerance_status": "provisional_not_scientifically_frozen"
+}

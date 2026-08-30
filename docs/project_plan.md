@@ -1,10 +1,10 @@
 # UMA × GPU4PySCF プロジェクト計画書
 
-- 文書状態: 初版
-- 基準日: 2026-08-22
+- 文書状態: Gate 1 Conditional GO反映版
+- 基準日: 2026-08-31
 - 対象リポジトリ: `uma_pyscf`
-- 現在地: CPU PySCF–ORCA検証完了、GPU4PySCF検証着手前
-- 現在の判断: **GPU4PySCF検証へGO。大量ラベル生成とUMA学習はGate 1通過まで保留**
+- 現在地: Gate 1検証完了、Part II P2.3 label pipeline engineering smoke
+- 現在の判断: **GPU4PySCFを条件付き採用。release条件を保ったまま小規模実装検証へ進む**
 
 ## 1. 目的
 
@@ -79,10 +79,10 @@ Part IIは設計計画として先に固定するが、実装開始条件はGate
 | M0 | 実現性調査とscope定義 | 完了 | feasibility note |
 | M1 | ORCA環境とCPUクロスコード基盤 | 完了 | ORCA/PBS/runner |
 | M2 | CPU PySCF–ORCA chemical ladder | 完了 | 36構造、全件PASS |
-| M3 | GPU環境固定とsmoke test | 未着手 | environment manifest |
-| M4 | CPU–GPU–ORCA三者比較 | 未着手 | Gate 1 report |
-| M5 | production label protocol固定 | Gate 1内 | versioned DFT config |
-| M6 | dataset生成・QC基盤 | Gate 1後 | dataset MVP |
+| M3 | GPU環境固定とsmoke test | 完了 | environment manifest |
+| M4 | CPU–GPU–ORCA三者比較 | 完了 | Gate 1 report |
+| M5 | production label protocol固定 | 完了 | Conditional GO DFT/QC config v1 |
+| M6 | dataset生成・QC基盤 | 実行中 | P2.3 label pipeline MVP、GPU engineering smoke |
 | M7 | 1,000–5,000構造pilot dataset | Gate 1後 | versioned manifest |
 | M8 | UMA-S fine-tuning pilot | Gate 1後 | checkpoint + training record |
 | M9 | 科学的評価・forgetting評価 | Gate 1後 | evaluation report |
@@ -201,13 +201,13 @@ Gate判定時には、日付、対象commit、計算環境、入力suite、metri
 
 ## 9. 直近の次アクション
 
-1. GPU機のOS、GPU、driver、CUDA、Python環境をinventory化する。
-2. PySCF/GPU4PySCF/CuPy/cuTENSORの互換versionを固定する。
-3. H2、SiH4、SiCl4、中性二重項、混合分子でsmoke testを行う。
-4. 既存29構造suiteをGPU4PySCFで計算する。
-5. CPU–GPU–ORCAのparity/RMSEと性能をまとめ、Gate 1を判定する。
+1. P2.3 sample→label→QCの1構造engineering smokeをSoftBank Slurmで完了する。
+2. 50–200構造engineering setでresume、failure ledger、resource tierを検証する。
+3. composition baselineとproduction QC閾値を科学reviewする。
+4. non-default charge/spinのstate registryを作成・承認する。
+5. release条件を満たしてから1,000–5,000構造pilotとGate 2へ進む。
 
-詳細は[Part I](plans/01_gpu4pyscf_validation_plan.md)に従う。
+詳細は[Part II](plans/02_uma_finetuning_implementation_plan.md)に従う。
 
 ## 10. 関連文書
 

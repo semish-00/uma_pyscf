@@ -7,7 +7,7 @@ name = "uma-pyscf"
 version = "0.1.0.dev0"
 description = "Reproducible UMA fine-tuning on GPU4PySCF wB97M-V/def2-TZVPD labels for H/Si/Ge/Cl gas-phase molecules."
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.10"
 # Beyond the config parser the core library is standard library only by design.
 # Scientific dependencies (pyscf, gpu4pyscf, ase, fairchem) belong to the
 # modules that need them and are declared when those modules are added.
@@ -32,7 +32,7 @@ uma_pyscf = ["py.typed"]
 
 [tool.ruff]
 line-length = 99
-target-version = "py311"
+target-version = "py310"
 src = ["src", "tests"]
 
 [tool.ruff.lint]
@@ -44,7 +44,7 @@ select = ["E", "F", "I", "B", "UP"]
 force-sort-within-sections = true
 
 [tool.mypy]
-python_version = "3.11"
+python_version = "3.10"
 files = ["src"]
 disallow_untyped_defs = true
 disallow_incomplete_defs = true

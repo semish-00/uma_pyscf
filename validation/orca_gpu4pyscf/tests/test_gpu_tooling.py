@@ -12,7 +12,7 @@ from unittest import mock
 
 from collect_environment import collect, default_output, emit_yaml
 from common import case_record, load_case, write_json
-from gpu_smoke_check import CHECKS, run_checks
+from gpu_smoke_check import CHECKS, MATMUL_TRACE_EXPECTED, run_checks
 import run_suite
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -222,6 +222,9 @@ class CollectEnvironmentTests(unittest.TestCase):
 
 
 class GpuSmokeCheckTests(unittest.TestCase):
+    def test_matmul_trace_reference(self) -> None:
+        self.assertEqual(MATMUL_TRACE_EXPECTED, 1060.0)
+
     def test_report_structure_and_fail_fast(self) -> None:
         report = run_checks(device_id=0, grid_level=1, nlc_grid_level=1)
         self.assertEqual(

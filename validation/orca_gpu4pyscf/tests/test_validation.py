@@ -1,16 +1,18 @@
 from __future__ import annotations
 
 import copy
+from importlib import metadata
 import json
 from pathlib import Path
 import tempfile
 import unittest
+from unittest.mock import patch
 
 from common import RESULT_SCHEMA, case_record, load_case, multiplicity_to_pyscf_spin
 from compare import compare_results
 from parse_orca import normalized_result, parse_engrad
 from prepare_orca import render_orca_input
-from run_pyscf import build_plan
+from run_pyscf import build_plan, package_version
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -70,6 +72,18 @@ class GenerationTests(unittest.TestCase):
         self.assertTrue(plan["dry_run"])
         self.assertEqual(plan["settings"]["grid_level"], 5)
         self.assertEqual(plan["settings"]["nlc_grid_level"], 5)
+
+    def test_package_version_tries_distribution_aliases(self) -> None:
+        def fake_version(name: str) -> str:
+            if name == "gpu4pyscf-cuda12x":
+                return "1.8.1"
+            raise metadata.PackageNotFoundError(name)
+
+        with patch("run_pyscf.metadata.version", side_effect=fake_version):
+            self.assertEqual(
+                package_version("gpu4pyscf", "gpu4pyscf-cuda12x"),
+                "1.8.1",
+            )
 
 
 class ParserAndComparisonTests(unittest.TestCase):

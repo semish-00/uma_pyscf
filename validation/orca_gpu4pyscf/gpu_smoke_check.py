@@ -29,6 +29,14 @@ from common import write_json
 SCHEMA = "gpu-smoke-check-v1"
 FUNCTIONAL = "wb97m-v"
 BASIS = "def2-tzvpd"
+MATRIX_SIZE = 4
+MATMUL_TRACE_EXPECTED = float(
+    sum(
+        (MATRIX_SIZE * row + column) * (MATRIX_SIZE * column + row)
+        for row in range(MATRIX_SIZE)
+        for column in range(MATRIX_SIZE)
+    )
+)
 
 
 def check_cupy_import(state: dict[str, Any]) -> dict[str, Any]:
@@ -62,11 +70,14 @@ def check_gpu_visible(state: dict[str, Any]) -> dict[str, Any]:
 
 def check_cupy_kernel(state: dict[str, Any]) -> dict[str, Any]:
     cupy = state["cupy"]
-    matrix = cupy.arange(16.0, dtype=cupy.float64).reshape(4, 4)
+    matrix = cupy.arange(MATRIX_SIZE**2, dtype=cupy.float64).reshape(
+        MATRIX_SIZE, MATRIX_SIZE
+    )
     trace = float(cupy.trace(matrix @ matrix).get())
-    expected = 1240.0
-    if abs(trace - expected) > 1e-9:
-        raise RuntimeError(f"GPU matmul trace {trace} != {expected}.")
+    if abs(trace - MATMUL_TRACE_EXPECTED) > 1e-9:
+        raise RuntimeError(
+            f"GPU matmul trace {trace} != {MATMUL_TRACE_EXPECTED}."
+        )
     return {"matmul_trace": trace}
 
 

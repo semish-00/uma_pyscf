@@ -64,6 +64,7 @@ from .geometry import (
     geometry_checks,
     state_qualified_key,
 )
+from .protocol import PROTOCOL_CHECK_NAMES, protocol_checks
 from .run import QC_EVENT, apply_qc, composition_formula
 
 __all__ = [
@@ -73,6 +74,7 @@ __all__ = [
     "GEOMETRY_KEYS",
     "QC_CONFIG_SCHEMA_VERSION",
     "QC_EVENT",
+    "PROTOCOL_CHECK_NAMES",
     "apply_qc",
     "check_converged",
     "check_duplicate",
@@ -90,6 +92,7 @@ __all__ = [
     "gradient_norm",
     "load_qc_config",
     "load_records",
+    "protocol_checks",
     "resolve_record_paths",
     "run_qc",
     "state_qualified_key",

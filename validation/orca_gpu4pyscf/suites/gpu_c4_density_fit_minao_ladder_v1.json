@@ -1,0 +1,346 @@
+{
+  "schema": "crosscode-suite-v1",
+  "suite_id": "gpu_c4_density_fit_minao_ladder_v1",
+  "description": "C4 full 29-case GPU ladder for the conditional density-fitting candidate with an explicit shared MINAO initial density. Grid 5, VV10 grid 5, and all scientific inputs remain unchanged. Direct SCF remains the fallback protocol.",
+  "selection_status": "conditional_candidate_not_production_frozen",
+  "source_suite_id": "si_ge_h_cl_ladder_v1",
+  "candidate_change": {
+    "density_fit": {
+      "from": false,
+      "to": true
+    },
+    "init_guess": {
+      "from": "implicit_default",
+      "to": "explicit_minao"
+    }
+  },
+  "case_count": 29,
+  "engine_jobs_per_case": [
+    "gpu4pyscf"
+  ],
+  "execution_policy": {
+    "sequential": true,
+    "stop_on_first_failure": false
+  },
+  "cases": [
+    {
+      "case_id": "sih4_bond1_x0p85_c4_density_fit_minao",
+      "category": "gpu_c4_density_fit",
+      "base_case_id": "sih4_bond1_x0p85",
+      "config": "configs/sih4_bond1_x0p85_c4_density_fit_minao.json",
+      "resources": {
+        "ncpus": 8,
+        "memory_gb": 32,
+        "walltime": "06:00:00"
+      }
+    },
+    {
+      "case_id": "sih4_bond1_x1p15_c4_density_fit_minao",
+      "category": "gpu_c4_density_fit",
+      "base_case_id": "sih4_bond1_x1p15",
+      "config": "configs/sih4_bond1_x1p15_c4_density_fit_minao.json",
+      "resources": {
+        "ncpus": 8,
+        "memory_gb": 32,
+        "walltime": "06:00:00"
+      }
+    },
+    {
+      "case_id": "sih4_bond1_x1p30_c4_density_fit_minao",
+      "category": "gpu_c4_density_fit",
+      "base_case_id": "sih4_bond1_x1p30",
+      "config": "configs/sih4_bond1_x1p30_c4_density_fit_minao.json",
+      "resources": {
+        "ncpus": 8,
+        "memory_gb": 32,
+        "walltime": "06:00:00"
+      }
+    },
+    {
+      "case_id": "geh4_bond1_x0p85_c4_density_fit_minao",
+      "category": "gpu_c4_density_fit",
+      "base_case_id": "geh4_bond1_x0p85",
+      "config": "configs/geh4_bond1_x0p85_c4_density_fit_minao.json",
+      "resources": {
+        "ncpus": 8,
+        "memory_gb": 32,
+        "walltime": "06:00:00"
+      }
+    },
+    {
+      "case_id": "geh4_bond1_x1p15_c4_density_fit_minao",
+      "category": "gpu_c4_density_fit",
+      "base_case_id": "geh4_bond1_x1p15",
+      "config": "configs/geh4_bond1_x1p15_c4_density_fit_minao.json",
+      "resources": {
+        "ncpus": 8,
+        "memory_gb": 32,
+        "walltime": "06:00:00"
+      }
+    },
+    {
+      "case_id": "geh4_bond1_x1p30_c4_density_fit_minao",
+      "category": "gpu_c4_density_fit",
+      "base_case_id": "geh4_bond1_x1p30",
+      "config": "configs/geh4_bond1_x1p30_c4_density_fit_minao.json",
+      "resources": {
+        "ncpus": 8,
+        "memory_gb": 32,
+        "walltime": "06:00:00"
+      }
+    },
+    {
+      "case_id": "sicl4_bond1_x0p85_c4_density_fit_minao",
+      "category": "gpu_c4_density_fit",
+      "base_case_id": "sicl4_bond1_x0p85",
+      "config": "configs/sicl4_bond1_x0p85_c4_density_fit_minao.json",
+      "resources": {
+        "ncpus": 16,
+        "memory_gb": 64,
+        "walltime": "12:00:00"
+      }
+    },
+    {
+      "case_id": "sicl4_bond1_x1p15_c4_density_fit_minao",
+      "category": "gpu_c4_density_fit",
+      "base_case_id": "sicl4_bond1_x1p15",
+      "config": "configs/sicl4_bond1_x1p15_c4_density_fit_minao.json",
+      "resources": {
+        "ncpus": 16,
+        "memory_gb": 64,
+        "walltime": "12:00:00"
+      }
+    },
+    {
+      "case_id": "sicl4_bond1_x1p30_c4_density_fit_minao",
+      "category": "gpu_c4_density_fit",
+      "base_case_id": "sicl4_bond1_x1p30",
+      "config": "configs/sicl4_bond1_x1p30_c4_density_fit_minao.json",
+      "resources": {
+        "ncpus": 16,
+        "memory_gb": 64,
+        "walltime": "12:00:00"
+      }
+    },
+    {
+      "case_id": "gecl4_bond1_x0p85_c4_density_fit_minao",
+      "category": "gpu_c4_density_fit",
+      "base_case_id": "gecl4_bond1_x0p85",
+      "config": "configs/gecl4_bond1_x0p85_c4_density_fit_minao.json",
+      "resources": {
+        "ncpus": 16,
+        "memory_gb": 64,
+        "walltime": "12:00:00"
+      }
+    },
+    {
+      "case_id": "gecl4_bond1_x1p15_c4_density_fit_minao",
+      "category": "gpu_c4_density_fit",
+      "base_case_id": "gecl4_bond1_x1p15",
+      "config": "configs/gecl4_bond1_x1p15_c4_density_fit_minao.json",
+      "resources": {
+        "ncpus": 16,
+        "memory_gb": 64,
+        "walltime": "12:00:00"
+      }
+    },
+    {
+      "case_id": "gecl4_bond1_x1p30_c4_density_fit_minao",
+      "category": "gpu_c4_density_fit",
+      "base_case_id": "gecl4_bond1_x1p30",
+      "config": "configs/gecl4_bond1_x1p30_c4_density_fit_minao.json",
+      "resources": {
+        "ncpus": 16,
+        "memory_gb": 64,
+        "walltime": "12:00:00"
+      }
+    },
+    {
+      "case_id": "sih3_doublet_planar_seed_c4_density_fit_minao",
+      "category": "gpu_c4_density_fit",
+      "base_case_id": "sih3_doublet_planar_seed",
+      "config": "configs/sih3_doublet_planar_seed_c4_density_fit_minao.json",
+      "resources": {
+        "ncpus": 8,
+        "memory_gb": 32,
+        "walltime": "06:00:00"
+      }
+    },
+    {
+      "case_id": "geh3_doublet_planar_seed_c4_density_fit_minao",
+      "category": "gpu_c4_density_fit",
+      "base_case_id": "geh3_doublet_planar_seed",
+      "config": "configs/geh3_doublet_planar_seed_c4_density_fit_minao.json",
+      "resources": {
+        "ncpus": 8,
+        "memory_gb": 32,
+        "walltime": "06:00:00"
+      }
+    },
+    {
+      "case_id": "sicl3_doublet_planar_seed_c4_density_fit_minao",
+      "category": "gpu_c4_density_fit",
+      "base_case_id": "sicl3_doublet_planar_seed",
+      "config": "configs/sicl3_doublet_planar_seed_c4_density_fit_minao.json",
+      "resources": {
+        "ncpus": 16,
+        "memory_gb": 64,
+        "walltime": "12:00:00"
+      }
+    },
+    {
+      "case_id": "gecl3_doublet_planar_seed_c4_density_fit_minao",
+      "category": "gpu_c4_density_fit",
+      "base_case_id": "gecl3_doublet_planar_seed",
+      "config": "configs/gecl3_doublet_planar_seed_c4_density_fit_minao.json",
+      "resources": {
+        "ncpus": 16,
+        "memory_gb": 64,
+        "walltime": "12:00:00"
+      }
+    },
+    {
+      "case_id": "h3si_geh3_staggered_seed_c4_density_fit_minao",
+      "category": "gpu_c4_density_fit",
+      "base_case_id": "h3si_geh3_staggered_seed",
+      "config": "configs/h3si_geh3_staggered_seed_c4_density_fit_minao.json",
+      "resources": {
+        "ncpus": 16,
+        "memory_gb": 64,
+        "walltime": "12:00:00"
+      }
+    },
+    {
+      "case_id": "h3si_gecl3_staggered_seed_c4_density_fit_minao",
+      "category": "gpu_c4_density_fit",
+      "base_case_id": "h3si_gecl3_staggered_seed",
+      "config": "configs/h3si_gecl3_staggered_seed_c4_density_fit_minao.json",
+      "resources": {
+        "ncpus": 16,
+        "memory_gb": 64,
+        "walltime": "12:00:00"
+      }
+    },
+    {
+      "case_id": "cl3si_geh3_staggered_seed_c4_density_fit_minao",
+      "category": "gpu_c4_density_fit",
+      "base_case_id": "cl3si_geh3_staggered_seed",
+      "config": "configs/cl3si_geh3_staggered_seed_c4_density_fit_minao.json",
+      "resources": {
+        "ncpus": 16,
+        "memory_gb": 64,
+        "walltime": "12:00:00"
+      }
+    },
+    {
+      "case_id": "sih4_random_sigma0p04_s20260813_c4_density_fit_minao",
+      "category": "gpu_c4_density_fit",
+      "base_case_id": "sih4_random_sigma0p04_s20260813",
+      "config": "configs/sih4_random_sigma0p04_s20260813_c4_density_fit_minao.json",
+      "resources": {
+        "ncpus": 8,
+        "memory_gb": 32,
+        "walltime": "06:00:00"
+      }
+    },
+    {
+      "case_id": "sih4_random_sigma0p12_s20260814_c4_density_fit_minao",
+      "category": "gpu_c4_density_fit",
+      "base_case_id": "sih4_random_sigma0p12_s20260814",
+      "config": "configs/sih4_random_sigma0p12_s20260814_c4_density_fit_minao.json",
+      "resources": {
+        "ncpus": 8,
+        "memory_gb": 32,
+        "walltime": "06:00:00"
+      }
+    },
+    {
+      "case_id": "geh4_random_sigma0p04_s20260913_c4_density_fit_minao",
+      "category": "gpu_c4_density_fit",
+      "base_case_id": "geh4_random_sigma0p04_s20260913",
+      "config": "configs/geh4_random_sigma0p04_s20260913_c4_density_fit_minao.json",
+      "resources": {
+        "ncpus": 8,
+        "memory_gb": 32,
+        "walltime": "06:00:00"
+      }
+    },
+    {
+      "case_id": "geh4_random_sigma0p12_s20260914_c4_density_fit_minao",
+      "category": "gpu_c4_density_fit",
+      "base_case_id": "geh4_random_sigma0p12_s20260914",
+      "config": "configs/geh4_random_sigma0p12_s20260914_c4_density_fit_minao.json",
+      "resources": {
+        "ncpus": 8,
+        "memory_gb": 32,
+        "walltime": "06:00:00"
+      }
+    },
+    {
+      "case_id": "sicl4_random_sigma0p04_s20261013_c4_density_fit_minao",
+      "category": "gpu_c4_density_fit",
+      "base_case_id": "sicl4_random_sigma0p04_s20261013",
+      "config": "configs/sicl4_random_sigma0p04_s20261013_c4_density_fit_minao.json",
+      "resources": {
+        "ncpus": 16,
+        "memory_gb": 64,
+        "walltime": "12:00:00"
+      }
+    },
+    {
+      "case_id": "sicl4_random_sigma0p12_s20261014_c4_density_fit_minao",
+      "category": "gpu_c4_density_fit",
+      "base_case_id": "sicl4_random_sigma0p12_s20261014",
+      "config": "configs/sicl4_random_sigma0p12_s20261014_c4_density_fit_minao.json",
+      "resources": {
+        "ncpus": 16,
+        "memory_gb": 64,
+        "walltime": "12:00:00"
+      }
+    },
+    {
+      "case_id": "gecl4_random_sigma0p04_s20261113_c4_density_fit_minao",
+      "category": "gpu_c4_density_fit",
+      "base_case_id": "gecl4_random_sigma0p04_s20261113",
+      "config": "configs/gecl4_random_sigma0p04_s20261113_c4_density_fit_minao.json",
+      "resources": {
+        "ncpus": 16,
+        "memory_gb": 64,
+        "walltime": "12:00:00"
+      }
+    },
+    {
+      "case_id": "gecl4_random_sigma0p12_s20261114_c4_density_fit_minao",
+      "category": "gpu_c4_density_fit",
+      "base_case_id": "gecl4_random_sigma0p12_s20261114",
+      "config": "configs/gecl4_random_sigma0p12_s20261114_c4_density_fit_minao.json",
+      "resources": {
+        "ncpus": 16,
+        "memory_gb": 64,
+        "walltime": "12:00:00"
+      }
+    },
+    {
+      "case_id": "h3si_gecl3_random_sigma0p04_s20261213_c4_density_fit_minao",
+      "category": "gpu_c4_density_fit",
+      "base_case_id": "h3si_gecl3_random_sigma0p04_s20261213",
+      "config": "configs/h3si_gecl3_random_sigma0p04_s20261213_c4_density_fit_minao.json",
+      "resources": {
+        "ncpus": 16,
+        "memory_gb": 64,
+        "walltime": "12:00:00"
+      }
+    },
+    {
+      "case_id": "h3si_gecl3_random_sigma0p12_s20261214_c4_density_fit_minao",
+      "category": "gpu_c4_density_fit",
+      "base_case_id": "h3si_gecl3_random_sigma0p12_s20261214",
+      "config": "configs/h3si_gecl3_random_sigma0p12_s20261214_c4_density_fit_minao.json",
+      "resources": {
+        "ncpus": 16,
+        "memory_gb": 64,
+        "walltime": "12:00:00"
+      }
+    }
+  ]
+}

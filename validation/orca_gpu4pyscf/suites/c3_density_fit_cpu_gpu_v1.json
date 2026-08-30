@@ -1,0 +1,82 @@
+{
+  "schema": "crosscode-suite-v1",
+  "suite_id": "c3_density_fit_cpu_gpu_v1",
+  "description": "CPU-GPU C3 candidate check for density fitting on four sentinel molecules. This separates the density-fitting approximation from GPU-port numerical differences; it does not freeze density fitting as the production protocol.",
+  "selection_status": "diagnostic_not_production_frozen",
+  "baseline_settings": {
+    "grid_level": 5,
+    "nlc_grid_level": 5,
+    "density_fit": false
+  },
+  "case_count": 4,
+  "engine_jobs_per_case": [
+    "pyscf-cpu",
+    "gpu4pyscf"
+  ],
+  "execution_policy": {
+    "sequential": false,
+    "stop_on_first_failure": false
+  },
+  "cases": [
+    {
+      "case_id": "sih4_td_seed_c3_density_fit",
+      "category": "gpu_c3_settings",
+      "base_case_id": "sih4_td_seed",
+      "axis": "density_fitting",
+      "setting_key": "density_fit",
+      "baseline_value": false,
+      "candidate_value": true,
+      "config": "configs/sih4_td_seed_c3_density_fit.json",
+      "resources": {
+        "ncpus": 8,
+        "memory_gb": 32,
+        "walltime": "06:00:00"
+      }
+    },
+    {
+      "case_id": "sicl4_td_seed_c3_density_fit",
+      "category": "gpu_c3_settings",
+      "base_case_id": "sicl4_td_seed",
+      "axis": "density_fitting",
+      "setting_key": "density_fit",
+      "baseline_value": false,
+      "candidate_value": true,
+      "config": "configs/sicl4_td_seed_c3_density_fit.json",
+      "resources": {
+        "ncpus": 16,
+        "memory_gb": 64,
+        "walltime": "12:00:00"
+      }
+    },
+    {
+      "case_id": "sih3_doublet_planar_seed_c3_density_fit",
+      "category": "gpu_c3_settings",
+      "base_case_id": "sih3_doublet_planar_seed",
+      "axis": "density_fitting",
+      "setting_key": "density_fit",
+      "baseline_value": false,
+      "candidate_value": true,
+      "config": "configs/sih3_doublet_planar_seed_c3_density_fit.json",
+      "resources": {
+        "ncpus": 8,
+        "memory_gb": 32,
+        "walltime": "06:00:00"
+      }
+    },
+    {
+      "case_id": "h3si_gecl3_staggered_seed_c3_density_fit",
+      "category": "gpu_c3_settings",
+      "base_case_id": "h3si_gecl3_staggered_seed",
+      "axis": "density_fitting",
+      "setting_key": "density_fit",
+      "baseline_value": false,
+      "candidate_value": true,
+      "config": "configs/h3si_gecl3_staggered_seed_c3_density_fit.json",
+      "resources": {
+        "ncpus": 16,
+        "memory_gb": 64,
+        "walltime": "12:00:00"
+      }
+    }
+  ]
+}

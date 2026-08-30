@@ -22,7 +22,7 @@ would destroy that, so it is refused rather than performed.
 from __future__ import annotations
 
 import argparse
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from pathlib import Path
 import sys
 
@@ -135,7 +135,7 @@ def run_qc(args: argparse.Namespace) -> int:
         config = load_qc_config(Path(args.config))
         paths = resolve_record_paths(args.records)
         records = load_records(paths)
-        judged, report = apply_qc(records, config, utc=datetime.now(UTC).isoformat())
+        judged, report = apply_qc(records, config, utc=datetime.now(timezone.utc).isoformat())
         _, report_path = write_qc_outputs(judged, report, Path(args.output_dir), inputs=paths)
     except (UmaPyscfError, OSError, ValueError) as exc:
         print(f"{args.config}: ERROR {exc}", file=sys.stderr)

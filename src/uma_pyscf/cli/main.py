@@ -16,6 +16,7 @@ import platform
 import sys
 
 from .. import __version__
+from ..calculators.cli import configure_label, run_label
 from ..datasets.cli import configure_split, run_split
 from ..qc.cli import configure_qc, run_qc
 from ..sampling.cli import configure_sample, run_sample
@@ -69,6 +70,12 @@ SUBCOMMANDS: tuple[Subcommand, ...] = (
         help="Generate structure candidates from a sampling config and QC their geometry.",
         handler=run_sample,
         configure=configure_sample,
+    ),
+    Subcommand(
+        name="label",
+        help="Label a candidate manifest with the frozen GPU4PySCF protocol.",
+        handler=run_label,
+        configure=configure_label,
     ),
     Subcommand(
         name="qc",

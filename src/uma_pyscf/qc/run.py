@@ -44,6 +44,7 @@ from ..schemas.qc_report import QcReport
 from .config import validate_qc_config
 from .electronic import electronic_checks, gradient_max_abs
 from .geometry import duplicate_map, geometry_checks
+from .protocol import protocol_checks
 
 __all__ = ["PENDING_STATUS", "QC_EVENT", "apply_qc", "composition_formula"]
 
@@ -124,12 +125,14 @@ def apply_qc(
     digest = canonical_json_fingerprint(checked)
     electronic = checked["electronic"]
     geometry = checked["geometry"]
+    protocol = checked.get("protocol")
     duplicates = duplicate_map(batch, geometry)
 
     updated: list[LabelRecord] = []
     entries: list[dict[str, Any]] = []
     for record in batch:
         checks = [
+            *(protocol_checks(record, protocol) if protocol is not None else ()),
             *electronic_checks(record, electronic),
             *geometry_checks(record, geometry, duplicates.get(record.record_id)),
         ]

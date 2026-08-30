@@ -1,0 +1,172 @@
+{
+  "schema": "crosscode-suite-v1",
+  "suite_id": "charge_spin_density_fit_minao_probe_v1",
+  "description": "CPU-GPU numerical parity probe for twelve SiH3/GeH3 charge and spin states using the conditional density-fitting candidate and an explicit shared MINAO initial density. State selection remains pending scientific review and is not teacher-data approval.",
+  "selection_status": "numerical_probe_not_teacher_data_approved",
+  "source_suite_id": "charge_spin_mini_v1",
+  "candidate_change": {
+    "density_fit": {
+      "from": false,
+      "to": true
+    },
+    "init_guess": {
+      "from": "implicit_default",
+      "to": "explicit_minao"
+    }
+  },
+  "case_count": 12,
+  "engine_jobs_per_case": [
+    "pyscf-cpu",
+    "gpu4pyscf"
+  ],
+  "execution_policy": {
+    "sequential": true,
+    "stop_on_first_failure": false
+  },
+  "cases": [
+    {
+      "case_id": "sih3_doublet_planar_seed_density_fit_minao_probe",
+      "category": "charge_spin_density_fit_probe",
+      "base_case_id": "sih3_doublet_planar_seed",
+      "state_selection_status": "pending_scientific_review",
+      "config": "configs/sih3_doublet_planar_seed_density_fit_minao_probe.json",
+      "resources": {
+        "ncpus": 8,
+        "memory_gb": 32,
+        "walltime": "06:00:00"
+      }
+    },
+    {
+      "case_id": "sih3_neutral_quartet_density_fit_minao_probe",
+      "category": "charge_spin_density_fit_probe",
+      "base_case_id": "sih3_neutral_quartet",
+      "state_selection_status": "pending_scientific_review",
+      "config": "configs/sih3_neutral_quartet_density_fit_minao_probe.json",
+      "resources": {
+        "ncpus": 8,
+        "memory_gb": 32,
+        "walltime": "06:00:00"
+      }
+    },
+    {
+      "case_id": "sih3_cation_singlet_density_fit_minao_probe",
+      "category": "charge_spin_density_fit_probe",
+      "base_case_id": "sih3_cation_singlet",
+      "state_selection_status": "pending_scientific_review",
+      "config": "configs/sih3_cation_singlet_density_fit_minao_probe.json",
+      "resources": {
+        "ncpus": 8,
+        "memory_gb": 32,
+        "walltime": "06:00:00"
+      }
+    },
+    {
+      "case_id": "sih3_cation_triplet_density_fit_minao_probe",
+      "category": "charge_spin_density_fit_probe",
+      "base_case_id": "sih3_cation_triplet",
+      "state_selection_status": "pending_scientific_review",
+      "config": "configs/sih3_cation_triplet_density_fit_minao_probe.json",
+      "resources": {
+        "ncpus": 8,
+        "memory_gb": 32,
+        "walltime": "06:00:00"
+      }
+    },
+    {
+      "case_id": "sih3_anion_singlet_density_fit_minao_probe",
+      "category": "charge_spin_density_fit_probe",
+      "base_case_id": "sih3_anion_singlet",
+      "state_selection_status": "pending_scientific_review",
+      "config": "configs/sih3_anion_singlet_density_fit_minao_probe.json",
+      "resources": {
+        "ncpus": 8,
+        "memory_gb": 32,
+        "walltime": "06:00:00"
+      }
+    },
+    {
+      "case_id": "sih3_anion_triplet_density_fit_minao_probe",
+      "category": "charge_spin_density_fit_probe",
+      "base_case_id": "sih3_anion_triplet",
+      "state_selection_status": "pending_scientific_review",
+      "config": "configs/sih3_anion_triplet_density_fit_minao_probe.json",
+      "resources": {
+        "ncpus": 8,
+        "memory_gb": 32,
+        "walltime": "06:00:00"
+      }
+    },
+    {
+      "case_id": "geh3_doublet_planar_seed_density_fit_minao_probe",
+      "category": "charge_spin_density_fit_probe",
+      "base_case_id": "geh3_doublet_planar_seed",
+      "state_selection_status": "pending_scientific_review",
+      "config": "configs/geh3_doublet_planar_seed_density_fit_minao_probe.json",
+      "resources": {
+        "ncpus": 8,
+        "memory_gb": 32,
+        "walltime": "06:00:00"
+      }
+    },
+    {
+      "case_id": "geh3_neutral_quartet_density_fit_minao_probe",
+      "category": "charge_spin_density_fit_probe",
+      "base_case_id": "geh3_neutral_quartet",
+      "state_selection_status": "pending_scientific_review",
+      "config": "configs/geh3_neutral_quartet_density_fit_minao_probe.json",
+      "resources": {
+        "ncpus": 8,
+        "memory_gb": 32,
+        "walltime": "06:00:00"
+      }
+    },
+    {
+      "case_id": "geh3_cation_singlet_density_fit_minao_probe",
+      "category": "charge_spin_density_fit_probe",
+      "base_case_id": "geh3_cation_singlet",
+      "state_selection_status": "pending_scientific_review",
+      "config": "configs/geh3_cation_singlet_density_fit_minao_probe.json",
+      "resources": {
+        "ncpus": 8,
+        "memory_gb": 32,
+        "walltime": "06:00:00"
+      }
+    },
+    {
+      "case_id": "geh3_cation_triplet_density_fit_minao_probe",
+      "category": "charge_spin_density_fit_probe",
+      "base_case_id": "geh3_cation_triplet",
+      "state_selection_status": "pending_scientific_review",
+      "config": "configs/geh3_cation_triplet_density_fit_minao_probe.json",
+      "resources": {
+        "ncpus": 8,
+        "memory_gb": 32,
+        "walltime": "06:00:00"
+      }
+    },
+    {
+      "case_id": "geh3_anion_singlet_density_fit_minao_probe",
+      "category": "charge_spin_density_fit_probe",
+      "base_case_id": "geh3_anion_singlet",
+      "state_selection_status": "pending_scientific_review",
+      "config": "configs/geh3_anion_singlet_density_fit_minao_probe.json",
+      "resources": {
+        "ncpus": 8,
+        "memory_gb": 32,
+        "walltime": "06:00:00"
+      }
+    },
+    {
+      "case_id": "geh3_anion_triplet_density_fit_minao_probe",
+      "category": "charge_spin_density_fit_probe",
+      "base_case_id": "geh3_anion_triplet",
+      "state_selection_status": "pending_scientific_review",
+      "config": "configs/geh3_anion_triplet_density_fit_minao_probe.json",
+      "resources": {
+        "ncpus": 8,
+        "memory_gb": 32,
+        "walltime": "06:00:00"
+      }
+    }
+  ]
+}

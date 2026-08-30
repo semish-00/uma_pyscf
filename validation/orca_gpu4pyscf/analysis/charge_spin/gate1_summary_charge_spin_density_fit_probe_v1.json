@@ -1,0 +1,180 @@
+{
+  "case_count": 12,
+  "created_utc": "2026-08-30T10:56:43.681167+00:00",
+  "engine_result_counts": {
+    "gpu4pyscf": 12,
+    "orca": 0,
+    "pyscf-cpu": 12
+  },
+  "missing": {
+    "gpu4pyscf": [],
+    "orca": [
+      "sih3_doublet_planar_seed_density_fit_probe",
+      "sih3_neutral_quartet_density_fit_probe",
+      "sih3_cation_singlet_density_fit_probe",
+      "sih3_cation_triplet_density_fit_probe",
+      "sih3_anion_singlet_density_fit_probe",
+      "sih3_anion_triplet_density_fit_probe",
+      "geh3_doublet_planar_seed_density_fit_probe",
+      "geh3_neutral_quartet_density_fit_probe",
+      "geh3_cation_singlet_density_fit_probe",
+      "geh3_cation_triplet_density_fit_probe",
+      "geh3_anion_singlet_density_fit_probe",
+      "geh3_anion_triplet_density_fit_probe"
+    ],
+    "pyscf-cpu": []
+  },
+  "pairs": [
+    {
+      "left_engine": "gpu4pyscf",
+      "paired_case_count": 12,
+      "right_engine": "pyscf-cpu",
+      "worst_energy_absolute_difference_hartree": {
+        "case_id": "geh3_neutral_quartet_density_fit_probe",
+        "value": 0.0010060585473183892
+      },
+      "worst_gradient_component_rmse_hartree_per_bohr": {
+        "case_id": "geh3_neutral_quartet_density_fit_probe",
+        "value": 0.06251602173126468
+      },
+      "worst_gradient_max_absolute_difference_hartree_per_bohr": {
+        "case_id": "geh3_neutral_quartet_density_fit_probe",
+        "value": 0.1740046842926471
+      }
+    },
+    {
+      "left_engine": "pyscf-cpu",
+      "paired_case_count": 0,
+      "right_engine": "orca",
+      "worst_energy_absolute_difference_hartree": {
+        "case_id": null,
+        "value": null
+      },
+      "worst_gradient_component_rmse_hartree_per_bohr": {
+        "case_id": null,
+        "value": null
+      },
+      "worst_gradient_max_absolute_difference_hartree_per_bohr": {
+        "case_id": null,
+        "value": null
+      }
+    },
+    {
+      "left_engine": "gpu4pyscf",
+      "paired_case_count": 0,
+      "right_engine": "orca",
+      "worst_energy_absolute_difference_hartree": {
+        "case_id": null,
+        "value": null
+      },
+      "worst_gradient_component_rmse_hartree_per_bohr": {
+        "case_id": null,
+        "value": null
+      },
+      "worst_gradient_max_absolute_difference_hartree_per_bohr": {
+        "case_id": null,
+        "value": null
+      }
+    }
+  ],
+  "provisional_cpu_gpu_gate": {
+    "cases": [
+      {
+        "case_id": "sih3_doublet_planar_seed_density_fit_probe",
+        "failed_metrics": [],
+        "passed": true
+      },
+      {
+        "case_id": "sih3_neutral_quartet_density_fit_probe",
+        "failed_metrics": [],
+        "passed": true
+      },
+      {
+        "case_id": "sih3_cation_singlet_density_fit_probe",
+        "failed_metrics": [],
+        "passed": true
+      },
+      {
+        "case_id": "sih3_cation_triplet_density_fit_probe",
+        "failed_metrics": [],
+        "passed": true
+      },
+      {
+        "case_id": "sih3_anion_singlet_density_fit_probe",
+        "failed_metrics": [],
+        "passed": true
+      },
+      {
+        "case_id": "sih3_anion_triplet_density_fit_probe",
+        "failed_metrics": [],
+        "passed": true
+      },
+      {
+        "case_id": "geh3_doublet_planar_seed_density_fit_probe",
+        "failed_metrics": [],
+        "passed": true
+      },
+      {
+        "case_id": "geh3_neutral_quartet_density_fit_probe",
+        "failed_metrics": [
+          "energy_abs_hartree",
+          "gradient_rms_hartree_per_bohr",
+          "gradient_max_hartree_per_bohr"
+        ],
+        "passed": false
+      },
+      {
+        "case_id": "geh3_cation_singlet_density_fit_probe",
+        "failed_metrics": [],
+        "passed": true
+      },
+      {
+        "case_id": "geh3_cation_triplet_density_fit_probe",
+        "failed_metrics": [],
+        "passed": true
+      },
+      {
+        "case_id": "geh3_anion_singlet_density_fit_probe",
+        "failed_metrics": [],
+        "passed": true
+      },
+      {
+        "case_id": "geh3_anion_triplet_density_fit_probe",
+        "failed_metrics": [],
+        "passed": true
+      }
+    ],
+    "evaluated_case_count": 12,
+    "failed_case_count": 1,
+    "final_calculation_success": {
+      "gpu4pyscf_result_count": 12,
+      "passed": true,
+      "required_case_count": 12
+    },
+    "left_engine": "gpu4pyscf",
+    "pairing_coverage": {
+      "paired_case_count": 12,
+      "passed": true,
+      "required_case_count": 12
+    },
+    "passed": false,
+    "passed_case_count": 11,
+    "right_engine": "pyscf-cpu",
+    "thresholds": {
+      "energy_abs_hartree": 5e-06,
+      "gradient_max_hartree_per_bohr": 0.0001,
+      "gradient_rms_hartree_per_bohr": 2e-05
+    },
+    "tolerance_status": "provisional_not_scientifically_frozen"
+  },
+  "relative_condition": {
+    "compared_case_count": 0,
+    "compared_case_ids": [],
+    "description": "The CPU-GPU difference must stay at or below the corresponding CPU-ORCA difference for the same case.",
+    "energy_absolute_difference_violations": [],
+    "gradient_component_rmse_violations": [],
+    "passed": true
+  },
+  "schema": "gate1-metrics-summary-v1",
+  "suite_id": "charge_spin_density_fit_probe_v1"
+}

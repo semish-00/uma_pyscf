@@ -1,0 +1,321 @@
+{
+  "schema": "crosscode-suite-v1",
+  "suite_id": "gpu_c3_settings_matrix_v1",
+  "description": "GPU-only C3 scan on four sentinel molecules. Every manifest changes exactly one PySCF setting from grid=5, VV10 grid=5, direct SCF. Candidates are diagnostic and are not a frozen production protocol.",
+  "selection_status": "diagnostic_not_production_frozen",
+  "baseline_settings": {
+    "grid_level": 5,
+    "nlc_grid_level": 5,
+    "density_fit": false
+  },
+  "case_count": 20,
+  "engine_jobs_per_case": [
+    "gpu4pyscf"
+  ],
+  "execution_policy": {
+    "sequential": true,
+    "stop_on_first_failure": true
+  },
+  "cases": [
+    {
+      "case_id": "sih4_td_seed_c3_grid4",
+      "category": "gpu_c3_settings",
+      "base_case_id": "sih4_td_seed",
+      "axis": "ordinary_grid",
+      "setting_key": "grid_level",
+      "baseline_value": 5,
+      "candidate_value": 4,
+      "config": "configs/sih4_td_seed_c3_grid4.json",
+      "resources": {
+        "ncpus": 8,
+        "memory_gb": 32,
+        "walltime": "06:00:00"
+      }
+    },
+    {
+      "case_id": "sih4_td_seed_c3_grid6",
+      "category": "gpu_c3_settings",
+      "base_case_id": "sih4_td_seed",
+      "axis": "ordinary_grid",
+      "setting_key": "grid_level",
+      "baseline_value": 5,
+      "candidate_value": 6,
+      "config": "configs/sih4_td_seed_c3_grid6.json",
+      "resources": {
+        "ncpus": 8,
+        "memory_gb": 32,
+        "walltime": "06:00:00"
+      }
+    },
+    {
+      "case_id": "sih4_td_seed_c3_nlc3",
+      "category": "gpu_c3_settings",
+      "base_case_id": "sih4_td_seed",
+      "axis": "vv10_grid",
+      "setting_key": "nlc_grid_level",
+      "baseline_value": 5,
+      "candidate_value": 3,
+      "config": "configs/sih4_td_seed_c3_nlc3.json",
+      "resources": {
+        "ncpus": 8,
+        "memory_gb": 32,
+        "walltime": "06:00:00"
+      }
+    },
+    {
+      "case_id": "sih4_td_seed_c3_nlc4",
+      "category": "gpu_c3_settings",
+      "base_case_id": "sih4_td_seed",
+      "axis": "vv10_grid",
+      "setting_key": "nlc_grid_level",
+      "baseline_value": 5,
+      "candidate_value": 4,
+      "config": "configs/sih4_td_seed_c3_nlc4.json",
+      "resources": {
+        "ncpus": 8,
+        "memory_gb": 32,
+        "walltime": "06:00:00"
+      }
+    },
+    {
+      "case_id": "sih4_td_seed_c3_density_fit",
+      "category": "gpu_c3_settings",
+      "base_case_id": "sih4_td_seed",
+      "axis": "density_fitting",
+      "setting_key": "density_fit",
+      "baseline_value": false,
+      "candidate_value": true,
+      "config": "configs/sih4_td_seed_c3_density_fit.json",
+      "resources": {
+        "ncpus": 8,
+        "memory_gb": 32,
+        "walltime": "06:00:00"
+      }
+    },
+    {
+      "case_id": "sicl4_td_seed_c3_grid4",
+      "category": "gpu_c3_settings",
+      "base_case_id": "sicl4_td_seed",
+      "axis": "ordinary_grid",
+      "setting_key": "grid_level",
+      "baseline_value": 5,
+      "candidate_value": 4,
+      "config": "configs/sicl4_td_seed_c3_grid4.json",
+      "resources": {
+        "ncpus": 16,
+        "memory_gb": 64,
+        "walltime": "12:00:00"
+      }
+    },
+    {
+      "case_id": "sicl4_td_seed_c3_grid6",
+      "category": "gpu_c3_settings",
+      "base_case_id": "sicl4_td_seed",
+      "axis": "ordinary_grid",
+      "setting_key": "grid_level",
+      "baseline_value": 5,
+      "candidate_value": 6,
+      "config": "configs/sicl4_td_seed_c3_grid6.json",
+      "resources": {
+        "ncpus": 16,
+        "memory_gb": 64,
+        "walltime": "12:00:00"
+      }
+    },
+    {
+      "case_id": "sicl4_td_seed_c3_nlc3",
+      "category": "gpu_c3_settings",
+      "base_case_id": "sicl4_td_seed",
+      "axis": "vv10_grid",
+      "setting_key": "nlc_grid_level",
+      "baseline_value": 5,
+      "candidate_value": 3,
+      "config": "configs/sicl4_td_seed_c3_nlc3.json",
+      "resources": {
+        "ncpus": 16,
+        "memory_gb": 64,
+        "walltime": "12:00:00"
+      }
+    },
+    {
+      "case_id": "sicl4_td_seed_c3_nlc4",
+      "category": "gpu_c3_settings",
+      "base_case_id": "sicl4_td_seed",
+      "axis": "vv10_grid",
+      "setting_key": "nlc_grid_level",
+      "baseline_value": 5,
+      "candidate_value": 4,
+      "config": "configs/sicl4_td_seed_c3_nlc4.json",
+      "resources": {
+        "ncpus": 16,
+        "memory_gb": 64,
+        "walltime": "12:00:00"
+      }
+    },
+    {
+      "case_id": "sicl4_td_seed_c3_density_fit",
+      "category": "gpu_c3_settings",
+      "base_case_id": "sicl4_td_seed",
+      "axis": "density_fitting",
+      "setting_key": "density_fit",
+      "baseline_value": false,
+      "candidate_value": true,
+      "config": "configs/sicl4_td_seed_c3_density_fit.json",
+      "resources": {
+        "ncpus": 16,
+        "memory_gb": 64,
+        "walltime": "12:00:00"
+      }
+    },
+    {
+      "case_id": "sih3_doublet_planar_seed_c3_grid4",
+      "category": "gpu_c3_settings",
+      "base_case_id": "sih3_doublet_planar_seed",
+      "axis": "ordinary_grid",
+      "setting_key": "grid_level",
+      "baseline_value": 5,
+      "candidate_value": 4,
+      "config": "configs/sih3_doublet_planar_seed_c3_grid4.json",
+      "resources": {
+        "ncpus": 8,
+        "memory_gb": 32,
+        "walltime": "06:00:00"
+      }
+    },
+    {
+      "case_id": "sih3_doublet_planar_seed_c3_grid6",
+      "category": "gpu_c3_settings",
+      "base_case_id": "sih3_doublet_planar_seed",
+      "axis": "ordinary_grid",
+      "setting_key": "grid_level",
+      "baseline_value": 5,
+      "candidate_value": 6,
+      "config": "configs/sih3_doublet_planar_seed_c3_grid6.json",
+      "resources": {
+        "ncpus": 8,
+        "memory_gb": 32,
+        "walltime": "06:00:00"
+      }
+    },
+    {
+      "case_id": "sih3_doublet_planar_seed_c3_nlc3",
+      "category": "gpu_c3_settings",
+      "base_case_id": "sih3_doublet_planar_seed",
+      "axis": "vv10_grid",
+      "setting_key": "nlc_grid_level",
+      "baseline_value": 5,
+      "candidate_value": 3,
+      "config": "configs/sih3_doublet_planar_seed_c3_nlc3.json",
+      "resources": {
+        "ncpus": 8,
+        "memory_gb": 32,
+        "walltime": "06:00:00"
+      }
+    },
+    {
+      "case_id": "sih3_doublet_planar_seed_c3_nlc4",
+      "category": "gpu_c3_settings",
+      "base_case_id": "sih3_doublet_planar_seed",
+      "axis": "vv10_grid",
+      "setting_key": "nlc_grid_level",
+      "baseline_value": 5,
+      "candidate_value": 4,
+      "config": "configs/sih3_doublet_planar_seed_c3_nlc4.json",
+      "resources": {
+        "ncpus": 8,
+        "memory_gb": 32,
+        "walltime": "06:00:00"
+      }
+    },
+    {
+      "case_id": "sih3_doublet_planar_seed_c3_density_fit",
+      "category": "gpu_c3_settings",
+      "base_case_id": "sih3_doublet_planar_seed",
+      "axis": "density_fitting",
+      "setting_key": "density_fit",
+      "baseline_value": false,
+      "candidate_value": true,
+      "config": "configs/sih3_doublet_planar_seed_c3_density_fit.json",
+      "resources": {
+        "ncpus": 8,
+        "memory_gb": 32,
+        "walltime": "06:00:00"
+      }
+    },
+    {
+      "case_id": "h3si_gecl3_staggered_seed_c3_grid4",
+      "category": "gpu_c3_settings",
+      "base_case_id": "h3si_gecl3_staggered_seed",
+      "axis": "ordinary_grid",
+      "setting_key": "grid_level",
+      "baseline_value": 5,
+      "candidate_value": 4,
+      "config": "configs/h3si_gecl3_staggered_seed_c3_grid4.json",
+      "resources": {
+        "ncpus": 16,
+        "memory_gb": 64,
+        "walltime": "12:00:00"
+      }
+    },
+    {
+      "case_id": "h3si_gecl3_staggered_seed_c3_grid6",
+      "category": "gpu_c3_settings",
+      "base_case_id": "h3si_gecl3_staggered_seed",
+      "axis": "ordinary_grid",
+      "setting_key": "grid_level",
+      "baseline_value": 5,
+      "candidate_value": 6,
+      "config": "configs/h3si_gecl3_staggered_seed_c3_grid6.json",
+      "resources": {
+        "ncpus": 16,
+        "memory_gb": 64,
+        "walltime": "12:00:00"
+      }
+    },
+    {
+      "case_id": "h3si_gecl3_staggered_seed_c3_nlc3",
+      "category": "gpu_c3_settings",
+      "base_case_id": "h3si_gecl3_staggered_seed",
+      "axis": "vv10_grid",
+      "setting_key": "nlc_grid_level",
+      "baseline_value": 5,
+      "candidate_value": 3,
+      "config": "configs/h3si_gecl3_staggered_seed_c3_nlc3.json",
+      "resources": {
+        "ncpus": 16,
+        "memory_gb": 64,
+        "walltime": "12:00:00"
+      }
+    },
+    {
+      "case_id": "h3si_gecl3_staggered_seed_c3_nlc4",
+      "category": "gpu_c3_settings",
+      "base_case_id": "h3si_gecl3_staggered_seed",
+      "axis": "vv10_grid",
+      "setting_key": "nlc_grid_level",
+      "baseline_value": 5,
+      "candidate_value": 4,
+      "config": "configs/h3si_gecl3_staggered_seed_c3_nlc4.json",
+      "resources": {
+        "ncpus": 16,
+        "memory_gb": 64,
+        "walltime": "12:00:00"
+      }
+    },
+    {
+      "case_id": "h3si_gecl3_staggered_seed_c3_density_fit",
+      "category": "gpu_c3_settings",
+      "base_case_id": "h3si_gecl3_staggered_seed",
+      "axis": "density_fitting",
+      "setting_key": "density_fit",
+      "baseline_value": false,
+      "candidate_value": true,
+      "config": "configs/h3si_gecl3_staggered_seed_c3_density_fit.json",
+      "resources": {
+        "ncpus": 16,
+        "memory_gb": 64,
+        "walltime": "12:00:00"
+      }
+    }
+  ]
+}

@@ -1,0 +1,5 @@
+case_id,category,left_engine,right_engine,energy_signed_difference_hartree,energy_absolute_difference_hartree,gradient_component_rmse_hartree_per_bohr,gradient_component_mae_hartree_per_bohr,gradient_max_absolute_difference_hartree_per_bohr,gradient_max_atom_index_zero_based,gradient_max_axis
+sih4_td_seed_c3_density_fit,gpu_c3_settings,gpu4pyscf,pyscf-cpu,2.1536266103794333e-08,2.1536266103794333e-08,9.556843766051464e-09,8.635205461557819e-09,1.0924484872276707e-08,2,y
+sicl4_td_seed_c3_density_fit,gpu_c3_settings,gpu4pyscf,pyscf-cpu,7.77135937823914e-08,7.77135937823914e-08,1.505303977121943e-08,1.3422335474586421e-08,2.2683991574012907e-08,4,y
+sih3_doublet_planar_seed_c3_density_fit,gpu_c3_settings,gpu4pyscf,pyscf-cpu,2.11808242056577e-08,2.11808242056577e-08,4.007070934996425e-09,2.535836313617611e-09,8.328531198031897e-09,1,x
+h3si_gecl3_staggered_seed_c3_density_fit,gpu_c3_settings,gpu4pyscf,pyscf-cpu,8.732786227483302e-08,8.732786227483302e-08,8.06122904583137e-08,4.92578584997999e-08,2.1135729610932685e-07,6,x

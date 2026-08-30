@@ -7,9 +7,11 @@ explicitly on every structure. Work is split into two parts: **Part I** is the
 ORCA / CPU PySCF / GPU4PySCF cross-code validation that decides whether
 GPU4PySCF can serve as the teacher-label engine (Gate 1), and **Part II** is the
 production library that generates, quality-checks, and trains on those labels.
-Part II is at its foundation milestone: the package currently provides the
-cross-cutting `core` primitives (units, spin, identifiers, atomic I/O, error
-hierarchy) and the `uma-pyscf` CLI skeleton.
+Gate 1 concluded with a Conditional GO. Part II now provides deterministic
+sampling, the canonical label schema, a resumable GPU4PySCF label pipeline,
+engineering QC, and leakage-safe splits. Dataset release remains fail closed
+until the scientific thresholds, composition baseline, and non-default state
+registry are approved.
 
 ## Install
 
@@ -17,9 +19,11 @@ hierarchy) and the `uma-pyscf` CLI skeleton.
 pip install -e .          # runtime core has no third-party dependencies
 pip install -e '.[dev]'   # adds ruff and mypy
 uma-pyscf info            # package version, Python version, platform
+uma-pyscf label --help    # production protocol dry-run and execution
 ```
 
-Python 3.11 or newer is required.
+Python 3.10 or newer is required. The lower bound matches the frozen
+GPU4PySCF container used by the production label pipeline.
 
 ## Test
 
@@ -40,7 +44,7 @@ cd validation/orca_gpu4pyscf && python3 -m unittest discover -s tests
 ## Layout
 
 ```text
-src/uma_pyscf/    library: core/ (units, spin, ids, io, errors), cli/
+src/uma_pyscf/    library: core, schemas, sampling, calculators, QC, datasets, CLI
 tests/            unit/ mirrors src/; integration/ and fixtures/ follow later
 docs/             project plan, roadmap, milestone plans, lab notes
 validation/       Part I cross-code experiment (frozen, self-contained)
@@ -58,3 +62,5 @@ rather than copied.
 - [Plans](docs/plans/) — Part I validation, Part II implementation, and the
   production repository structure design that governs this package layout
 - [Lab notes](docs/lab_notes/) — dated records of individual investigations
+- [P2.3 SoftBank operation](docs/operations/p2_3_softbank_label_pipeline.md) —
+  dry-run, Slurm smoke, artifacts, and resume rules

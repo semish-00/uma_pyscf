@@ -1,0 +1,128 @@
+{
+  "case_count": 4,
+  "created_utc": "2026-08-30T10:29:18.397205+00:00",
+  "engine_result_counts": {
+    "gpu4pyscf": 4,
+    "orca": 0,
+    "pyscf-cpu": 4
+  },
+  "missing": {
+    "gpu4pyscf": [],
+    "orca": [
+      "sih4_td_seed_c3_density_fit",
+      "sicl4_td_seed_c3_density_fit",
+      "sih3_doublet_planar_seed_c3_density_fit",
+      "h3si_gecl3_staggered_seed_c3_density_fit"
+    ],
+    "pyscf-cpu": []
+  },
+  "pairs": [
+    {
+      "left_engine": "gpu4pyscf",
+      "paired_case_count": 4,
+      "right_engine": "pyscf-cpu",
+      "worst_energy_absolute_difference_hartree": {
+        "case_id": "h3si_gecl3_staggered_seed_c3_density_fit",
+        "value": 8.732786227483302e-08
+      },
+      "worst_gradient_component_rmse_hartree_per_bohr": {
+        "case_id": "h3si_gecl3_staggered_seed_c3_density_fit",
+        "value": 8.06122904583137e-08
+      },
+      "worst_gradient_max_absolute_difference_hartree_per_bohr": {
+        "case_id": "h3si_gecl3_staggered_seed_c3_density_fit",
+        "value": 2.1135729610932685e-07
+      }
+    },
+    {
+      "left_engine": "pyscf-cpu",
+      "paired_case_count": 0,
+      "right_engine": "orca",
+      "worst_energy_absolute_difference_hartree": {
+        "case_id": null,
+        "value": null
+      },
+      "worst_gradient_component_rmse_hartree_per_bohr": {
+        "case_id": null,
+        "value": null
+      },
+      "worst_gradient_max_absolute_difference_hartree_per_bohr": {
+        "case_id": null,
+        "value": null
+      }
+    },
+    {
+      "left_engine": "gpu4pyscf",
+      "paired_case_count": 0,
+      "right_engine": "orca",
+      "worst_energy_absolute_difference_hartree": {
+        "case_id": null,
+        "value": null
+      },
+      "worst_gradient_component_rmse_hartree_per_bohr": {
+        "case_id": null,
+        "value": null
+      },
+      "worst_gradient_max_absolute_difference_hartree_per_bohr": {
+        "case_id": null,
+        "value": null
+      }
+    }
+  ],
+  "provisional_cpu_gpu_gate": {
+    "cases": [
+      {
+        "case_id": "sih4_td_seed_c3_density_fit",
+        "failed_metrics": [],
+        "passed": true
+      },
+      {
+        "case_id": "sicl4_td_seed_c3_density_fit",
+        "failed_metrics": [],
+        "passed": true
+      },
+      {
+        "case_id": "sih3_doublet_planar_seed_c3_density_fit",
+        "failed_metrics": [],
+        "passed": true
+      },
+      {
+        "case_id": "h3si_gecl3_staggered_seed_c3_density_fit",
+        "failed_metrics": [],
+        "passed": true
+      }
+    ],
+    "evaluated_case_count": 4,
+    "failed_case_count": 0,
+    "final_calculation_success": {
+      "gpu4pyscf_result_count": 4,
+      "passed": true,
+      "required_case_count": 4
+    },
+    "left_engine": "gpu4pyscf",
+    "pairing_coverage": {
+      "paired_case_count": 4,
+      "passed": true,
+      "required_case_count": 4
+    },
+    "passed": true,
+    "passed_case_count": 4,
+    "right_engine": "pyscf-cpu",
+    "thresholds": {
+      "energy_abs_hartree": 5e-06,
+      "gradient_max_hartree_per_bohr": 0.0001,
+      "gradient_rms_hartree_per_bohr": 2e-05
+    },
+    "tolerance_status": "provisional_not_scientifically_frozen"
+  },
+  "relative_condition": {
+    "compared_case_count": 0,
+    "compared_case_ids": [],
+    "description": "The CPU-GPU difference must stay at or below the corresponding CPU-ORCA difference for the same case.",
+    "energy_absolute_difference_violations": [],
+    "gradient_component_rmse_violations": [],
+    "passed": true
+  },
+  "schema": "gate1-metrics-summary-v1",
+  "suite_id": "c3_density_fit_cpu_gpu_v1"
+}

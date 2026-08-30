@@ -1,0 +1,18 @@
+# Direct requirements for the SoftBank A100 / CUDA 12.2 validation environment.
+#
+# Keep this list aligned with the upstream gpu4pyscf v1.8.1 requirements.
+# The setup Slurm job resolves transitive dependencies once, writes a complete
+# lock next to the installed package directory, and never mutates that directory.
+gpu4pyscf-cuda12x==1.8.1
+pyscf==2.14.0
+cupy-cuda12x==13.4.1
+cutensor-cu12==2.2.0
+gpu4pyscf-libxc-cuda12x==0.8.1
+basis-set-exchange==0.11
+pyscf-dispersion==1.5.0
+geometric==1.1.0
+packaging==24.2
+
+# NGC PyTorch 23.10 includes Numba 0.57 and Matplotlib 3.8, both of which
+# require NumPy 1.x. Keep the overlay compatible with the base container.
+numpy==1.24.4

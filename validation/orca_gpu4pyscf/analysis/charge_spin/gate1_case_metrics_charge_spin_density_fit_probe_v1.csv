@@ -1,0 +1,13 @@
+case_id,category,left_engine,right_engine,energy_signed_difference_hartree,energy_absolute_difference_hartree,gradient_component_rmse_hartree_per_bohr,gradient_component_mae_hartree_per_bohr,gradient_max_absolute_difference_hartree_per_bohr,gradient_max_atom_index_zero_based,gradient_max_axis
+sih3_doublet_planar_seed_density_fit_probe,charge_spin_density_fit_probe,gpu4pyscf,pyscf-cpu,2.1180369458306814e-08,2.1180369458306814e-08,3.958103154534441e-09,2.58634553011694e-09,7.82058129367158e-09,1,x
+sih3_neutral_quartet_density_fit_probe,charge_spin_density_fit_probe,gpu4pyscf,pyscf-cpu,3.653468638731283e-08,3.653468638731283e-08,1.097143176166014e-06,6.36837408102766e-07,3.028764277438061e-06,0,y
+sih3_cation_singlet_density_fit_probe,charge_spin_density_fit_probe,gpu4pyscf,pyscf-cpu,2.7355667953088414e-08,2.7355667953088414e-08,2.932429620499127e-09,1.842074230303344e-09,5.989409634921117e-09,1,x
+sih3_cation_triplet_density_fit_probe,charge_spin_density_fit_probe,gpu4pyscf,pyscf-cpu,2.5746146548044635e-08,2.5746146548044635e-08,5.697133864923998e-08,3.120301998376233e-08,1.6661920992921964e-07,0,x
+sih3_anion_singlet_density_fit_probe,charge_spin_density_fit_probe,gpu4pyscf,pyscf-cpu,3.033903794857906e-08,3.033903794857906e-08,6.431897779575811e-09,4.01508037930365e-09,1.2904431967442065e-08,1,x
+sih3_anion_triplet_density_fit_probe,charge_spin_density_fit_probe,gpu4pyscf,pyscf-cpu,5.94170046497311e-08,5.94170046497311e-08,4.3977582674424755e-07,2.739112903610878e-07,8.508591089473327e-07,1,x
+geh3_doublet_planar_seed_density_fit_probe,charge_spin_density_fit_probe,gpu4pyscf,pyscf-cpu,2.4745986593188718e-08,2.4745986593188718e-08,8.157726577287949e-10,5.488066186929227e-10,1.6638217744354144e-09,0,x
+geh3_neutral_quartet_density_fit_probe,charge_spin_density_fit_probe,gpu4pyscf,pyscf-cpu,-0.0010060585473183892,0.0010060585473183892,0.06251602173126468,0.035714971807815264,0.1740046842926471,0,x
+geh3_cation_singlet_density_fit_probe,charge_spin_density_fit_probe,gpu4pyscf,pyscf-cpu,3.278000804129988e-08,3.278000804129988e-08,6.715863279915492e-09,4.368559700553793e-09,1.3602560411385411e-08,1,x
+geh3_cation_triplet_density_fit_probe,charge_spin_density_fit_probe,gpu4pyscf,pyscf-cpu,2.6067027647513896e-08,2.6067027647513896e-08,6.713672170075813e-08,4.373842699753537e-08,1.7077695838562295e-07,0,y
+geh3_anion_singlet_density_fit_probe,charge_spin_density_fit_probe,gpu4pyscf,pyscf-cpu,2.7760961529565975e-08,2.7760961529565975e-08,8.460852543716854e-09,5.405251791668982e-09,1.6441604078210048e-08,1,x
+geh3_anion_triplet_density_fit_probe,charge_spin_density_fit_probe,gpu4pyscf,pyscf-cpu,4.861431079916656e-08,4.861431079916656e-08,6.178585240049974e-08,3.839526596407702e-08,1.1688785406249735e-07,3,y

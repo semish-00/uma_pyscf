@@ -64,6 +64,8 @@ GPU実行が安定した後、Gate判定前に小さなcharge/spin matrixを追�
 
 ### A1. Hardware/software inventory
 
+- 状態: **完了**（2026-08-30、環境構築job `1796193`、inventory job `1796210`）
+
 記録するもの:
 
 - GPU modelと搭載数
@@ -85,6 +87,8 @@ GPU実行が安定した後、Gate判定前に小さなcharge/spin matrixを追�
 - lock fileまたは再構築可能なenvironment定義
 
 ### A2. Installation smoke test
+
+- 状態: **完了**（2026-08-30、job `1796210`、7/7 checks passed）
 
 - GPUがCuPyから見える。
 - PySCF moleculeをGPUへ変換できる。
@@ -114,11 +118,15 @@ GPU実行が安定した後、Gate判定前に小さなcharge/spin matrixを追�
 
 ### C0. Dry run
 
+- 状態: **完了**（2026-08-30、GPU host上で29/29 manifestを検証）
+
 - 29 manifestをGPU host上で解決できる。
 - basis availabilityとelectron/spin parity検査が全件通る。
 - output先がGit非追跡である。
 
 ### C1. Minimal smoke
+
+- 状態: **完了**（2026-08-30、job `1796213`、5/5 cases初回成功）
 
 順序:
 
@@ -132,6 +140,8 @@ GPU実行が安定した後、Gate判定前に小さなcharge/spin matrixを追�
 
 ### C2. Diagnostic lane
 
+- 状態: **完了**（C1 5-caseのCPU–GPU比較は暫定数値gate 5/5通過）
+
 既存CPU PySCFと可能な限り同じ条件で比較する。
 
 - grid level 5
@@ -143,6 +153,10 @@ GPU4PySCFが特定のdirect条件をサポートしない、または非実用�
 decision recordへ残し、CPU上でdensity fitting誤差を先に測ってからproduction laneへ進む。
 
 ### C3. Production-candidate lane
+
+- 状態: **完了**（2026-08-30、GPU one-axis matrix 20/20、density-fitting
+  CPU–GPU照合4/4、relative-energy sentinel 8/8完了。density fittingを条件付き候補、
+  directをfallbackとして選定）
 
 大量label生成を想定した候補設定を比較する。
 
@@ -156,7 +170,17 @@ decision recordへ残し、CPU上でdensity fitting誤差を先に測ってか�
 一度に一軸だけ変更し、数値差と速度差を分離する。最速設定ではなく、設定変更誤差が
 cross-code差および想定学習誤差より十分小さい設定を採用する。
 
+最初の4-case matrixではordinary/VV10 grid変更のaggregate speedupは0.99–1.04xに
+留まった。density fittingは7.40xだった一方、direct baselineから最大5.50e-5 Ehの
+絶対energy shiftを示した。CPU上でも同じdensity-fitting計算を行い、近似誤差とGPU port差を
+分離した結果、CPU–GPU差は最大8.73e-8 Ehであり、shiftはdensity-fitting近似由来と
+確認できた。同一組成の歪み8件ではrelative-energy誤差が最大2.32e-5 Eh
+（0.0146 kcal/mol）、gradient maxが6.45e-5 Eh/bohrだった。
+
 ### C4. Full ladder
+
+- 状態: **完了**（density-fitting + explicit MINAO条件付き候補、SoftBank Slurm job
+  `1796359`、29/29初回成功、CPU direct比aggregate speedup 20.96x）
 
 - 29構造を固定manifestのまま実行
 - failed caseは上書きせず、attemptと変更理由を残す
@@ -251,15 +275,15 @@ CPU–GPUは同一PySCF familyであるため、ORCA–CPUより厳しい基準�
 
 ## 11. 実行チェックリスト
 
-- [ ] GPU hostと接続・作業directoryを決定
-- [ ] hardware/software inventoryを保存
-- [ ] environmentを構築・version固定
-- [ ] 5-case smokeを完了
-- [ ] CPU–GPUの差分parser/comparatorを確認
-- [ ] diagnostic laneを完了
-- [ ] production-candidate convergence ladderを完了
-- [ ] 29-case full ladderを完了
-- [ ] charge/spin mini-matrixを完了
-- [ ] parity plot、RMSE、性能表を作成
-- [ ] Gate 1 decision recordを作成
-- [ ] GOの場合、Part IIの前提と設定を更新
+- [x] GPU hostと接続・作業directoryを決定
+- [x] hardware/software inventoryを保存
+- [x] environmentを構築・version固定
+- [x] 5-case smokeを完了
+- [x] CPU–GPUの差分parser/comparatorを確認
+- [x] diagnostic laneを完了
+- [x] production-candidate convergence ladderを完了
+- [x] 29-case full ladderを完了
+- [x] charge/spin mini-matrixを完了
+- [x] parity plot、RMSE、性能表を作成
+- [x] Gate 1 decision record案を作成
+- [x] GO/Conditional GOの場合、Part IIの前提と設定を更新

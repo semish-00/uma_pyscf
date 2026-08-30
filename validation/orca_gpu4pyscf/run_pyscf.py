@@ -15,16 +15,23 @@ from typing import Any
 from common import RESULT_SCHEMA, case_record, load_case, target_s2, write_json
 
 
-def package_version(name: str) -> str | None:
-    try:
-        return metadata.version(name)
-    except metadata.PackageNotFoundError:
-        return None
+def package_version(*names: str) -> str | None:
+    for name in names:
+        try:
+            return metadata.version(name)
+        except metadata.PackageNotFoundError:
+            continue
+    return None
 
 
 def build_plan(config_path: str | Path, device: str) -> dict[str, Any]:
     case = load_case(config_path)
     pyscf_settings = case.raw["pyscf"]
+    init_guess = str(pyscf_settings.get("init_guess", "minao"))
+    if init_guess not in {"minao", "atom", "hcore"}:
+        raise ValueError(
+            f"Unsupported pyscf.init_guess {init_guess!r}; use minao, atom, or hcore."
+        )
     return {
         "dry_run": True,
         "engine": "pyscf-cpu" if device == "cpu" else "gpu4pyscf",
@@ -37,6 +44,8 @@ def build_plan(config_path: str | Path, device: str) -> dict[str, Any]:
             "nlc_grid_level": int(pyscf_settings["nlc_grid_level"]),
             "grid_response": bool(pyscf_settings["grid_response"]),
             "density_fit": bool(pyscf_settings["density_fit"]),
+            "init_guess": init_guess,
+            "initial_density_generated_before_device_conversion": True,
             "max_memory_mb": float(pyscf_settings["max_memory_mb"]),
         },
         "tolerances": case.tolerances,
@@ -74,6 +83,14 @@ def run(config_path: str | Path, device: str) -> dict[str, Any]:
 
     if bool(case.raw["pyscf"]["density_fit"]):
         mf = mf.density_fit()
+    started = time.perf_counter()
+    initial_guess_started = started
+    init_guess = str(case.raw["pyscf"].get("init_guess", "minao"))
+    # Generate one density matrix on the CPU object and pass it explicitly to
+    # both engines. Otherwise GPU4PySCF can generate a different implicit guess
+    # after to_gpu() and converge to another open-shell SCF root.
+    dm0 = mf.get_init_guess(mol, key=init_guess)
+    initial_guess_wall_time = time.perf_counter() - initial_guess_started
     if device == "gpu":
         if not hasattr(mf, "to_gpu"):
             raise RuntimeError("This PySCF installation does not expose to_gpu().")
@@ -88,8 +105,9 @@ def run(config_path: str | Path, device: str) -> dict[str, Any]:
                     "an unintended grid."
                 )
 
-    started = time.perf_counter()
-    energy = float(mf.kernel())
+    kernel_started = time.perf_counter()
+    energy = float(mf.kernel(dm0=dm0))
+    scf_kernel_wall_time = time.perf_counter() - kernel_started
     scf_wall_time = time.perf_counter() - started
     if not bool(mf.converged):
         raise RuntimeError(f"SCF did not converge for {case.case_id}.")
@@ -124,8 +142,12 @@ def run(config_path: str | Path, device: str) -> dict[str, Any]:
         "python": platform.python_version(),
         "pyscf": pyscf.__version__,
         "libxc": getattr(dft.libxc, "__version__", None),
-        "gpu4pyscf": package_version("gpu4pyscf"),
-        "cupy": package_version("cupy"),
+        "gpu4pyscf": package_version(
+            "gpu4pyscf-cuda12x", "gpu4pyscf-cuda11x", "gpu4pyscf-cuda13x", "gpu4pyscf"
+        ),
+        "cupy": package_version(
+            "cupy-cuda12x", "cupy-cuda11x", "cupy-cuda13x", "cupy"
+        ),
         "cuda_device": None,
     }
     if device == "gpu":
@@ -170,6 +192,8 @@ def run(config_path: str | Path, device: str) -> dict[str, Any]:
         "multiplicity_from_spin_square": multiplicity_from_s2,
         "wall_time_seconds": wall_time,
         "scf_wall_time_seconds": scf_wall_time,
+        "initial_guess_wall_time_seconds": initial_guess_wall_time,
+        "scf_kernel_wall_time_seconds": scf_kernel_wall_time,
         "gradient_wall_time_seconds": gradient_wall_time,
         "tolerances": case.tolerances,
         "tolerance_status": case.raw.get("tolerance_status"),
