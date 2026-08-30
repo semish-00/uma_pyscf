@@ -7,12 +7,15 @@
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=16
 #SBATCH --gpus=1
-#SBATCH --mem=48G
 #SBATCH --time=03:00:00
 #SBATCH --output=/lustre/user140002/logs/uma-label-e50-%j.out
 #SBATCH --error=/lustre/user140002/logs/uma-label-e50-%j.err
 
 set -euo pipefail
+
+# The SoftBank node advertises RealMemory=1 to Slurm even though the host has
+# memory available, so --mem requests are unsatisfiable. PySCF still receives
+# and records the 24/48 GB per-candidate max_memory tier.
 
 REPO_ROOT="${REPO_ROOT:-/lustre/user140002/uma_pyscf}"
 CONTAINER_IMAGE="${CONTAINER_IMAGE:-/lustre/user140002/containers/nvidia-pytorch_23.10-py3.sqsh}"
