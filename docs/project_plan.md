@@ -3,7 +3,7 @@
 - 文書状態: Gate 1 Conditional GO反映版
 - 基準日: 2026-08-31
 - 対象リポジトリ: `uma_pyscf`
-- 現在地: Gate 1検証完了、Part II P2.3 label pipeline engineering smoke
+- 現在地: Gate 1検証とPart II P2.3 engineering smoke完了、50–200構造set準備
 - 現在の判断: **GPU4PySCFを条件付き採用。release条件を保ったまま小規模実装検証へ進む**
 
 ## 1. 目的
@@ -82,7 +82,7 @@ Part IIは設計計画として先に固定するが、実装開始条件はGate
 | M3 | GPU環境固定とsmoke test | 完了 | environment manifest |
 | M4 | CPU–GPU–ORCA三者比較 | 完了 | Gate 1 report |
 | M5 | production label protocol固定 | 完了 | Conditional GO DFT/QC config v1 |
-| M6 | dataset生成・QC基盤 | 実行中 | P2.3 label pipeline MVP、GPU engineering smoke |
+| M6 | dataset生成・QC基盤 | 実行中 | P2.3 smoke完了、50–200構造engineering set準備 |
 | M7 | 1,000–5,000構造pilot dataset | Gate 1後 | versioned manifest |
 | M8 | UMA-S fine-tuning pilot | Gate 1後 | checkpoint + training record |
 | M9 | 科学的評価・forgetting評価 | Gate 1後 | evaluation report |
@@ -201,11 +201,10 @@ Gate判定時には、日付、対象commit、計算環境、入力suite、metri
 
 ## 9. 直近の次アクション
 
-1. P2.3 sample→label→QCの1構造engineering smokeをSoftBank Slurmで完了する。
-2. 50–200構造engineering setでresume、failure ledger、resource tierを検証する。
-3. composition baselineとproduction QC閾値を科学reviewする。
-4. non-default charge/spinのstate registryを作成・承認する。
-5. release条件を満たしてから1,000–5,000構造pilotとGate 2へ進む。
+1. 50–200構造engineering setでresume、failure ledger、resource tierを検証する。
+2. composition baselineとproduction QC閾値を科学reviewする。
+3. non-default charge/spinのstate registryを作成・承認する。
+4. release条件を満たしてから1,000–5,000構造pilotとGate 2へ進む。
 
 詳細は[Part II](plans/02_uma_finetuning_implementation_plan.md)に従う。
 
@@ -213,5 +212,6 @@ Gate判定時には、日付、対象commit、計算環境、入力suite、metri
 
 - [初期実現性調査](lab_notes/2026-08-12_uma_gpu4pyscf_feasibility.md)
 - [クロスコード検証protocol](../validation/orca_gpu4pyscf/protocol.md)
+- [P2.3 GPU label smoke実行記録](lab_notes/2026-08-31_p2_3_gpu_label_smoke.md)
 - [CPU PySCF–ORCA総括](lab_notes/2026-08-13_orca_pyscf_validation_summary_and_finetuning_assessment.md)
 - [Si/Ge/H/Cl suite投入記録](lab_notes/2026-08-13_si_ge_h_cl_ladder_submission.md)

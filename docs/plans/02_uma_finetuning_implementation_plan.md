@@ -439,7 +439,7 @@ loop:
 - [x] deterministic structure generation
 - [x] GPU4PySCF batch label MVP（unit test・local dry-run）
 - [x] QC/retry/provenance（engineering QC、releaseはfail closed）
-- [ ] SoftBank GPU sample→label→QC integration smoke
+- [x] SoftBank GPU sample→label→QC integration smoke（job 1797122）
 - [ ] 50–200構造engineering dataset
 - [ ] ASE/fairchem変換とload-back test
 - [x] split generatorとleakage test
