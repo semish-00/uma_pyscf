@@ -33,11 +33,19 @@ Python環境はcontainerのsystem packageを継承しない独立venvとした�
 | 1797343 | NGC 26.07 container、Python、torch、CUDA、GPU演算 | `COMPLETED` |
 | 1797355 | clean venv、`pip check`、fairchem/ASE import、GPU演算 | `COMPLETED` |
 | 1797360 | pretrained API、`uma-s-1p2`登録、HF token有無 | `COMPLETED` |
+| 1797368 | 評価config、dataset manifest、shard checksum、40/10件load | `COMPLETED` |
 
 job 1797360では`uma-s-1p2`がfairchemの利用可能modelとして登録済みであることを確認した。
 一方、Hugging Face tokenは未設定だった。checkpoint repositoryはgatedであり、利用者本人が
 license条件を確認・承諾し、read tokenを端末から`hf auth login`へ入力する。tokenはチャット、
 Slurm script、stdout/stderr、環境inventory、Gitへ保存しない。
+
+preflight job 1797368はcheckpointを取得せず、commit
+`65963bc6730c1037242cb2ee3ae6eea5237ae5a2`から評価configと`ds_sigehcl_001`を読み、全shardの
+checksum一致、train 40件、holdout 10件を確認した。初回job 1797367は直接起動時に
+`PYTHONPATH`をSlurmへ渡さずpackage import前に終了したため、同一commandへrepositoryの`src`を
+明示して再実行した。job 1797371ではdevice認証を開始したが、承認待ちでA100を占有し続けない
+よう手動終了した。checkpoint、token、評価artifactはまだ作成していない。
 
 ## 次の実行
 
