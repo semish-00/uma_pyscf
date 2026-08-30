@@ -5,6 +5,9 @@
 # Generated calculation data.
 /validation/orca_gpu4pyscf/runs/*
 !/validation/orca_gpu4pyscf/runs/.gitignore
+/data/
+/runs/
+/artifacts/
 
 # Python caches.
 __pycache__/

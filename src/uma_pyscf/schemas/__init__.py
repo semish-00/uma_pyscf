@@ -34,6 +34,7 @@ from .crosscode import (
     IMPORT_EVENT,
     label_record_from_crosscode_result,
 )
+from .dataset_manifest import ASE_DATASET_MANIFEST_SCHEMA, AseDatasetManifest
 from .label_record import (
     CANONICAL_UNITS,
     LABEL_RECORD_SCHEMA,
@@ -68,6 +69,7 @@ from .state_registry import (
 )
 
 __all__ = [
+    "ASE_DATASET_MANIFEST_SCHEMA",
     "CANDIDATE_MANIFEST_SCHEMA",
     "CANDIDATE_STATUSES",
     "COMPOSITION_BASELINE_METHOD",
@@ -87,6 +89,7 @@ __all__ = [
     "STATE_REGISTRY_STATUSES",
     "CandidateManifest",
     "CandidateRecord",
+    "AseDatasetManifest",
     "CompositionBaseline",
     "ElectronicState",
     "Engine",

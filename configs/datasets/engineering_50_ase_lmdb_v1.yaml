@@ -1,0 +1,15 @@
+# Engineering-only ASE-LMDB export of the first 50 GPU labels.
+schema_version: 1
+dataset_id: ds_sigehcl_001
+created: "2026-08-31"
+derived_from:
+  - configs/sampling/engineering_50_v1.yaml
+  - configs/datasets/engineering_50_baseline_split_v1.yaml
+description: >-
+  Neutral-singlet H/Si/Ge/Cl engineering dataset for validating fairchem
+  dataset plumbing and an overfit smoke. This is not a scientific release.
+
+task: omol
+regression_tasks: ef
+shard_size: 10000
+fairchem_core_version: "2.22.0"

@@ -17,6 +17,12 @@ import sys
 
 from .. import __version__
 from ..calculators.cli import configure_label, run_label
+from ..datasets.ase_lmdb_cli import (
+    configure_dataset,
+    configure_verify_dataset,
+    run_dataset,
+    run_verify_dataset,
+)
 from ..datasets.baseline_cli import configure_fit_baseline, run_fit_baseline
 from ..datasets.cli import configure_split, run_split
 from ..qc.cli import configure_qc, run_qc
@@ -89,6 +95,18 @@ SUBCOMMANDS: tuple[Subcommand, ...] = (
         help="Assign a candidate manifest's records to partitions by whole groups.",
         handler=run_split,
         configure=configure_split,
+    ),
+    Subcommand(
+        name="dataset",
+        help="Export accepted records to checksummed, load-back-verified ASE-LMDB shards.",
+        handler=run_dataset,
+        configure=configure_dataset,
+    ),
+    Subcommand(
+        name="verify-dataset",
+        help="Recheck an ASE-LMDB manifest, source records, shard hashes, and loaded rows.",
+        handler=run_verify_dataset,
+        configure=configure_verify_dataset,
     ),
     Subcommand(
         name="fit-baseline",
