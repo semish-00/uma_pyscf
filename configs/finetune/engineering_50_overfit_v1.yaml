@@ -1,0 +1,115 @@
+# Derived from fairchem_core-2.22.0 configs/uma/finetune/
+# uma_sm_finetune_template.yaml at commit bb0a062a9a08.
+defaults:
+  - data: engineering_50_omol_ef_v1
+  - _self_
+
+job:
+  device_type: CUDA
+  scheduler:
+    mode: LOCAL
+    ranks_per_node: 1
+    num_nodes: 1
+  debug: true
+  run_dir: ${oc.env:UMA_TRAIN_RUN_DIR}
+  run_name: engineering_50_overfit_v1
+  logger:
+    _target_: fairchem.core.common.logger.WandBSingletonLogger.init_wandb
+    _partial_: true
+    entity: disabled_in_debug_mode
+    project: uma_pyscf_engineering
+
+base_model_name: uma-s-1p2
+max_neighbors: 100
+epochs: null
+steps: 200
+batch_size: 2
+lr: 4e-4
+weight_decay: 1e-3
+evaluate_every_n_steps: 20
+checkpoint_every_n_steps: 100
+
+train_dataset:
+  _target_: fairchem.core.datasets.mt_concat_dataset.create_concat_dataset
+  dataset_configs:
+    omol: ${data.train_dataset}
+  combined_dataset_config: {sampling: {type: temperature, temperature: 1.0}}
+
+train_dataloader:
+  _target_: fairchem.core.components.common.dataloader_builder.get_dataloader
+  dataset: ${train_dataset}
+  batch_sampler_fn:
+    _target_: fairchem.core.common.data_parallel.BalancedBatchSampler
+    _partial_: true
+    batch_size: ${batch_size}
+    shuffle: true
+    seed: 41
+  num_workers: 0
+  collate_fn:
+    _target_: fairchem.core.units.mlip_unit.mlip_unit.mt_collater_adapter
+    tasks: ${data.tasks_list}
+
+val_dataset:
+  _target_: fairchem.core.datasets.mt_concat_dataset.create_concat_dataset
+  dataset_configs:
+    omol: ${data.val_dataset}
+  combined_dataset_config: {sampling: {type: temperature, temperature: 1.0}}
+
+eval_dataloader:
+  _target_: fairchem.core.components.common.dataloader_builder.get_dataloader
+  dataset: ${val_dataset}
+  batch_sampler_fn:
+    _target_: fairchem.core.common.data_parallel.BalancedBatchSampler
+    _partial_: true
+    batch_size: ${batch_size}
+    shuffle: false
+    seed: 41
+  num_workers: 0
+  collate_fn:
+    _target_: fairchem.core.units.mlip_unit.mlip_unit.mt_collater_adapter
+    tasks: ${data.tasks_list}
+
+runner:
+  _target_: fairchem.core.components.train.train_runner.TrainEvalRunner
+  train_dataloader: ${train_dataloader}
+  eval_dataloader: ${eval_dataloader}
+  train_eval_unit:
+    _target_: fairchem.core.units.mlip_unit.mlip_unit.MLIPTrainEvalUnit
+    job_config: ${job}
+    tasks: ${data.tasks_list}
+    model:
+      _target_: fairchem.core.units.mlip_unit.mlip_unit.initialize_finetuning_model
+      checkpoint_location:
+        _target_: fairchem.core.calculate.pretrained_mlip.pretrained_checkpoint_path_from_name
+        model_name: ${base_model_name}
+      overrides:
+        backbone:
+          otf_graph: true
+          max_neighbors: ${max_neighbors}
+          regress_stress: ${data.regress_stress}
+          always_use_pbc: false
+        pass_through_head_outputs: ${data.pass_through_head_outputs}
+      heads: ${data.heads}
+    optimizer_fn:
+      _target_: torch.optim.AdamW
+      _partial_: true
+      lr: ${lr}
+      weight_decay: ${weight_decay}
+    cosine_lr_scheduler_fn:
+      _target_: fairchem.core.units.mlip_unit.mlip_unit._get_consine_lr_scheduler
+      _partial_: true
+      warmup_factor: 0.2
+      warmup_epochs: 0.01
+      lr_min_factor: 0.01
+      epochs: ${epochs}
+      steps: ${steps}
+    print_every: 10
+    clip_grad_norm: 100
+  max_epochs: ${epochs}
+  max_steps: ${steps}
+  evaluate_every_n_steps: ${evaluate_every_n_steps}
+  callbacks:
+    - _target_: fairchem.core.components.callbacks.TrainCheckpointCallback
+      checkpoint_every_n_steps: ${checkpoint_every_n_steps}
+      max_saved_checkpoints: 3
+    - _target_: torchtnt.framework.callbacks.TQDMProgressBar

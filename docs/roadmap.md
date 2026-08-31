@@ -26,7 +26,7 @@
 | 50–200構造engineering set | 完了 | job 1797134、50/50初回収束、resume 50/50 skip、QC 50/50 accepted |
 | Release controls | 機構完了・科学review継続 | train-only baseline実測済み、state registry 12件は全てpending、decision 0004 |
 | 1,000–5,000構造pilot | release条件のreview後 | H/Si/Ge/Cl、8原子以内から開始 |
-| UMA fine-tuning | base評価実行待ち | fairchem 2.22.0 GPU環境と評価器を固定済み。HF手動認証→base UMA評価→50件overfit smoke |
+| UMA fine-tuning | overfit smoke準備中 | base UMA 50件評価完了（job 1798793）。train-only正規化→200-step overfit smoke |
 | 科学的・retention評価 | Gate 2後 | relative energy、forces、forgetting |
 | Active learning / cluster拡張 | 後続 | fixed holdoutの改善で判断 |
 

@@ -446,7 +446,7 @@ loop:
 - [x] ASE/fairchem変換とload-back test（50件ASE-LMDB、job 1797318）
 - [x] split generatorとleakage test
 - [x] fairchem 2.22.0 GPU環境固定とbase評価器（実model評価はHF認証待ち）
-- [ ] base UMA evaluation
+- [x] base UMA evaluation（50件、formal job 1798793）
 - [ ] overfit smoke
 - [ ] 1,000–5,000構造pilot
 - [ ] fine-tuningと複数seed評価
