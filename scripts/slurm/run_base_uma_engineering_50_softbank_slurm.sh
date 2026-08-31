@@ -28,6 +28,7 @@ srun \
   bash -lc "
     set -euo pipefail
     export PYTHONPATH='$REPO_ROOT/src'
+    export FAIRCHEM_CACHE_DIR='$MODEL_CACHE_DIR'
     '$PYTHON' -c 'from importlib.metadata import version; import torch; assert torch.cuda.is_available(); print(version(\"fairchem-core\"), torch.__version__, torch.cuda.get_device_name())'
     '$PYTHON' -m uma_pyscf.cli.main evaluate-uma \
       --config '$REPO_ROOT/configs/evaluation/engineering_50_base_uma_s_1p2_v1.yaml' \

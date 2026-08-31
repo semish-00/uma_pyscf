@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from importlib.metadata import PackageNotFoundError, version
+import os
 from pathlib import Path
 import platform
 import subprocess
@@ -92,6 +93,13 @@ def evaluate_ase_lmdb(
     container_sha256: str,
 ) -> dict[str, Any]:
     """Run base-model inference and atomically publish predictions plus metrics."""
+    cache_root = Path(model_cache_dir).resolve()
+    configured_cache = os.environ.get("FAIRCHEM_CACHE_DIR")
+    if configured_cache is None or Path(configured_cache).resolve() != cache_root:
+        raise ValidationError(
+            "FAIRCHEM_CACHE_DIR must equal model_cache_dir before fairchem is imported; "
+            "fairchem-core 2.22.0 otherwise stores the checkpoint in its default cache."
+        )
     ase, connect, calculator_type, dependencies = _inference_api()
     pretrained_mlip, torch = dependencies
     installed_fairchem = _package_version("fairchem-core")
@@ -107,7 +115,6 @@ def evaluate_ase_lmdb(
     if unknown:
         raise ValidationError(f"Evaluation names unknown dataset partitions: {unknown!r}.")
 
-    cache_root = Path(model_cache_dir)
     cache_root.mkdir(parents=True, exist_ok=True)
     predictor = pretrained_mlip.get_predict_unit(
         model_name,
@@ -116,17 +123,23 @@ def evaluate_ase_lmdb(
         cache_dir=str(cache_root),
         seed=seed,
     )
+    cache_paths = [
+        path
+        for path in sorted(cache_root.rglob("*"))
+        if path.is_file() and not path.is_symlink()
+    ]
+    if not any(path.stat().st_size > 1_000_000 for path in cache_paths):
+        raise ValidationError(
+            f"Model cache {cache_root} contains no checkpoint-sized regular file."
+        )
     cache_files = [
         {
             "path": path.relative_to(cache_root).as_posix(),
             "bytes": path.stat().st_size,
             "sha256": sha256_of_file(path),
         }
-        for path in sorted(cache_root.rglob("*"))
-        if path.is_file()
+        for path in cache_paths
     ]
-    if not cache_files:
-        raise ValidationError(f"Model cache {cache_root} contains no checkpoint files.")
     calculator = calculator_type(predictor, task_name=task)
     root = Path(dataset_dir)
     predictions: list[PredictionRecord] = []

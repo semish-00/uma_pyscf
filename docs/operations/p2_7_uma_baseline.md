@@ -44,6 +44,10 @@ scriptは次を固定する。
 row数を照合し、各rowのrecord ID、`pbc=False`、`charge`、`spin`を確認してから推論する。
 不一致時はartifactを発行せず失敗する。
 
+fairchem-core 2.22.0では`get_predict_unit`の`cache_dir`引数がreference fileへは適用される一方、
+checkpoint本体はimport時の`FAIRCHEM_CACHE_DIR`を使う。scriptは両者を同じmodel cacheへ固定し、
+評価器も環境変数の不一致とcheckpoint-sized fileの欠落を拒否する。
+
 ## 評価artifact
 
 出力は次に保存する。
