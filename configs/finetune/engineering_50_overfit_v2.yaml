@@ -1,0 +1,11 @@
+# Extend the verified 200-step smoke configuration without mutating its record.
+defaults:
+  - engineering_50_overfit_v1
+  - _self_
+
+job:
+  run_name: engineering_50_overfit_v2
+
+steps: 2000
+evaluate_every_n_steps: 200
+checkpoint_every_n_steps: 1000
