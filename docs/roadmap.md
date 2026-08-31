@@ -4,8 +4,8 @@
 
 ## 現在地
 
-- 基準日: 2026-08-31
-- 現在のphase: **Part II — scientific release conditions review**
+- 基準日: 2026-09-01
+- 現在のphase: **Part II — C0 teacher-data calibration準備**
 - 次のGate: **Gate 2 — pilot dataset品質**
 - dataset release・UMA fine-tuning: 科学閾値、composition baseline、state registryまで保留
 
@@ -25,10 +25,14 @@
 | P2.3 label pipeline | 完了 | SoftBank Slurm job 1797122。1件completed、QC accepted、checksum一致 |
 | 50–200構造engineering set | 完了 | job 1797134、50/50初回収束、resume 50/50 skip、QC 50/50 accepted |
 | Release controls | 機構完了・科学review継続 | train-only baseline実測済み、state registry 12件は全てpending、decision 0004 |
-| 1,000–5,000構造pilot | release条件のreview後 | H/Si/Ge/Cl、8原子以内から開始 |
+| C0 calibration 180 | 設計・assembly基盤完了 | 6 sourceの実candidate 500–1,000件を生成しblindに180件固定 |
+| C0-S state review 24–36 | 設計完了・未実行 | SiH3/GeH3等をCPU/GPU sentinel付きでreview |
+| T0 fixed test 200 | C0後 | 独立parent/reactionをscore計算前にfreeze |
+| P0 oracle pool 1,000 | C0/T0後 | blindに全件labelし、acquisition policyをretrospective比較 |
+| 1,000–5,000構造pilot | P0/Gate 3後 | online active learningは実測signal確認後に開始 |
 | UMA fine-tuning | 10,000-step engineering overfit評価完了 | train適合・holdout崩壊を確認。base UMAをscreening基準として維持 |
 | 科学的・retention評価 | Gate 2後 | relative energy、forces、forgetting |
-| Active learning / cluster拡張 | 78件IRC poolのUMA/PFP selection dry-run完了 | 独立parent/test固定、diversity追加、400件pool化 |
+| Active learning / cluster拡張 | 78件IRC poolのUMA/PFP selection dry-run完了 | C0/P0でsignalを校正するまでproduction選抜へ使わない |
 
 ## 詳細計画
 
@@ -36,6 +40,7 @@
 - [Part II: UMAファインチューニング実装計画](plans/02_uma_finetuning_implementation_plan.md)
 - [Part II準備: 本番リポジトリ構成設計](plans/03_production_repository_structure.md)
 - [P2.9前段: Matlantis/PFP多フィデリティ教師データ選抜pilot計画](plans/04_matlantis_multifidelity_screening_pilot.md)
+- [教師データsampling・calibration・oracle pool計画](plans/05_teacher_data_sampling_and_calibration.md)
 
 このファイルは進捗だけを更新する。scope、品質基準、設計を変更するときは、
 `project_plan.md`および該当Part計画も更新し、必要に応じて`docs/decisions/`へ理由を残す。

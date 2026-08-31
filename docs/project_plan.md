@@ -201,13 +201,15 @@ Gate判定時には、日付、対象commit、計算環境、入力suite、metri
 
 ## 9. 直近の次アクション
 
-1. train-only atomic composition baseline機構は実装済み。未知組成を含む独立calibration setで
-   baseline residualとgradient分布をseverity別に評価する。
-2. versioned state registry機構と12件のpending entryは実装済み。SiH3/GeH3を複数geometryで
-   検証し、evidence・reviewer・decisionが揃ったstateだけを承認する。
-3. production QC v2の科学閾値をfreezeしてから1,000–5,000構造pilotとGate 2へ進む。
+1. [教師データsampling・calibration計画](plans/05_teacher_data_sampling_and_calibration.md)の
+   6 sourceから500–1,000件を生成し、score非依存のquotaでC0 180件をfreezeする。
+2. C0をGPU4PySCFでlabelし、source/severityごとの5–10%をCPU PySCF sentinelで監査する。
+   baseline residual、gradient、SCF/QC failure、UMA/PFP signalを同じC0上で評価する。
+3. C0-SでSiH3/GeH3等のstate registryをreviewし、QC v2をfreezeする。その後に独立T0 200件、
+   acquisition非依存P0 1,000件へ進む。
 
-詳細は[Part II](plans/02_uma_finetuning_implementation_plan.md)に従う。
+詳細は[Part II](plans/02_uma_finetuning_implementation_plan.md)および
+[教師データsampling・calibration計画](plans/05_teacher_data_sampling_and_calibration.md)に従う。
 
 ## 10. 関連文書
 

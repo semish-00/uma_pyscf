@@ -1,0 +1,30 @@
+schema_version: 1
+portfolio_id: calibration_portfolio_180_v1
+created: "2026-09-01"
+description: >-
+  Score-independent C0 calibration portfolio. Source quotas are fixed before
+  UMA, PFP, or teacher errors are evaluated.
+seed: 2026090101
+strategy: parent_round_robin
+duplicate_decimals: 3
+max_per_parent: 12
+max_per_trajectory: 6
+sources:
+  - category: equilibrium_local_nms
+    manifest: calibration/sources/equilibrium_local_nms_candidates.json
+    quota: 45
+  - category: internal_scan_dissociation
+    manifest: calibration/sources/internal_scan_dissociation_candidates.json
+    quota: 36
+  - category: interpolation_neb_irc
+    manifest: calibration/sources/interpolation_neb_irc_candidates.json
+    quota: 36
+  - category: moderate_temperature_md
+    manifest: calibration/sources/moderate_temperature_md_candidates.json
+    quota: 27
+  - category: strong_distortion_high_temperature_md
+    manifest: calibration/sources/strong_distortion_high_temperature_md_candidates.json
+    quota: 18
+  - category: curated_graph_edit_unknown_reaction
+    manifest: calibration/sources/curated_graph_edit_unknown_reaction_candidates.json
+    quota: 18

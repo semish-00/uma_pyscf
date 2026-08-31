@@ -38,20 +38,29 @@ from .generate import (
     write_outputs,
 )
 from .geometry import gaussian_displacement, scale_bond
+from .portfolio import (
+    PORTFOLIO_CONFIG_SCHEMA_VERSION,
+    assemble_portfolio,
+    load_portfolio_config,
+    write_portfolio_outputs,
+)
 from .selection import load_selection_config, run_selection, select_candidates
 from .siblings import expand_states
 from .trajectory_import import (
     import_trajectory_candidates,
     load_trajectory_import_config,
+    mass_weighted_arc_length_indices,
     uniform_frame_indices,
 )
 
 __all__ = [
     "DEFAULT_FILTERS",
     "OPERATION_KINDS",
+    "PORTFOLIO_CONFIG_SCHEMA_VERSION",
     "SAMPLING_CONFIG_SCHEMA_VERSION",
     "FilterSettings",
     "configure_sample",
+    "assemble_portfolio",
     "expand_states",
     "fragment_count",
     "gaussian_displacement",
@@ -59,8 +68,10 @@ __all__ = [
     "is_duplicate",
     "import_trajectory_candidates",
     "load_sampling_config",
+    "load_portfolio_config",
     "load_trajectory_import_config",
     "minimum_distance_violation",
+    "mass_weighted_arc_length_indices",
     "pair_distance_fingerprint",
     "read_xyz_structure",
     "load_selection_config",
@@ -70,4 +81,5 @@ __all__ = [
     "scale_bond",
     "uniform_frame_indices",
     "write_outputs",
+    "write_portfolio_outputs",
 ]

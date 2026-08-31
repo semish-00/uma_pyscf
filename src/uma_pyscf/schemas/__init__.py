@@ -61,6 +61,12 @@ from .model_prediction import (
     ModelPredictionManifest,
     ModelPredictionRecord,
 )
+from .portfolio import (
+    PORTFOLIO_REPORT_SCHEMA,
+    PORTFOLIO_SKIP_REASONS,
+    PortfolioReport,
+    PortfolioSourceSummary,
+)
 from .qc_report import (
     QC_REPORT_SCHEMA,
     QC_REPORT_STATUSES,
@@ -96,6 +102,8 @@ __all__ = [
     "LABEL_RECORD_SCHEMA",
     "MODEL_PREDICTION_SCHEMA",
     "PREDICTION_UNITS",
+    "PORTFOLIO_REPORT_SCHEMA",
+    "PORTFOLIO_SKIP_REASONS",
     "QC_REPORT_SCHEMA",
     "QC_REPORT_STATUSES",
     "QC_STATUSES",
@@ -117,6 +125,8 @@ __all__ = [
     "Method",
     "ModelPredictionManifest",
     "ModelPredictionRecord",
+    "PortfolioReport",
+    "PortfolioSourceSummary",
     "QcReport",
     "QcState",
     "RawArtifact",

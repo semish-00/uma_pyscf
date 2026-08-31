@@ -1,0 +1,43 @@
+# Engineering-only equilibrium seeds for validating the PFP Langevin MD runner.
+# These five parents overlap engineering_50 and therefore must not enter C0/T0.
+schema_version: 1
+sampling_id: pfp_md_engineering_seeds_v1
+created: "2026-09-01"
+description: >-
+  Neutral-singlet seed geometries used only to preflight the reproducible PFP
+  Langevin MD implementation. C0 must use an independent parent manifest.
+
+structures:
+  - id: sih4_seed
+    xyz_path: structures/sih4_seed_example.xyz
+  - id: geh4_seed
+    xyz_path: structures/geh4_seed_engineering.xyz
+  - id: sicl4_seed
+    xyz_path: structures/sicl4_seed_engineering.xyz
+  - id: gecl4_seed
+    xyz_path: structures/gecl4_seed_engineering.xyz
+  - id: h3si_gecl3_seed
+    xyz_path: structures/h3si_gecl3_seed_engineering.xyz
+
+operations:
+  - kind: state_expansion
+    structure: sih4_seed
+    states: [{charge: 0, multiplicity: 1}]
+  - kind: state_expansion
+    structure: geh4_seed
+    states: [{charge: 0, multiplicity: 1}]
+  - kind: state_expansion
+    structure: sicl4_seed
+    states: [{charge: 0, multiplicity: 1}]
+  - kind: state_expansion
+    structure: gecl4_seed
+    states: [{charge: 0, multiplicity: 1}]
+  - kind: state_expansion
+    structure: h3si_gecl3_seed
+    states: [{charge: 0, multiplicity: 1}]
+
+filters:
+  covalent_factor: 0.65
+  bond_factor: 1.3
+  allow_fragments: false
+  duplicate_decimals: 3

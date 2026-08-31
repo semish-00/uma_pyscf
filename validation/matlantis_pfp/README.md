@@ -28,6 +28,7 @@ those routes needs a held-out GPU4PySCF validation gate before adoption.
 validation/matlantis_pfp/
   configs/              pinned PFP protocol
   run_single_points.py  Matlantis-only, resumable evaluator
+  run_langevin_md.py    pinned neutral-singlet NVT candidate generator
   compare.py            local PFP vs canonical GPU4PySCF comparison
   build_acquisition_scores.py
                         PFP-versus-UMA scores; never reads HF result fields
@@ -131,3 +132,34 @@ The 2026-09-01 run completed 78/78 records with no failures; its resume pass
 completed zero and skipped all 78. After base UMA inference, the committed
 selection config produced 10 records per policy and a 22-record union while
 enforcing five records per parent and three per trajectory.
+
+## PFP Langevin MD candidate source
+
+PFP MD is restricted to neutral singlets and creates candidate trajectories,
+not canonical labels. The committed preflight uses PFP v9.0.0 /
+`R2SCAN_PLUS_D3`, NVT Langevin, a 0.5 fs timestep, 200 steps, temperatures
+300/600/900/1200 K, and two independent seeds. It records the full run grid,
+model protocol, seed, diagnostics, trajectory path, and runtime versions.
+
+The five committed seed parents are engineering fixtures shared with
+`engineering_50`; they validate the runner only and must not enter C0 or T0:
+
+```bash
+python -m uma_pyscf.cli.main sample \
+  configs/sampling/pfp_md_engineering_seeds_v1.yaml \
+  --output-dir validation/matlantis_pfp/runs/pfp_md_engineering_seeds_v1
+
+use_venv python311
+python validation/matlantis_pfp/run_langevin_md.py \
+  --config validation/matlantis_pfp/configs/pfp_v9_r2scan_plus_d3_langevin_preflight_v1.json \
+  --manifest validation/matlantis_pfp/runs/pfp_md_engineering_seeds_v1/pfp_md_engineering_seeds_v1_candidates.json \
+  --output-dir validation/matlantis_pfp/runs/pfp_md_engineering_preflight_v1 \
+  --dry-run
+```
+
+Remove `--dry-run` only inside Matlantis. Each estimator/calculator is created
+per trajectory; velocity and thermostat RNGs are separately seeded. A partial
+trajectory without a completed summary is refused on resume instead of being
+silently overwritten. After the engineering preflight, C0 uses a new,
+independent parent manifest and imports decorrelated frames through
+`uma-pyscf import-trajectory` with `mass_weighted_arc_length`.

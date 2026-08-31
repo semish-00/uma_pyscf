@@ -23,6 +23,7 @@ pip install -e '.[dev]'   # adds ruff and mypy
 uma-pyscf info            # package version, Python version, platform
 uma-pyscf label --help    # production protocol dry-run and execution
 uma-pyscf import-trajectory --help  # ASE trajectory -> unlabeled candidates
+uma-pyscf assemble-portfolio --help # blind source quotas -> calibration manifest
 uma-pyscf predict-uma --help  # unlabeled candidate-manifest inference
 uma-pyscf select --help       # deterministic, parent-capped acquisition
 ```
@@ -69,7 +70,8 @@ versioned unlabeled UMA predictions and acquisition-score records, then routes
 selected candidates through the normal GPU4PySCF label and QC path.
 
 Existing molecular ASE trajectories can be imported with source-file hashes,
-original frame indices, geometry QC, and duplicate removal before prediction:
+original frame indices, geometry QC, and duplicate removal before prediction.
+Each source can use index-uniform or mass-weighted Cartesian arc-length thinning:
 
 ```bash
 uma-pyscf import-trajectory \
@@ -80,6 +82,12 @@ uma-pyscf import-trajectory \
 
 Selection configs may set both `max_per_parent` and `max_per_trajectory`; the
 latter fails closed if any score record lacks trajectory provenance.
+
+Calibration and oracle pools use `uma-pyscf assemble-portfolio`. It reads
+multiple immutable candidate manifests, checks their SHA-256 digests, and fills
+fixed source quotas without consulting UMA/PFP scores. Cross-source geometry
+deduplication includes charge and multiplicity, and parent/trajectory caps stop
+one family from dominating the teacher-label budget.
 
 ## Documents
 

@@ -1,8 +1,9 @@
-"""Import uniformly spaced ASE trajectory frames as unlabeled candidates."""
+"""Import deterministically thinned ASE trajectory frames as candidates."""
 
 from __future__ import annotations
 
 from copy import deepcopy
+import math
 from pathlib import Path
 from typing import Any
 
@@ -30,6 +31,7 @@ from .generate import FilterSettings, write_outputs
 __all__ = [
     "import_trajectory_candidates",
     "load_trajectory_import_config",
+    "mass_weighted_arc_length_indices",
     "uniform_frame_indices",
     "write_trajectory_outputs",
 ]
@@ -44,8 +46,13 @@ _TOP_LEVEL_KEYS = (
     "filters",
 )
 _STATE_KEYS = ("charge", "multiplicity")
-_TRAJECTORY_KEYS = ("trajectory_id", "parent_id", "path", "count")
+_TRAJECTORY_KEYS = ("trajectory_id", "parent_id", "path", "count", "frame_selection")
 _FILTER_KEYS = ("covalent_factor", "bond_factor", "allow_fragments", "duplicate_decimals")
+_FRAME_SELECTIONS = ("uniform_index", "mass_weighted_arc_length")
+# Standard atomic weights (Da) for the explicitly supported H/Si/Ge/Cl pilot domain.
+# Keeping this small table local makes thinning reproducible without importing an
+# ASE-version-dependent data table; elements outside the declared domain fail closed.
+_ATOMIC_MASSES_DALTON = {1: 1.008, 14: 28.085, 17: 35.45, 32: 72.630}
 
 
 def uniform_frame_indices(frame_count: int, requested_count: int) -> tuple[int, ...]:
@@ -65,6 +72,89 @@ def uniform_frame_indices(frame_count: int, requested_count: int) -> tuple[int, 
     if len(set(indices)) != requested_count:
         raise ValidationError("Uniform frame selection unexpectedly produced duplicate indices.")
     return indices
+
+
+def _validate_requested_count(frame_count: int, requested_count: int) -> None:
+    if frame_count < 1:
+        raise ValidationError("A trajectory must contain at least one frame.")
+    if requested_count < 1 or requested_count > frame_count:
+        raise ValidationError(
+            f"Requested {requested_count} frames from a trajectory containing {frame_count}."
+        )
+
+
+def _mass_weighted_arc_coordinates(frames: list[Any]) -> tuple[float, ...]:
+    _validate_requested_count(len(frames), 1)
+    reference_numbers = tuple(int(value) for value in frames[0].numbers)
+    try:
+        masses = tuple(_ATOMIC_MASSES_DALTON[number] for number in reference_numbers)
+    except KeyError as exc:
+        raise ValidationError(
+            "Mass-weighted thinning supports only H/Si/Ge/Cl; "
+            f"trajectory contains atomic number {exc.args[0]}."
+        ) from exc
+    if not masses or any(not math.isfinite(mass) or mass <= 0 for mass in masses):
+        raise ValidationError("Trajectory atomic masses must be finite and positive.")
+    total_mass = sum(masses)
+    cumulative = [0.0]
+    previous = frames[0]
+    for frame_index, current in enumerate(frames[1:], start=1):
+        numbers = tuple(int(value) for value in current.numbers)
+        if numbers != reference_numbers:
+            raise ValidationError(
+                f"Trajectory frame {frame_index} changes atom identity or ordering."
+            )
+        if len(previous.positions) != len(masses) or len(current.positions) != len(masses):
+            raise ValidationError(f"Trajectory frame {frame_index} has the wrong atom count.")
+        squared = 0.0
+        for mass, before, after in zip(
+            masses, previous.positions, current.positions, strict=True
+        ):
+            displacement_squared = sum(
+                (float(after[axis]) - float(before[axis])) ** 2 for axis in range(3)
+            )
+            squared += mass * displacement_squared
+        step = math.sqrt(squared / total_mass)
+        if not math.isfinite(step):
+            raise ValidationError(
+                f"Trajectory frame {frame_index} has non-finite Cartesian displacement."
+            )
+        cumulative.append(cumulative[-1] + step)
+        previous = current
+    return tuple(cumulative)
+
+
+def _coordinate_indices(coordinates: tuple[float, ...], requested_count: int) -> tuple[int, ...]:
+    frame_count = len(coordinates)
+    _validate_requested_count(frame_count, requested_count)
+    if requested_count == 1:
+        target = coordinates[-1] / 2.0
+        chosen = min(
+            range(frame_count),
+            key=lambda index: (abs(coordinates[index] - target), index),
+        )
+        return (chosen,)
+    if coordinates[-1] == 0.0:
+        return uniform_frame_indices(frame_count, requested_count)
+    indices = [0]
+    for target_index in range(1, requested_count - 1):
+        target = coordinates[-1] * target_index / (requested_count - 1)
+        lower = indices[-1] + 1
+        upper = frame_count - (requested_count - target_index)
+        chosen = min(
+            range(lower, upper + 1),
+            key=lambda index: (abs(coordinates[index] - target), index),
+        )
+        indices.append(chosen)
+    indices.append(frame_count - 1)
+    return tuple(indices)
+
+
+def mass_weighted_arc_length_indices(
+    frames: list[Any], requested_count: int
+) -> tuple[int, ...]:
+    """Choose endpoint-inclusive frames uniformly in mass-weighted Cartesian arc length."""
+    return _coordinate_indices(_mass_weighted_arc_coordinates(frames), requested_count)
 
 
 def load_trajectory_import_config(path: str | Path) -> dict[str, Any]:
@@ -129,6 +219,14 @@ def load_trajectory_import_config(path: str | Path) -> dict[str, Any]:
         count = require_int(require_key(entry, "count", item_path), f"{item_path}.count")
         if count < 1:
             raise ValidationError(f"{item_path}.count must be positive.")
+        selection = require_str(
+            entry.get("frame_selection", "uniform_index"), f"{item_path}.frame_selection"
+        )
+        if selection not in _FRAME_SELECTIONS:
+            raise ValidationError(
+                f"{item_path}.frame_selection must be one of {_FRAME_SELECTIONS!r}; "
+                f"got {selection!r}."
+            )
     filters = require_mapping(
         require_key(config, "filters", "trajectory_import_config"),
         "trajectory_import_config.filters",
@@ -203,7 +301,14 @@ def import_trajectory_candidates(
             )
         source = Path(source_root) / relative_path
         frames = _read_trajectory(source)
-        indices = uniform_frame_indices(len(frames), int(item["count"]))
+        frame_selection = str(item.get("frame_selection", "uniform_index"))
+        if frame_selection == "mass_weighted_arc_length":
+            arc_coordinates = _mass_weighted_arc_coordinates(frames)
+            indices = _coordinate_indices(arc_coordinates, int(item["count"]))
+            total_mass_weighted_arc_length = arc_coordinates[-1]
+        else:
+            indices = uniform_frame_indices(len(frames), int(item["count"]))
+            total_mass_weighted_arc_length = None
         source_hash = sha256_of_file(source)
         resolved_sources.append(
             {
@@ -211,7 +316,9 @@ def import_trajectory_candidates(
                 "path": relative_path.as_posix(),
                 "sha256": source_hash,
                 "frame_count": len(frames),
+                "frame_selection": frame_selection,
                 "selected_frame_indices": list(indices),
+                "total_mass_weighted_arc_length_angstrom": total_mass_weighted_arc_length,
             }
         )
         for frame_index in indices:
@@ -227,7 +334,7 @@ def import_trajectory_candidates(
                     (float(row[0]), float(row[1]), float(row[2])) for row in atoms.positions
                 ),
                 parent_structure_id=parent_id,
-                sampling_method="ase_trajectory_uniform",
+                sampling_method=f"ase_trajectory_{frame_selection}",
             )
             validate_electron_spin_parity(
                 electron_count(structure.atomic_numbers, charge), multiplicity
@@ -246,6 +353,7 @@ def import_trajectory_candidates(
                     generation_parameters={
                         "trajectory_id": trajectory_id,
                         "frame_index": frame_index,
+                        "frame_selection": frame_selection,
                         "source_path": relative_path.as_posix(),
                         "source_sha256": source_hash,
                     },

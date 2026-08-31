@@ -9,6 +9,7 @@ from unittest.mock import patch
 
 from uma_pyscf.sampling.trajectory_import import (
     import_trajectory_candidates,
+    mass_weighted_arc_length_indices,
     uniform_frame_indices,
 )
 
@@ -24,6 +25,10 @@ class TrajectoryImportTests(unittest.TestCase):
     def test_uniform_indices_include_both_endpoints(self) -> None:
         self.assertEqual(uniform_frame_indices(10, 4), (0, 3, 6, 9))
         self.assertEqual(uniform_frame_indices(5, 1), (2,))
+
+    def test_mass_weighted_arc_length_tracks_geometry_not_frame_index(self) -> None:
+        frames = [_Atoms(distance) for distance in (0.70, 0.71, 0.72, 1.20, 1.70)]
+        self.assertEqual(mass_weighted_arc_length_indices(frames, 3), (0, 3, 4))
 
     def test_import_records_source_hash_and_original_frame_index(self) -> None:
         config = """\
@@ -69,6 +74,47 @@ filters:
         source = manifest.config["resolved_sources"][0]
         self.assertEqual(source["selected_frame_indices"], [0, 2, 4])
         self.assertEqual(len(source["sha256"]), 64)
+
+    def test_import_can_thin_by_mass_weighted_arc_length(self) -> None:
+        config = """\
+schema_version: 1
+sampling_id: arc_test_v1
+state: {charge: 0, multiplicity: 1}
+trajectories:
+  - trajectory_id: reaction_arc
+    parent_id: reaction_family
+    path: reaction.traj
+    count: 3
+    frame_selection: mass_weighted_arc_length
+filters:
+  covalent_factor: 0.3
+  bond_factor: 1.3
+  allow_fragments: true
+  duplicate_decimals: 3
+"""
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            config_path = root / "config.yaml"
+            config_path.write_text(config, encoding="utf-8")
+            trajectory_path = root / "reaction.traj"
+            trajectory_path.write_bytes(b"trajectory fixture")
+            frames = [_Atoms(distance) for distance in (0.70, 0.71, 0.72, 1.20, 1.70)]
+            with patch(
+                "uma_pyscf.sampling.trajectory_import._read_trajectory", return_value=frames
+            ):
+                manifest, _ = import_trajectory_candidates(config_path, root)
+
+        self.assertEqual(
+            [record.generation_parameters["frame_index"] for record in manifest.records],
+            [0, 3, 4],
+        )
+        self.assertTrue(
+            all(
+                record.generation_parameters["frame_selection"]
+                == "mass_weighted_arc_length"
+                for record in manifest.records
+            )
+        )
 
 
 if __name__ == "__main__":

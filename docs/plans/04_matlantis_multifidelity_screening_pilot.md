@@ -4,6 +4,9 @@
 - 基準日: 2026-09-01
 - 位置づけ: P2.9 active learningの前段に置くengineering pilot
 - production状態: 本書だけではdataset release、Gate 2通過、追加学習modelの昇格を認めない
+- 更新: 2026-09-01のDeep Research後、label予算・calibration順序・productionへの昇格条件は
+  [教師データsampling・calibration・oracle pool計画](05_teacher_data_sampling_and_calibration.md)
+  が本書に優先する。本書はMF0 engineering experimentの設計・記録として保持する。
 - 入力 evidence:
   [PFP engineering-50実行記録](../lab_notes/2026-08-31_matlantis_pfp_engineering_50.md)と
   2026-08-31受領のmulti-fidelity調査報告
@@ -281,4 +284,3 @@ disagreement scoreは廃止する。
   fine-tuning後の価値を直接証明しない。MF-Cを省略してproduction採択しない。
 - 固定test、selection union、training追加集合は親構造単位で分離する。
   trajectory frame単位のrandom splitは禁止する。
-

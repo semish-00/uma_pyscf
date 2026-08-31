@@ -33,6 +33,7 @@ from ..inference.cli import (
 )
 from ..qc.cli import configure_qc, run_qc
 from ..sampling.cli import configure_sample, run_sample
+from ..sampling.portfolio_cli import configure_assemble_portfolio, run_assemble_portfolio
 from ..sampling.selection_cli import configure_select, run_select
 from ..sampling.trajectory_cli import configure_import_trajectory, run_import_trajectory
 from ..schemas.cli import configure_validate_records, run_validate_records
@@ -87,6 +88,12 @@ SUBCOMMANDS: tuple[Subcommand, ...] = (
         configure=configure_sample,
     ),
     Subcommand(
+        name="assemble-portfolio",
+        help="Assemble score-independent source quotas into one candidate portfolio.",
+        handler=run_assemble_portfolio,
+        configure=configure_assemble_portfolio,
+    ),
+    Subcommand(
         name="select",
         help="Select scored candidates with deterministic policies and parent quotas.",
         handler=run_select,
@@ -94,7 +101,7 @@ SUBCOMMANDS: tuple[Subcommand, ...] = (
     ),
     Subcommand(
         name="import-trajectory",
-        help="Import uniformly spaced ASE trajectory frames as unlabeled candidates.",
+        help="Import deterministically thinned ASE trajectory frames as unlabeled candidates.",
         handler=run_import_trajectory,
         configure=configure_import_trajectory,
     ),
