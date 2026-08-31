@@ -1,0 +1,26 @@
+schema_version: 1
+selection_id: mf_neb_arrhenius_selection_dry_run_v1
+created: "2026-09-01"
+description: >-
+  Engineering-only selection on the two-reaction IRC pool. Parent and
+  trajectory caps prevent a policy from filling its budget with adjacent
+  frames from one path.
+dry_run: true
+seed: 20260901
+max_union_records: 30
+max_per_parent: 5
+max_per_trajectory: 3
+policies:
+  - name: random
+    kind: random
+    budget: 10
+  - name: pfp_force_rms
+    kind: score
+    score: pfp_uma_force_rms
+    direction: max
+    budget: 10
+  - name: pfp_combined_rank
+    kind: score
+    score: pfp_uma_combined_rank
+    direction: max
+    budget: 10

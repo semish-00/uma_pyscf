@@ -1,0 +1,25 @@
+schema_version: 1
+selection_id: mf_pfp_screening_engineering_50_dry_run_v1
+created: "2026-09-01"
+description: >-
+  Plumbing-only selection dry-run on the already observed engineering-50 set.
+  It validates deterministic ranking, parent quotas, and the policy union but
+  provides no scientific active-learning evidence and authorizes no new labels.
+dry_run: true
+seed: 20260901
+max_union_records: 30
+max_per_parent: 2
+policies:
+  - name: random
+    kind: random
+    budget: 10
+  - name: pfp_force_rms
+    kind: score
+    score: pfp_uma_force_rms
+    direction: max
+    budget: 10
+  - name: pfp_combined_rank
+    kind: score
+    score: pfp_uma_combined_rank
+    direction: max
+    budget: 10

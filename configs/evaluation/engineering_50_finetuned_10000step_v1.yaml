@@ -1,0 +1,19 @@
+schema_version: 1
+evaluation_id: engineering_50_finetuned_10000step_v1
+created: "2026-09-01"
+description: >-
+  Engineering-only evaluation of the final checkpoint from the 10,000-step
+  overfit extension. This is not a scientific model release and must not be
+  used as the fixed test for active-learning policy selection.
+dataset_id: ds_sigehcl_001
+model_name: engineering-50-overfit-10000step-v1
+model_source: local fairchem fine-tuning job
+model_license: FAIR Chemistry License v1 (2025-05-14)
+task: omol
+device: cuda
+inference_settings: default
+seed: 41
+fairchem_core_version: "2.22.0"
+partitions:
+  - train
+  - holdout

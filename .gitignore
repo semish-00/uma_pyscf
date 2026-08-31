@@ -5,6 +5,8 @@
 # Generated calculation data.
 /validation/orca_gpu4pyscf/runs/*
 !/validation/orca_gpu4pyscf/runs/.gitignore
+/validation/matlantis_pfp/runs/*
+!/validation/matlantis_pfp/runs/.gitignore
 /data/
 /runs/
 /artifacts/

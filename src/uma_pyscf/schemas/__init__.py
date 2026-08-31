@@ -15,6 +15,13 @@ reads it back through :meth:`LabelRecord.from_dict`.
 
 from __future__ import annotations
 
+from .acquisition import (
+    ACQUISITION_SCORE_SCHEMA,
+    SELECTION_MANIFEST_SCHEMA,
+    AcquisitionScoreManifest,
+    AcquisitionScoreRecord,
+    SelectionManifest,
+)
 from .candidate import (
     CANDIDATE_MANIFEST_SCHEMA,
     CANDIDATE_STATUSES,
@@ -48,6 +55,12 @@ from .label_record import (
     Results,
     Structure,
 )
+from .model_prediction import (
+    MODEL_PREDICTION_SCHEMA,
+    PREDICTION_UNITS,
+    ModelPredictionManifest,
+    ModelPredictionRecord,
+)
 from .qc_report import (
     QC_REPORT_SCHEMA,
     QC_REPORT_STATUSES,
@@ -69,6 +82,7 @@ from .state_registry import (
 )
 
 __all__ = [
+    "ACQUISITION_SCORE_SCHEMA",
     "ASE_DATASET_MANIFEST_SCHEMA",
     "CANDIDATE_MANIFEST_SCHEMA",
     "CANDIDATE_STATUSES",
@@ -80,15 +94,20 @@ __all__ = [
     "GEOMETRY_QC_SCHEMA",
     "IMPORT_EVENT",
     "LABEL_RECORD_SCHEMA",
+    "MODEL_PREDICTION_SCHEMA",
+    "PREDICTION_UNITS",
     "QC_REPORT_SCHEMA",
     "QC_REPORT_STATUSES",
     "QC_STATUSES",
     "SPLIT_AXES",
     "SPLIT_MANIFEST_SCHEMA",
+    "SELECTION_MANIFEST_SCHEMA",
     "STATE_REGISTRY_SCHEMA",
     "STATE_REGISTRY_STATUSES",
     "CandidateManifest",
     "CandidateRecord",
+    "AcquisitionScoreManifest",
+    "AcquisitionScoreRecord",
     "AseDatasetManifest",
     "CompositionBaseline",
     "ElectronicState",
@@ -96,10 +115,13 @@ __all__ = [
     "GeometryQcReport",
     "LabelRecord",
     "Method",
+    "ModelPredictionManifest",
+    "ModelPredictionRecord",
     "QcReport",
     "QcState",
     "RawArtifact",
     "Results",
+    "SelectionManifest",
     "SplitManifest",
     "StateRegistry",
     "StateRegistryEntry",

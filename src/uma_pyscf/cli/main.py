@@ -25,9 +25,16 @@ from ..datasets.ase_lmdb_cli import (
 )
 from ..datasets.baseline_cli import configure_fit_baseline, run_fit_baseline
 from ..datasets.cli import configure_split, run_split
-from ..inference.cli import configure_evaluate_uma, run_evaluate_uma
+from ..inference.cli import (
+    configure_evaluate_uma,
+    configure_predict_uma,
+    run_evaluate_uma,
+    run_predict_uma,
+)
 from ..qc.cli import configure_qc, run_qc
 from ..sampling.cli import configure_sample, run_sample
+from ..sampling.selection_cli import configure_select, run_select
+from ..sampling.trajectory_cli import configure_import_trajectory, run_import_trajectory
 from ..schemas.cli import configure_validate_records, run_validate_records
 
 __all__ = ["SUBCOMMANDS", "Subcommand", "build_parser", "main", "run_info"]
@@ -80,6 +87,18 @@ SUBCOMMANDS: tuple[Subcommand, ...] = (
         configure=configure_sample,
     ),
     Subcommand(
+        name="select",
+        help="Select scored candidates with deterministic policies and parent quotas.",
+        handler=run_select,
+        configure=configure_select,
+    ),
+    Subcommand(
+        name="import-trajectory",
+        help="Import uniformly spaced ASE trajectory frames as unlabeled candidates.",
+        handler=run_import_trajectory,
+        configure=configure_import_trajectory,
+    ),
+    Subcommand(
         name="label",
         help="Label a candidate manifest with the frozen GPU4PySCF protocol.",
         handler=run_label,
@@ -120,6 +139,12 @@ SUBCOMMANDS: tuple[Subcommand, ...] = (
         help="Evaluate a base UMA model on verified ASE-LMDB partitions.",
         handler=run_evaluate_uma,
         configure=configure_evaluate_uma,
+    ),
+    Subcommand(
+        name="predict-uma",
+        help="Predict an unlabeled candidate manifest with a pinned UMA model.",
+        handler=run_predict_uma,
+        configure=configure_predict_uma,
     ),
 )
 

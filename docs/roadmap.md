@@ -26,15 +26,16 @@
 | 50–200構造engineering set | 完了 | job 1797134、50/50初回収束、resume 50/50 skip、QC 50/50 accepted |
 | Release controls | 機構完了・科学review継続 | train-only baseline実測済み、state registry 12件は全てpending、decision 0004 |
 | 1,000–5,000構造pilot | release条件のreview後 | H/Si/Ge/Cl、8原子以内から開始 |
-| UMA fine-tuning | overfit smoke準備中 | base UMA 50件評価完了（job 1798793）。train-only正規化→200-step overfit smoke |
+| UMA fine-tuning | 10,000-step engineering overfit評価完了 | train適合・holdout崩壊を確認。base UMAをscreening基準として維持 |
 | 科学的・retention評価 | Gate 2後 | relative energy、forces、forgetting |
-| Active learning / cluster拡張 | 後続 | fixed holdoutの改善で判断 |
+| Active learning / cluster拡張 | 78件IRC poolのUMA/PFP selection dry-run完了 | 独立parent/test固定、diversity追加、400件pool化 |
 
 ## 詳細計画
 
 - [Part I: GPU4PySCF検証計画](plans/01_gpu4pyscf_validation_plan.md)
 - [Part II: UMAファインチューニング実装計画](plans/02_uma_finetuning_implementation_plan.md)
 - [Part II準備: 本番リポジトリ構成設計](plans/03_production_repository_structure.md)
+- [P2.9前段: Matlantis/PFP多フィデリティ教師データ選抜pilot計画](plans/04_matlantis_multifidelity_screening_pilot.md)
 
 このファイルは進捗だけを更新する。scope、品質基準、設計を変更するときは、
 `project_plan.md`および該当Part計画も更新し、必要に応じて`docs/decisions/`へ理由を残す。

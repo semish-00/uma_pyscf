@@ -1,0 +1,8 @@
+{
+  "calc_mode": "R2SCAN_PLUS_D3",
+  "max_retries": 15,
+  "model_version": "v9.0.0",
+  "required_charge": 0,
+  "required_multiplicity": 1,
+  "schema": "uma-pyscf-pfp-protocol-v1"
+}

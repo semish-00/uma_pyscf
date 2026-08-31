@@ -1,0 +1,37 @@
+# Engineering-only reaction-path pool. The source root is supplied separately
+# so the committed config contains logical paths, not a workstation-specific path.
+schema_version: 1
+sampling_id: mf_neb_arrhenius_trajectory_pool_v1
+created: "2026-09-01"
+description: >-
+  Endpoint-inclusive uniform sampling of four existing PFP IRC trajectories.
+  This two-parent pool validates trajectory provenance and multi-fidelity
+  scoring only; it is not the independent scientific pilot pool or fixed test.
+
+state:
+  charge: 0
+  multiplicity: 1
+
+trajectories:
+  - trajectory_id: sih4_irc_forward
+    parent_id: sih4_to_sih2_h2
+    path: runs/sih4_to_sih2_h2_pfp_only_20260813T142848Z/irc_forward.traj
+    count: 20
+  - trajectory_id: sih4_irc_reverse
+    parent_id: sih4_to_sih2_h2
+    path: runs/sih4_to_sih2_h2_pfp_only_20260813T142848Z/irc_reverse.traj
+    count: 20
+  - trajectory_id: gehcl3_irc_forward
+    parent_id: gehcl3_to_gecl2_hcl
+    path: runs/gehcl3_to_gecl2_hcl_pfp_only_20260813T164318Z/irc_forward.traj
+    count: 20
+  - trajectory_id: gehcl3_irc_reverse
+    parent_id: gehcl3_to_gecl2_hcl
+    path: runs/gehcl3_to_gecl2_hcl_pfp_only_20260813T164318Z/irc_reverse.traj
+    count: 20
+
+filters:
+  covalent_factor: 0.65
+  bond_factor: 1.3
+  allow_fragments: true
+  duplicate_decimals: 3

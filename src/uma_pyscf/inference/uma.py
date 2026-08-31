@@ -13,10 +13,12 @@ from typing import Any
 from ..core.errors import ValidationError
 from ..core.ids import sha256_of_file
 from ..core.io import write_json_atomic
+from ..schemas.candidate import CandidateManifest
 from ..schemas.dataset_manifest import AseDatasetManifest
+from ..schemas.model_prediction import ModelPredictionManifest, ModelPredictionRecord
 from .metrics import PredictionRecord, Vector, summarize_predictions
 
-__all__ = ["evaluate_ase_lmdb"]
+__all__ = ["evaluate_ase_lmdb", "predict_candidate_manifest"]
 
 
 def _inference_api() -> tuple[Any, Any, Any, Any]:
@@ -75,6 +77,127 @@ def _package_version(distribution: str) -> str:
         raise ValidationError(f"Required distribution {distribution!r} is not installed.") from exc
 
 
+def _initialize_uma(
+    *,
+    model_name: str,
+    checkpoint_path: str | Path | None,
+    model_cache_dir: str | Path,
+    task: str,
+    device: str,
+    inference_settings: str,
+    seed: int,
+    fairchem_core_version: str,
+) -> dict[str, Any]:
+    """Load one pinned predictor and return its calculator plus provenance."""
+    cache_root = Path(model_cache_dir).resolve()
+    configured_cache = os.environ.get("FAIRCHEM_CACHE_DIR")
+    if configured_cache is None or Path(configured_cache).resolve() != cache_root:
+        raise ValidationError(
+            "FAIRCHEM_CACHE_DIR must equal model_cache_dir before fairchem is imported; "
+            "fairchem-core 2.22.0 otherwise stores the checkpoint in its default cache."
+        )
+    ase, connect, calculator_type, dependencies = _inference_api()
+    pretrained_mlip, load_predict_unit, torch = dependencies
+    installed_fairchem = _package_version("fairchem-core")
+    if installed_fairchem != fairchem_core_version:
+        raise ValidationError(
+            f"fairchem-core is {installed_fairchem}, expected {fairchem_core_version}."
+        )
+    cache_root.mkdir(parents=True, exist_ok=True)
+    local_checkpoint = Path(checkpoint_path).resolve() if checkpoint_path is not None else None
+    if local_checkpoint is not None:
+        if not local_checkpoint.is_file():
+            raise ValidationError(f"Fine-tuned checkpoint {local_checkpoint} is not a file.")
+        predictor = load_predict_unit(
+            local_checkpoint,
+            device=device,
+            inference_settings=inference_settings,
+            seed=seed,
+        )
+    else:
+        predictor = pretrained_mlip.get_predict_unit(
+            model_name,
+            device=device,
+            inference_settings=inference_settings,
+            cache_dir=str(cache_root),
+            seed=seed,
+        )
+    cache_paths = [
+        path for path in sorted(cache_root.rglob("*")) if path.is_file() and not path.is_symlink()
+    ]
+    if not any(path.stat().st_size > 1_000_000 for path in cache_paths):
+        raise ValidationError(
+            f"Model cache {cache_root} contains no checkpoint-sized regular file."
+        )
+    cache_files = [
+        {
+            "path": path.relative_to(cache_root).as_posix(),
+            "bytes": path.stat().st_size,
+            "sha256": sha256_of_file(path),
+        }
+        for path in cache_paths
+    ]
+    return {
+        "ase": ase,
+        "connect": connect,
+        "calculator": calculator_type(predictor, task_name=task),
+        "torch": torch,
+        "installed_fairchem": installed_fairchem,
+        "local_checkpoint": local_checkpoint,
+        "cache_files": cache_files,
+    }
+
+
+def _model_metadata(
+    context: dict[str, Any],
+    *,
+    model_name: str,
+    model_source: str,
+    model_license: str,
+    task: str,
+    device: str,
+    inference_settings: str,
+    seed: int,
+) -> dict[str, Any]:
+    local_checkpoint = context["local_checkpoint"]
+    return {
+        "name": model_name,
+        "source": model_source,
+        "license": model_license,
+        "task": task,
+        "device": device,
+        "inference_settings": inference_settings,
+        "seed": seed,
+        "evaluated_checkpoint": (
+            {
+                "path": str(local_checkpoint),
+                "bytes": local_checkpoint.stat().st_size,
+                "sha256": sha256_of_file(local_checkpoint),
+            }
+            if local_checkpoint is not None
+            else None
+        ),
+        "cache_files": context["cache_files"],
+    }
+
+
+def _runtime_metadata(
+    context: dict[str, Any], *, repository: str | Path, container_sha256: str
+) -> dict[str, Any]:
+    torch = context["torch"]
+    ase = context["ase"]
+    return {
+        "python": platform.python_version(),
+        "ase": str(ase.__version__),
+        "fairchem_core": context["installed_fairchem"],
+        "torch": str(torch.__version__),
+        "torch_cuda": str(torch.version.cuda),
+        "cuda_device": (str(torch.cuda.get_device_name()) if torch.cuda.is_available() else None),
+        "container_sha256": container_sha256,
+        "git_commit": _git_commit(Path(repository)),
+    }
+
+
 def evaluate_ase_lmdb(
     manifest: AseDatasetManifest,
     *,
@@ -97,20 +220,6 @@ def evaluate_ase_lmdb(
     container_sha256: str,
 ) -> dict[str, Any]:
     """Run base-model inference and atomically publish predictions plus metrics."""
-    cache_root = Path(model_cache_dir).resolve()
-    configured_cache = os.environ.get("FAIRCHEM_CACHE_DIR")
-    if configured_cache is None or Path(configured_cache).resolve() != cache_root:
-        raise ValidationError(
-            "FAIRCHEM_CACHE_DIR must equal model_cache_dir before fairchem is imported; "
-            "fairchem-core 2.22.0 otherwise stores the checkpoint in its default cache."
-        )
-    ase, connect, calculator_type, dependencies = _inference_api()
-    pretrained_mlip, load_predict_unit, torch = dependencies
-    installed_fairchem = _package_version("fairchem-core")
-    if installed_fairchem != fairchem_core_version:
-        raise ValidationError(
-            f"fairchem-core is {installed_fairchem}, expected {fairchem_core_version}."
-        )
     if task != manifest.task:
         raise ValidationError(
             f"Evaluation task {task!r} does not match dataset task {manifest.task!r}."
@@ -118,44 +227,18 @@ def evaluate_ase_lmdb(
     unknown = sorted(set(partitions) - set(manifest.partitions))
     if unknown:
         raise ValidationError(f"Evaluation names unknown dataset partitions: {unknown!r}.")
-
-    cache_root.mkdir(parents=True, exist_ok=True)
-    local_checkpoint = Path(checkpoint_path).resolve() if checkpoint_path is not None else None
-    if local_checkpoint is not None:
-        if not local_checkpoint.is_file():
-            raise ValidationError(f"Fine-tuned checkpoint {local_checkpoint} is not a file.")
-        predictor = load_predict_unit(
-            local_checkpoint,
-            device=device,
-            inference_settings=inference_settings,
-            seed=seed,
-        )
-    else:
-        predictor = pretrained_mlip.get_predict_unit(
-            model_name,
-            device=device,
-            inference_settings=inference_settings,
-            cache_dir=str(cache_root),
-            seed=seed,
-        )
-    cache_paths = [
-        path
-        for path in sorted(cache_root.rglob("*"))
-        if path.is_file() and not path.is_symlink()
-    ]
-    if not any(path.stat().st_size > 1_000_000 for path in cache_paths):
-        raise ValidationError(
-            f"Model cache {cache_root} contains no checkpoint-sized regular file."
-        )
-    cache_files = [
-        {
-            "path": path.relative_to(cache_root).as_posix(),
-            "bytes": path.stat().st_size,
-            "sha256": sha256_of_file(path),
-        }
-        for path in cache_paths
-    ]
-    calculator = calculator_type(predictor, task_name=task)
+    context = _initialize_uma(
+        model_name=model_name,
+        checkpoint_path=checkpoint_path,
+        model_cache_dir=model_cache_dir,
+        task=task,
+        device=device,
+        inference_settings=inference_settings,
+        seed=seed,
+        fairchem_core_version=fairchem_core_version,
+    )
+    connect = context["connect"]
+    calculator = context["calculator"]
     root = Path(dataset_dir)
     predictions: list[PredictionRecord] = []
     for partition in partitions:
@@ -224,37 +307,19 @@ def evaluate_ase_lmdb(
             "split_sha256": manifest.split["sha256"],
             "partitions": list(partitions),
         },
-        "model": {
-            "name": model_name,
-            "source": model_source,
-            "license": model_license,
-            "task": task,
-            "device": device,
-            "inference_settings": inference_settings,
-            "seed": seed,
-            "evaluated_checkpoint": (
-                {
-                    "path": str(local_checkpoint),
-                    "bytes": local_checkpoint.stat().st_size,
-                    "sha256": sha256_of_file(local_checkpoint),
-                }
-                if local_checkpoint is not None
-                else None
-            ),
-            "cache_files": cache_files,
-        },
-        "runtime": {
-            "python": platform.python_version(),
-            "ase": str(ase.__version__),
-            "fairchem_core": installed_fairchem,
-            "torch": str(torch.__version__),
-            "torch_cuda": str(torch.version.cuda),
-            "cuda_device": (
-                str(torch.cuda.get_device_name()) if torch.cuda.is_available() else None
-            ),
-            "container_sha256": container_sha256,
-            "git_commit": _git_commit(Path(repository)),
-        },
+        "model": _model_metadata(
+            context,
+            model_name=model_name,
+            model_source=model_source,
+            model_license=model_license,
+            task=task,
+            device=device,
+            inference_settings=inference_settings,
+            seed=seed,
+        ),
+        "runtime": _runtime_metadata(
+            context, repository=repository, container_sha256=container_sha256
+        ),
         "units": {"energy": "eV", "forces": "eV/angstrom"},
         "metrics_by_partition": {
             partition: summarize_predictions(records)
@@ -263,4 +328,81 @@ def evaluate_ase_lmdb(
         "predictions": [record.to_dict() for record in predictions],
     }
     write_json_atomic(output_path, artifact)
+    return artifact
+
+
+def predict_candidate_manifest(
+    manifest: CandidateManifest,
+    *,
+    manifest_sha256: str,
+    prediction_id: str,
+    model_name: str,
+    model_source: str,
+    model_license: str,
+    checkpoint_path: str | Path | None,
+    model_cache_dir: str | Path,
+    task: str,
+    device: str,
+    inference_settings: str,
+    seed: int,
+    fairchem_core_version: str,
+    output_path: str | Path,
+    repository: str | Path,
+    container_sha256: str,
+) -> ModelPredictionManifest:
+    """Predict an unlabeled candidate pool without exposing reference-label fields."""
+    if task != "omol":
+        raise ValidationError(f"Candidate prediction task must be 'omol'; got {task!r}.")
+    context = _initialize_uma(
+        model_name=model_name,
+        checkpoint_path=checkpoint_path,
+        model_cache_dir=model_cache_dir,
+        task=task,
+        device=device,
+        inference_settings=inference_settings,
+        seed=seed,
+        fairchem_core_version=fairchem_core_version,
+    )
+    ase = context["ase"]
+    calculator = context["calculator"]
+    predictions: list[ModelPredictionRecord] = []
+    for candidate in manifest.records:
+        atoms = ase.Atoms(
+            numbers=candidate.structure.atomic_numbers,
+            positions=candidate.structure.positions_angstrom,
+            pbc=False,
+        )
+        atoms.info["charge"] = candidate.state.charge
+        atoms.info["spin"] = candidate.state.multiplicity
+        atoms.calc = calculator
+        energy = float(atoms.get_potential_energy())
+        forces = _vectors(atoms.get_forces(), path=f"{candidate.record_id}.predicted_forces")
+        predictions.append(
+            ModelPredictionRecord(
+                record_id=candidate.record_id,
+                structure=candidate.structure,
+                state=candidate.state,
+                energy_ev=energy,
+                forces_ev_per_angstrom=forces,
+            )
+        )
+    artifact = ModelPredictionManifest(
+        prediction_id=prediction_id,
+        source={"id": manifest.sampling_id, "sha256": manifest_sha256},
+        model=_model_metadata(
+            context,
+            model_name=model_name,
+            model_source=model_source,
+            model_license=model_license,
+            task=task,
+            device=device,
+            inference_settings=inference_settings,
+            seed=seed,
+        ),
+        runtime=_runtime_metadata(
+            context, repository=repository, container_sha256=container_sha256
+        ),
+        records=tuple(predictions),
+    )
+    write_json_atomic(output_path, artifact.to_dict())
     return artifact

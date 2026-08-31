@@ -22,6 +22,9 @@ pip install -e .          # runtime core has no third-party dependencies
 pip install -e '.[dev]'   # adds ruff and mypy
 uma-pyscf info            # package version, Python version, platform
 uma-pyscf label --help    # production protocol dry-run and execution
+uma-pyscf import-trajectory --help  # ASE trajectory -> unlabeled candidates
+uma-pyscf predict-uma --help  # unlabeled candidate-manifest inference
+uma-pyscf select --help       # deterministic, parent-capped acquisition
 ```
 
 Python 3.10 or newer is required. The lower bound matches the frozen
@@ -56,6 +59,27 @@ validation/       Part I cross-code experiment (frozen, self-contained)
 package**. It is never imported from `src/`, and `src/` is never imported from
 it. Logic that generalizes is re-implemented with tests on the package side
 rather than copied.
+
+`validation/matlantis_pfp/` is a separate multi-fidelity comparison
+experiment. It evaluates neutral candidate geometries with a pinned PFP model
+inside Matlantis and compares energy differences and forces with canonical
+GPU4PySCF records. PFP outputs are not canonical teacher labels and are never
+mixed directly into the GPU4PySCF dataset. The production side accepts
+versioned unlabeled UMA predictions and acquisition-score records, then routes
+selected candidates through the normal GPU4PySCF label and QC path.
+
+Existing molecular ASE trajectories can be imported with source-file hashes,
+original frame indices, geometry QC, and duplicate removal before prediction:
+
+```bash
+uma-pyscf import-trajectory \
+  configs/sampling/mf_neb_arrhenius_trajectory_pool_v1.yaml \
+  --source-root /path/to/neb_arrhenius \
+  --output-dir validation/matlantis_pfp/runs/mf_neb_arrhenius_trajectory_pool_v1
+```
+
+Selection configs may set both `max_per_parent` and `max_per_trajectory`; the
+latter fails closed if any score record lacks trajectory provenance.
 
 ## Documents
 

@@ -7,7 +7,7 @@ import tempfile
 import unittest
 
 from uma_pyscf.core.errors import ValidationError
-from uma_pyscf.inference.cli import load_evaluation_config
+from uma_pyscf.inference.cli import load_evaluation_config, load_prediction_config
 from uma_pyscf.inference.metrics import PredictionRecord, summarize_predictions
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -42,9 +42,7 @@ class UmaEvaluationMetricTests(unittest.TestCase):
         self.assertAlmostEqual(float(metrics["energy_mean_error_ev"]), 0.5)
         self.assertAlmostEqual(float(metrics["energy_mae_ev"]), 1.5)
         self.assertAlmostEqual(float(metrics["energy_mae_ev_per_atom"]), 0.75)
-        self.assertAlmostEqual(
-            float(metrics["energy_same_composition_centered_mae_ev"]), 1.5
-        )
+        self.assertAlmostEqual(float(metrics["energy_same_composition_centered_mae_ev"]), 1.5)
         self.assertAlmostEqual(float(metrics["force_component_mae_ev_per_angstrom"]), 1.5)
         self.assertEqual(prediction("one", 2.0, 0.0).to_dict()["energy_error_ev"], 2.0)
 
@@ -78,6 +76,19 @@ class UmaEvaluationMetricTests(unittest.TestCase):
             REPO_ROOT / "configs/evaluation/engineering_50_finetuned_200step_v1.yaml"
         )
         self.assertEqual(fine_tuned["model_name"], "engineering-50-overfit-200step-v1")
+
+        extended = load_evaluation_config(
+            REPO_ROOT / "configs/evaluation/engineering_50_finetuned_10000step_v1.yaml"
+        )
+        self.assertEqual(extended["model_name"], "engineering-50-overfit-10000step-v1")
+
+        prediction_config = load_prediction_config(
+            REPO_ROOT / "configs/evaluation/mf_pfp_candidate_pool_base_uma_s_1p2_v1.yaml"
+        )
+        self.assertEqual(
+            prediction_config["prediction_id"],
+            "mf_pfp_candidate_pool_base_uma_s_1p2_v1",
+        )
 
 
 if __name__ == "__main__":

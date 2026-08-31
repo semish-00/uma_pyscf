@@ -20,10 +20,18 @@ from ..schemas._fields import (
     require_str,
     validated_json_object,
 )
+from ..schemas.candidate import CandidateManifest
 from ..schemas.dataset_manifest import AseDatasetManifest
-from .uma import evaluate_ase_lmdb
+from .uma import evaluate_ase_lmdb, predict_candidate_manifest
 
-__all__ = ["configure_evaluate_uma", "load_evaluation_config", "run_evaluate_uma"]
+__all__ = [
+    "configure_evaluate_uma",
+    "configure_predict_uma",
+    "load_evaluation_config",
+    "load_prediction_config",
+    "run_evaluate_uma",
+    "run_predict_uma",
+]
 
 _CONFIG_KEYS = (
     "schema_version",
@@ -42,6 +50,24 @@ _CONFIG_KEYS = (
     "partitions",
 )
 _REQUIRED_KEYS = tuple(key for key in _CONFIG_KEYS if key not in {"created", "description"})
+
+_PREDICTION_CONFIG_KEYS = (
+    "schema_version",
+    "prediction_id",
+    "created",
+    "description",
+    "model_name",
+    "model_source",
+    "model_license",
+    "task",
+    "device",
+    "inference_settings",
+    "seed",
+    "fairchem_core_version",
+)
+_PREDICTION_REQUIRED_KEYS = tuple(
+    key for key in _PREDICTION_CONFIG_KEYS if key not in {"created", "description"}
+)
 
 
 def load_evaluation_config(path: str | Path) -> dict[str, Any]:
@@ -83,10 +109,50 @@ def load_evaluation_config(path: str | Path) -> dict[str, Any]:
     return config
 
 
+def load_prediction_config(path: str | Path) -> dict[str, Any]:
+    source = Path(path)
+    try:
+        loaded = yaml.safe_load(source.read_text(encoding="utf-8"))
+    except OSError as exc:
+        raise ValidationError(f"Prediction config {source} cannot be read: {exc}.") from exc
+    except yaml.YAMLError as exc:
+        raise ValidationError(f"Prediction config {source} is not valid YAML: {exc}.") from exc
+    config = validated_json_object(loaded, "config")
+    reject_unknown_keys(config, _PREDICTION_CONFIG_KEYS, "config")
+    for key in _PREDICTION_REQUIRED_KEYS:
+        require_key(config, key, "config")
+    if require_int(config["schema_version"], "config.schema_version") != 1:
+        raise ValidationError("config.schema_version must be 1.")
+    validate_record_id(require_str(config["prediction_id"], "config.prediction_id"))
+    if require_str(config["task"], "config.task") != "omol":
+        raise ValidationError("config.task must be 'omol'.")
+    if require_str(config["device"], "config.device") != "cuda":
+        raise ValidationError("config.device must be 'cuda' for UMA prediction.")
+    settings = require_str(config["inference_settings"], "config.inference_settings")
+    if settings not in {"default", "turbo", "batch"}:
+        raise ValidationError("config.inference_settings must be default, turbo, or batch.")
+    seed = require_int(config["seed"], "config.seed")
+    if seed < 0:
+        raise ValidationError("config.seed must not be negative.")
+    for key in ("model_name", "model_source", "model_license", "fairchem_core_version"):
+        require_str(config[key], f"config.{key}")
+    return config
+
+
 def configure_evaluate_uma(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--config", required=True, metavar="<config>")
     parser.add_argument("--dataset-dir", required=True, metavar="<dir>")
     parser.add_argument("--output", required=True, metavar="<json>")
+    parser.add_argument("--repository", required=True, metavar="<dir>")
+    parser.add_argument("--model-cache-dir", required=True, metavar="<dir>")
+    parser.add_argument("--checkpoint", metavar="<inference_ckpt.pt>")
+    parser.add_argument("--container-sha256-file", required=True, metavar="<file>")
+
+
+def configure_predict_uma(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument("--config", required=True, metavar="<config>")
+    parser.add_argument("--manifest", required=True, metavar="<candidates.json>")
+    parser.add_argument("--output", required=True, metavar="<predictions.json>")
     parser.add_argument("--repository", required=True, metavar="<dir>")
     parser.add_argument("--model-cache-dir", required=True, metavar="<dir>")
     parser.add_argument("--checkpoint", metavar="<inference_ckpt.pt>")
@@ -139,4 +205,40 @@ def run_evaluate_uma(args: argparse.Namespace) -> int:
             f"energy_mae_ev={metrics['energy_mae_ev']:.8g} "
             f"force_mae_ev_per_angstrom={metrics['force_component_mae_ev_per_angstrom']:.8g}"
         )
+    return 0
+
+
+def run_predict_uma(args: argparse.Namespace) -> int:
+    try:
+        config = load_prediction_config(args.config)
+        manifest_path = Path(args.manifest)
+        manifest = CandidateManifest.from_dict(read_json(manifest_path))
+        container_line = Path(args.container_sha256_file).read_text(encoding="utf-8").split()
+        if len(container_line) < 1 or len(container_line[0]) != 64:
+            raise ValidationError("Container SHA-256 file does not begin with a SHA-256 digest.")
+        artifact = predict_candidate_manifest(
+            manifest,
+            manifest_sha256=sha256_of_file(manifest_path),
+            prediction_id=str(config["prediction_id"]),
+            model_name=str(config["model_name"]),
+            model_source=str(config["model_source"]),
+            model_license=str(config["model_license"]),
+            checkpoint_path=(Path(args.checkpoint) if args.checkpoint else None),
+            model_cache_dir=Path(args.model_cache_dir),
+            task=str(config["task"]),
+            device=str(config["device"]),
+            inference_settings=str(config["inference_settings"]),
+            seed=int(config["seed"]),
+            fairchem_core_version=str(config["fairchem_core_version"]),
+            output_path=Path(args.output),
+            repository=Path(args.repository),
+            container_sha256=container_line[0].lower(),
+        )
+    except (UmaPyscfError, OSError, ValueError) as exc:
+        print(f"{args.config}: ERROR {exc}", file=sys.stderr)
+        return 1
+    print(
+        f"prediction={artifact.prediction_id} model={artifact.model['name']} "
+        f"records={len(artifact.records)} output={args.output}"
+    )
     return 0

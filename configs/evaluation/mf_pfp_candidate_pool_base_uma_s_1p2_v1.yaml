@@ -1,0 +1,15 @@
+schema_version: 1
+prediction_id: mf_pfp_candidate_pool_base_uma_s_1p2_v1
+created: "2026-09-01"
+description: >-
+  Base UMA predictions on an unlabeled, versioned candidate manifest for the
+  Matlantis/PFP screening pilot. The output contains no GPU4PySCF reference
+  fields and does not authorize labeling or dataset release.
+model_name: uma-s-1p2
+model_source: https://huggingface.co/facebook/UMA
+model_license: FAIR Chemistry License v1 (2025-05-14)
+task: omol
+device: cuda
+inference_settings: default
+seed: 41
+fairchem_core_version: "2.22.0"
