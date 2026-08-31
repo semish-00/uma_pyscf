@@ -35,6 +35,14 @@ class FineTuneConfigTests(unittest.TestCase):
         self.assertEqual(config["batch_size"], 2)
         self.assertTrue(config["job"]["debug"])
         self.assertEqual(config["job"]["scheduler"]["ranks_per_node"], 1)
+        self.assertEqual(
+            config["train_dataloader"]["batch_sampler_fn"]["on_error"],
+            "warn_and_no_balance",
+        )
+        self.assertEqual(
+            config["eval_dataloader"]["batch_sampler_fn"]["on_error"],
+            "warn_and_no_balance",
+        )
 
 
 if __name__ == "__main__":

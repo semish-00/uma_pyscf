@@ -44,6 +44,7 @@ train_dataloader:
     batch_size: ${batch_size}
     shuffle: true
     seed: 41
+    on_error: warn_and_no_balance
   num_workers: 0
   collate_fn:
     _target_: fairchem.core.units.mlip_unit.mlip_unit.mt_collater_adapter
@@ -64,6 +65,7 @@ eval_dataloader:
     batch_size: ${batch_size}
     shuffle: false
     seed: 41
+    on_error: warn_and_no_balance
   num_workers: 0
   collate_fn:
     _target_: fairchem.core.units.mlip_unit.mlip_unit.mt_collater_adapter
