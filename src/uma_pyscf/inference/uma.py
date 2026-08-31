@@ -27,13 +27,16 @@ def _inference_api() -> tuple[Any, Any, Any, Any]:
             FAIRChemCalculator,
             pretrained_mlip,
         )
+        from fairchem.core.units.mlip_unit import (  # type: ignore[import-not-found]
+            load_predict_unit,
+        )
         import torch  # type: ignore[import-not-found]
     except ImportError as exc:
         raise ValidationError(
             "UMA evaluation requires Python 3.11+ and the inference extra; install with "
             "`pip install 'uma-pyscf[inference]'`."
         ) from exc
-    return ase, connect, FAIRChemCalculator, (pretrained_mlip, torch)
+    return ase, connect, FAIRChemCalculator, (pretrained_mlip, load_predict_unit, torch)
 
 
 def _git_commit(repository: Path) -> str:
@@ -81,6 +84,7 @@ def evaluate_ase_lmdb(
     model_name: str,
     model_source: str,
     model_license: str,
+    checkpoint_path: str | Path | None,
     model_cache_dir: str | Path,
     task: str,
     device: str,
@@ -101,7 +105,7 @@ def evaluate_ase_lmdb(
             "fairchem-core 2.22.0 otherwise stores the checkpoint in its default cache."
         )
     ase, connect, calculator_type, dependencies = _inference_api()
-    pretrained_mlip, torch = dependencies
+    pretrained_mlip, load_predict_unit, torch = dependencies
     installed_fairchem = _package_version("fairchem-core")
     if installed_fairchem != fairchem_core_version:
         raise ValidationError(
@@ -116,13 +120,24 @@ def evaluate_ase_lmdb(
         raise ValidationError(f"Evaluation names unknown dataset partitions: {unknown!r}.")
 
     cache_root.mkdir(parents=True, exist_ok=True)
-    predictor = pretrained_mlip.get_predict_unit(
-        model_name,
-        device=device,
-        inference_settings=inference_settings,
-        cache_dir=str(cache_root),
-        seed=seed,
-    )
+    local_checkpoint = Path(checkpoint_path).resolve() if checkpoint_path is not None else None
+    if local_checkpoint is not None:
+        if not local_checkpoint.is_file():
+            raise ValidationError(f"Fine-tuned checkpoint {local_checkpoint} is not a file.")
+        predictor = load_predict_unit(
+            local_checkpoint,
+            device=device,
+            inference_settings=inference_settings,
+            seed=seed,
+        )
+    else:
+        predictor = pretrained_mlip.get_predict_unit(
+            model_name,
+            device=device,
+            inference_settings=inference_settings,
+            cache_dir=str(cache_root),
+            seed=seed,
+        )
     cache_paths = [
         path
         for path in sorted(cache_root.rglob("*"))
@@ -217,6 +232,15 @@ def evaluate_ase_lmdb(
             "device": device,
             "inference_settings": inference_settings,
             "seed": seed,
+            "evaluated_checkpoint": (
+                {
+                    "path": str(local_checkpoint),
+                    "bytes": local_checkpoint.stat().st_size,
+                    "sha256": sha256_of_file(local_checkpoint),
+                }
+                if local_checkpoint is not None
+                else None
+            ),
             "cache_files": cache_files,
         },
         "runtime": {

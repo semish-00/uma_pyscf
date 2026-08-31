@@ -1,0 +1,18 @@
+schema_version: 1
+evaluation_id: engineering_50_finetuned_200step_v1
+created: "2026-08-31"
+description: >-
+  Engineering-only evaluation of the final checkpoint from the 200-step
+  overfit smoke. This is not a scientific model release.
+dataset_id: ds_sigehcl_001
+model_name: engineering-50-overfit-200step-v1
+model_source: local fairchem fine-tuning job
+model_license: FAIR Chemistry License v1 (2025-05-14)
+task: omol
+device: cuda
+inference_settings: default
+seed: 41
+fairchem_core_version: "2.22.0"
+partitions:
+  - train
+  - holdout

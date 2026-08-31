@@ -89,6 +89,7 @@ def configure_evaluate_uma(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--output", required=True, metavar="<json>")
     parser.add_argument("--repository", required=True, metavar="<dir>")
     parser.add_argument("--model-cache-dir", required=True, metavar="<dir>")
+    parser.add_argument("--checkpoint", metavar="<inference_ckpt.pt>")
     parser.add_argument("--container-sha256-file", required=True, metavar="<file>")
 
 
@@ -113,6 +114,7 @@ def run_evaluate_uma(args: argparse.Namespace) -> int:
             model_name=str(config["model_name"]),
             model_source=str(config["model_source"]),
             model_license=str(config["model_license"]),
+            checkpoint_path=(Path(args.checkpoint) if args.checkpoint else None),
             model_cache_dir=Path(args.model_cache_dir),
             task=str(config["task"]),
             device=str(config["device"]),

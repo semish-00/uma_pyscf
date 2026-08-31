@@ -74,6 +74,11 @@ class UmaEvaluationMetricTests(unittest.TestCase):
             with self.assertRaises(ValidationError):
                 load_evaluation_config(path)
 
+        fine_tuned = load_evaluation_config(
+            REPO_ROOT / "configs/evaluation/engineering_50_finetuned_200step_v1.yaml"
+        )
+        self.assertEqual(fine_tuned["model_name"], "engineering-50-overfit-200step-v1")
+
 
 if __name__ == "__main__":
     unittest.main()
