@@ -5,9 +5,9 @@ description: >-
   Base-UMA CI-NEB paths for the four reaction families that are independent of
   engineering-50. Endpoints come from si_ge_reaction_endpoints_v1. Each final
   path retains endpoints, the climbing image and its neighbors, then fills to
-  nine structures by mass-weighted arc-length coverage. The final force target
-  is a sampling-path criterion, not a precision barrier criterion; minimum
-  climbing steps prevent premature acceptance.
+  nine structures by mass-weighted arc-length coverage. The 0.30 eV/angstrom
+  force targets are sampling-path criteria, not precision barrier criteria;
+  minimum climbing steps prevent premature acceptance.
 
 endpoint_set_id: si_ge_reaction_endpoints_v1
 reaction_ids:
@@ -30,10 +30,10 @@ neb:
   spring_constant_ev_per_angstrom2: 0.10
   coarse_maxstep_angstrom: 0.08
   final_maxstep_angstrom: 0.03
-  coarse_fmax_ev_per_angstrom: 0.10
+  coarse_fmax_ev_per_angstrom: 0.30
   coarse_steps: 500
   final_min_steps: 50
-  final_fmax_ev_per_angstrom: 0.15
+  final_fmax_ev_per_angstrom: 0.30
   final_steps: 1500
 
 selection:
