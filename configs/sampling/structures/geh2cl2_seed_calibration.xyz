@@ -1,0 +1,7 @@
+5
+Approximate tetrahedral GeH2Cl2 seed; relaxed by base UMA before C0 sampling.
+Ge  0.000000  0.000000  0.000000
+H   0.883346  0.883346  0.883346
+H   0.883346 -0.883346 -0.883346
+Cl -1.235530  1.235530 -1.235530
+Cl -1.235530 -1.235530  1.235530

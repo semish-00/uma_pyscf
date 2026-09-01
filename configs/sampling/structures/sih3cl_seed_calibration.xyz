@@ -1,0 +1,7 @@
+5
+Approximate tetrahedral SiH3Cl seed; relaxed by base UMA before C0 sampling.
+Si  0.000000  0.000000  0.000000
+H   0.854478  0.854478  0.854478
+H   0.854478 -0.854478 -0.854478
+H  -0.854478  0.854478 -0.854478
+Cl -1.166248 -1.166248  1.166248

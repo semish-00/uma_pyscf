@@ -1,0 +1,14 @@
+schema_version: 1
+portfolio_id: calibration_local_portfolio_45_v1
+created: "2026-09-01"
+description: >-
+  Blind 45-record local-displacement tranche for C0. UMA is used only to relax
+  the six parents; no model score participates in this selection.
+seed: 2026090107
+strategy: parent_round_robin
+duplicate_decimals: 3
+max_per_parent: 8
+sources:
+  - category: equilibrium_local_nms
+    manifest: calibration_local_displacements_v1_candidates.json
+    quota: 45
