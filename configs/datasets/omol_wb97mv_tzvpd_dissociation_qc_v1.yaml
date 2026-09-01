@@ -1,0 +1,60 @@
+# Source-aware QC for intentional dissociation and association scans.
+# Passing this config is not dataset-release approval.
+schema_version: 1
+qc_id: omol_wb97mv_tzvpd_dissociation_qc_v1
+created: "2026-09-01"
+derived_from: docs/plans/05_teacher_data_sampling_and_calibration.md
+description: >-
+  Calibration QC for intentional dissociation and association structures. It
+  applies the frozen Gate 1 protocol, runtime, electronic, distance, duplicate,
+  checksum, and state checks, but does not reject an intended disconnected
+  geometry solely because it contains multiple fragments.
+release_status: engineering_only_pending_scientific_freeze
+
+protocol:
+  protocol_id: omol_wb97mv_tzvpd_v1
+  protocol_sha256: 34a77ae8fd809f893427fcfb1fe1400743e895c9afdb650215cb406bcb331404
+  engine_name: gpu4pyscf
+  required_versions:
+    python: "3.10.12"
+    pyscf: "2.14.0"
+    gpu4pyscf: "1.8.1"
+    cupy: "13.4.1"
+    cutensor: "2.2.0"
+  required_runtime_keys:
+    - cuda_runtime_version
+    - cuda_driver_version
+    - cuda_device_name
+    - container_image_sha256
+    - python_lock_sha256
+  allowed_elements: [H, Si, Ge, Cl]
+  max_atoms: 8
+  method:
+    functional: wb97m-v
+    basis: def2-tzvpd
+    ecp: null
+    aux_basis: null
+    grid_level: 5
+    nlc_grid_level: 5
+    grid_response: true
+    scf_conv_tol: 1.0e-10
+    scf_max_cycle: 250
+  allowed_density_fit: [true, false]
+  initial_density: minao
+  initial_density_generated_on: cpu_before_device_conversion
+  require_raw_checksum_sha256: true
+  require_state_registry_for_non_default: true
+  approved_state_provenance_prefix: "state_registry:"
+
+electronic:
+  require_converged: true
+  s2_max_abs_deviation: 0.05
+  require_s2_for_open_shell: true
+  gradient_max_abs_hartree_per_bohr: 1.0
+  gradient_norm_max_hartree_per_bohr: 2.0
+
+geometry:
+  covalent_factor: 0.65
+  bond_factor: 1.3
+  allow_fragments: true
+  duplicate_decimals: 3
