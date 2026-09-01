@@ -28,8 +28,8 @@ def run_assemble_portfolio(args: argparse.Namespace) -> int:
         print(f"{args.config}: ERROR {exc}", file=sys.stderr)
         return 1
     print(
-        f"sources={report.counts['source_manifests']} "
-        f"available={report.counts['available']} selected={report.counts['selected']} "
+        f"sources={report['counts']['source_manifests']} "
+        f"available={report['counts']['available']} selected={report['counts']['selected']} "
         f"manifest={manifest_path} report={report_path}"
     )
     return 0

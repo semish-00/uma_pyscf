@@ -235,10 +235,8 @@ Deep Research案の新しいtop-level `features/`、`acquisition/` packageは作
 configs/sampling/
   calibration_portfolio_v1.yaml
   ... source-specific generator configs
-src/uma_pyscf/schemas/
-  portfolio.py                 # blind portfolio report schema
 src/uma_pyscf/sampling/
-  portfolio.py                 # multi-manifest assembly and quotas
+  portfolio.py                 # multi-manifest assembly, quotas, compact receipt
   portfolio_cli.py
   trajectory_import.py         # path thinning strategies
   generate.py                  # deterministic local/scan operations

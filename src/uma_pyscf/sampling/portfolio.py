@@ -23,11 +23,6 @@ from ..schemas._fields import (
     validated_json_object,
 )
 from ..schemas.candidate import CandidateManifest, CandidateRecord
-from ..schemas.portfolio import (
-    PORTFOLIO_SKIP_REASONS,
-    PortfolioReport,
-    PortfolioSourceSummary,
-)
 from .filters import pair_distance_fingerprint
 
 __all__ = [
@@ -38,6 +33,13 @@ __all__ = [
 ]
 
 PORTFOLIO_CONFIG_SCHEMA_VERSION = 1
+PORTFOLIO_REPORT_SCHEMA = "uma-pyscf-candidate-portfolio-report-v1"
+PORTFOLIO_SKIP_REASONS = (
+    "duplicate_geometry_state",
+    "parent_limit",
+    "trajectory_limit",
+    "quota_reached",
+)
 
 _CONFIG_KEYS = (
     "schema_version",
@@ -207,7 +209,7 @@ def _enrich_record(
 
 def assemble_portfolio(
     config_path: str | Path, source_root: str | Path
-) -> tuple[CandidateManifest, PortfolioReport]:
+) -> tuple[CandidateManifest, dict[str, Any]]:
     """Assemble a deterministic, model-score-blind candidate portfolio."""
     config = load_portfolio_config(config_path)
     root = Path(source_root)
@@ -251,7 +253,7 @@ def assemble_portfolio(
     selected_fingerprints: set[tuple[Any, ...]] = set()
     parent_counts: dict[str, int] = defaultdict(int)
     trajectory_counts: dict[str, int] = defaultdict(int)
-    source_summaries: list[PortfolioSourceSummary] = []
+    source_summaries: list[dict[str, Any]] = []
 
     for source, manifest, manifest_sha256 in loaded_sources:
         category = str(source["category"])
@@ -297,15 +299,15 @@ def assemble_portfolio(
                 f"{quota}; available={len(ordered)}, skipped={skipped}."
             )
         source_summaries.append(
-            PortfolioSourceSummary(
-                category=category,
-                source_id=manifest.sampling_id,
-                source_sha256=manifest_sha256,
-                quota=quota,
-                available_count=len(manifest.records),
-                selected_record_ids=tuple(record.record_id for record in selected),
-                skipped_counts=skipped,
-            )
+            {
+                "category": category,
+                "source_id": manifest.sampling_id,
+                "source_sha256": manifest_sha256,
+                "quota": quota,
+                "available_count": len(manifest.records),
+                "selected_record_ids": [record.record_id for record in selected],
+                "skipped_counts": skipped,
+            }
         )
 
     config_sha256 = canonical_json_fingerprint(resolved)
@@ -315,29 +317,35 @@ def assemble_portfolio(
         config=resolved,
         records=tuple(selected_records),
     )
-    report = PortfolioReport(
-        portfolio_id=str(config["portfolio_id"]),
-        config_sha256=config_sha256,
-        config=resolved,
-        counts={
+    report: dict[str, Any] = {
+        "schema": PORTFOLIO_REPORT_SCHEMA,
+        "portfolio_id": str(config["portfolio_id"]),
+        "config_sha256": config_sha256,
+        "config": resolved,
+        "counts": {
             "source_manifests": len(source_summaries),
-            "available": sum(item.available_count for item in source_summaries),
+            "available": sum(int(item["available_count"]) for item in source_summaries),
             "selected": len(selected_records),
         },
-        sources=tuple(source_summaries),
+        "sources": source_summaries,
+    }
+    report_ids = tuple(
+        record_id
+        for source in source_summaries
+        for record_id in source["selected_record_ids"]
     )
-    if tuple(record.record_id for record in output_manifest.records) != report.selected_record_ids:
+    if tuple(record.record_id for record in output_manifest.records) != report_ids:
         raise ValidationError("Portfolio manifest order does not match its report.")
     return output_manifest, report
 
 
 def write_portfolio_outputs(
-    manifest: CandidateManifest, report: PortfolioReport, output_dir: str | Path
+    manifest: CandidateManifest, report: dict[str, Any], output_dir: str | Path
 ) -> tuple[Path, Path]:
     """Atomically publish the selected candidate manifest and audit report."""
     root = Path(output_dir)
     manifest_path = root / f"{manifest.sampling_id}_candidates.json"
-    report_path = root / f"{report.portfolio_id}_portfolio_report.json"
+    report_path = root / f"{report['portfolio_id']}_portfolio_report.json"
     write_json_atomic(manifest_path, manifest.to_dict())
-    write_json_atomic(report_path, report.to_dict())
+    write_json_atomic(report_path, report)
     return manifest_path, report_path

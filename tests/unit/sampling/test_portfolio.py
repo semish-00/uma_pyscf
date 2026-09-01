@@ -16,7 +16,6 @@ from uma_pyscf.core.io import write_json_atomic
 from uma_pyscf.sampling.portfolio import assemble_portfolio, load_portfolio_config
 from uma_pyscf.schemas.candidate import CandidateManifest, CandidateRecord
 from uma_pyscf.schemas.label_record import ElectronicState, Structure
-from uma_pyscf.schemas.portfolio import PortfolioReport
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 CALIBRATION_CONFIG = REPO_ROOT / "configs/sampling/calibration_portfolio_180_v1.yaml"
@@ -111,11 +110,16 @@ class PortfolioAssemblyTests(unittest.TestCase):
             second_manifest, second_report = assemble_portfolio(root / "portfolio.yaml", root)
 
         self.assertEqual(first_manifest.to_dict(), second_manifest.to_dict())
-        self.assertEqual(first_report.to_dict(), second_report.to_dict())
-        self.assertEqual(first_report.counts["selected"], 4)
+        self.assertEqual(first_report, second_report)
+        self.assertEqual(first_report["counts"]["selected"], 4)
+        selected_ids = tuple(
+            record_id
+            for source in first_report["sources"]
+            for record_id in source["selected_record_ids"]
+        )
         self.assertEqual(
             tuple(record.record_id for record in first_manifest.records),
-            first_report.selected_record_ids,
+            selected_ids,
         )
         self.assertEqual(
             {record.structure.parent_structure_id for record in first_manifest.records},
@@ -126,14 +130,11 @@ class PortfolioAssemblyTests(unittest.TestCase):
             self.assertEqual(
                 len(record.generation_parameters["portfolio_source_manifest_sha256"]), 64
             )
-        self.assertEqual(
-            PortfolioReport.from_dict(first_report.to_dict()).to_dict(), first_report.to_dict()
-        )
 
     def test_duplicate_geometry_is_removed_across_sources(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            write_config(root / "portfolio.yaml", second_quota=1)
+            write_config(root / "portfolio.yaml", second_quota=2)
             write_manifest(
                 root / "local.json",
                 "local_pool",
@@ -147,34 +148,25 @@ class PortfolioAssemblyTests(unittest.TestCase):
                 "path_pool",
                 (
                     candidate("path_duplicate", "p3", 0.70, trajectory_id="t1"),
-                    candidate("path_unique", "p4", 0.80, trajectory_id="t2"),
+                    candidate(
+                        "path_triplet",
+                        "p4",
+                        0.70,
+                        multiplicity=3,
+                        trajectory_id="t2",
+                    ),
+                    candidate("path_unique", "p5", 0.80, trajectory_id="t3"),
                 ),
             )
-            _, report = assemble_portfolio(root / "portfolio.yaml", root)
+            manifest, report = assemble_portfolio(root / "portfolio.yaml", root)
 
-        path_summary = next(source for source in report.sources if source.category == "path")
-        self.assertEqual(path_summary.selected_record_ids, ("path_unique",))
-        self.assertEqual(path_summary.skipped_counts["duplicate_geometry_state"], 1)
-
-    def test_same_geometry_in_a_different_electronic_state_is_retained(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
-            root = Path(directory)
-            write_config(root / "portfolio.yaml", second_quota=1)
-            write_manifest(
-                root / "local.json",
-                "local_pool",
-                (
-                    candidate("local_p1", "p1", 0.70),
-                    candidate("local_p2", "p2", 0.74),
-                ),
-            )
-            write_manifest(
-                root / "path.json",
-                "path_pool",
-                (candidate("path_triplet", "p3", 0.70, multiplicity=3),),
-            )
-            manifest, _ = assemble_portfolio(root / "portfolio.yaml", root)
-
+        path_summary = next(
+            source for source in report["sources"] if source["category"] == "path"
+        )
+        self.assertEqual(
+            set(path_summary["selected_record_ids"]), {"path_triplet", "path_unique"}
+        )
+        self.assertEqual(path_summary["skipped_counts"]["duplicate_geometry_state"], 1)
         self.assertIn("path_triplet", tuple(record.record_id for record in manifest.records))
 
     def test_impossible_quota_and_missing_parent_fail_closed(self) -> None:
@@ -258,12 +250,8 @@ sources:
             self.assertTrue(manifest_path.is_file())
             self.assertTrue(report_path.is_file())
             self.assertIn("selected=1", stream.getvalue())
-            self.assertEqual(
-                PortfolioReport.from_dict(
-                    json.loads(report_path.read_text(encoding="utf-8"))
-                ).selected_record_ids,
-                ("local_p1",),
-            )
+            report = json.loads(report_path.read_text(encoding="utf-8"))
+            self.assertEqual(report["sources"][0]["selected_record_ids"], ["local_p1"])
 
 
 if __name__ == "__main__":

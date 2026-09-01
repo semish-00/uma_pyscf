@@ -46,14 +46,11 @@ def manifest() -> dict:
 
 
 class PfpLangevinMdTests(unittest.TestCase):
-    def test_committed_preflight_protocol_is_strict_and_pinned(self) -> None:
+    def test_protocol_grid_and_state_guards(self) -> None:
         protocol = langevin_md._load_protocol(PROTOCOL_PATH)
         self.assertEqual(protocol["model_version"], "v9.0.0")
         self.assertEqual(protocol["timestep_fs"], 0.5)
         self.assertEqual(protocol["temperatures_K"], [300, 600, 900, 1200])
-
-    def test_identity_expands_temperature_seed_grid_deterministically(self) -> None:
-        protocol = langevin_md._load_protocol(PROTOCOL_PATH)
         first = langevin_md._run_identity(manifest(), protocol)
         second = langevin_md._run_identity(manifest(), protocol)
         self.assertEqual(first, second)
@@ -63,6 +60,19 @@ class PfpLangevinMdTests(unittest.TestCase):
             first["runs"][0]["path"],
             "trajectories/sih4_seed_t0300_s2026090101.traj",
         )
+
+        charged = candidate()
+        charged["state"]["charge"] = 1
+        with self.assertRaisesRegex(ValueError, "neutral singlet"):
+            langevin_md._validate_candidate(charged)
+
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "protocol.json"
+            invalid = dict(protocol)
+            invalid["timestep_fs"] = 1.5
+            path.write_text(json.dumps(invalid), encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "<= 1.0"):
+                langevin_md._load_protocol(path)
 
     def test_dry_run_needs_no_matlantis_dependencies_and_is_resumable(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -83,21 +93,6 @@ class PfpLangevinMdTests(unittest.TestCase):
             second = (output_dir / "run_identity.json").read_bytes()
 
         self.assertEqual(first, second)
-
-    def test_charged_seed_and_large_timestep_fail_closed(self) -> None:
-        charged = candidate()
-        charged["state"]["charge"] = 1
-        with self.assertRaisesRegex(ValueError, "neutral singlet"):
-            langevin_md._validate_candidate(charged)
-
-        with tempfile.TemporaryDirectory() as directory:
-            path = Path(directory) / "protocol.json"
-            protocol = json.loads(PROTOCOL_PATH.read_text(encoding="utf-8"))
-            protocol["timestep_fs"] = 1.5
-            path.write_text(json.dumps(protocol), encoding="utf-8")
-            with self.assertRaisesRegex(ValueError, "<= 1.0"):
-                langevin_md._load_protocol(path)
-
 
 if __name__ == "__main__":
     unittest.main()
