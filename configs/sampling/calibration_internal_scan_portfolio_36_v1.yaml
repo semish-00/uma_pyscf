@@ -1,0 +1,14 @@
+schema_version: 1
+portfolio_id: calibration_internal_scan_portfolio_36_v1
+created: "2026-09-01"
+description: >-
+  Blind 36-record internal-scan and dissociation tranche for C0. Selection is
+  balanced across the six parents and does not use UMA, PFP, or DFT scores.
+seed: 2026090111
+strategy: parent_round_robin
+duplicate_decimals: 3
+max_per_parent: 6
+sources:
+  - category: internal_scan_dissociation
+    manifest: calibration_internal_scan_v1_candidates.json
+    quota: 36
