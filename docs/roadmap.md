@@ -25,8 +25,8 @@
 | P2.3 label pipeline | 完了 | SoftBank Slurm job 1797122。1件completed、QC accepted、checksum一致 |
 | 50–200構造engineering set | 完了 | job 1797134、50/50初回収束、resume 50/50 skip、QC 50/50 accepted |
 | Release controls | 機構完了・科学review継続 | train-only baseline実測済み、state registry 12件は全てpending、decision 0004 |
-| C0 calibration 180 | 81/180 label・QC完了 | local 45 + internal scan/dissociation 36件完了。次はreaction path 36件 |
-| C0-S state review 24–36 | 設計完了・未実行 | SiH3/GeH3等をCPU/GPU sentinel付きでreview |
+| C0 calibration 180 | 81/180 label・QC完了 | reaction endpoint 8 family準備済み。次はC0 independent 4 path / 36件 |
+| C0-S state review 24–36 | dimer tranche 24/24 label・QC完了 | Si2H3/Si2H5/Ge2H3/Ge2H5はdoubletを強く支持。CPU/direct stability sentinel後に承認判断 |
 | T0 fixed test 200 | C0後 | 独立parent/reactionをscore計算前にfreeze |
 | P0 oracle pool 1,000 | C0/T0後 | blindに全件labelし、acquisition policyをretrospective比較 |
 | 1,000–5,000構造pilot | P0/Gate 3後 | online active learningは実測signal確認後に開始 |

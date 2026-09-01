@@ -13,7 +13,9 @@ entries:
     charge: 0
     multiplicity: 2
     status: pending_scientific_review
-    evidence: [docs/lab_notes/2026-09-01_reaction_path_family_registry.md]
+    evidence:
+      - docs/lab_notes/2026-09-01_reaction_path_family_registry.md
+      - docs/lab_notes/2026-09-01_reaction_endpoints_and_dimer_state_audit.md
     reviewer: null
     decision: null
   - entry_id: si2h3_neutral_quartet
@@ -21,7 +23,9 @@ entries:
     charge: 0
     multiplicity: 4
     status: pending_scientific_review
-    evidence: [docs/lab_notes/2026-09-01_reaction_path_family_registry.md]
+    evidence:
+      - docs/lab_notes/2026-09-01_reaction_path_family_registry.md
+      - docs/lab_notes/2026-09-01_reaction_endpoints_and_dimer_state_audit.md
     reviewer: null
     decision: null
   - entry_id: si2h5_neutral_doublet
@@ -29,7 +33,9 @@ entries:
     charge: 0
     multiplicity: 2
     status: pending_scientific_review
-    evidence: [docs/lab_notes/2026-09-01_reaction_path_family_registry.md]
+    evidence:
+      - docs/lab_notes/2026-09-01_reaction_path_family_registry.md
+      - docs/lab_notes/2026-09-01_reaction_endpoints_and_dimer_state_audit.md
     reviewer: null
     decision: null
   - entry_id: si2h5_neutral_quartet
@@ -37,7 +43,9 @@ entries:
     charge: 0
     multiplicity: 4
     status: pending_scientific_review
-    evidence: [docs/lab_notes/2026-09-01_reaction_path_family_registry.md]
+    evidence:
+      - docs/lab_notes/2026-09-01_reaction_path_family_registry.md
+      - docs/lab_notes/2026-09-01_reaction_endpoints_and_dimer_state_audit.md
     reviewer: null
     decision: null
   - entry_id: ge2h3_neutral_doublet
@@ -45,7 +53,9 @@ entries:
     charge: 0
     multiplicity: 2
     status: pending_scientific_review
-    evidence: [docs/lab_notes/2026-09-01_reaction_path_family_registry.md]
+    evidence:
+      - docs/lab_notes/2026-09-01_reaction_path_family_registry.md
+      - docs/lab_notes/2026-09-01_reaction_endpoints_and_dimer_state_audit.md
     reviewer: null
     decision: null
   - entry_id: ge2h3_neutral_quartet
@@ -53,7 +63,9 @@ entries:
     charge: 0
     multiplicity: 4
     status: pending_scientific_review
-    evidence: [docs/lab_notes/2026-09-01_reaction_path_family_registry.md]
+    evidence:
+      - docs/lab_notes/2026-09-01_reaction_path_family_registry.md
+      - docs/lab_notes/2026-09-01_reaction_endpoints_and_dimer_state_audit.md
     reviewer: null
     decision: null
   - entry_id: ge2h5_neutral_doublet
@@ -61,7 +73,9 @@ entries:
     charge: 0
     multiplicity: 2
     status: pending_scientific_review
-    evidence: [docs/lab_notes/2026-09-01_reaction_path_family_registry.md]
+    evidence:
+      - docs/lab_notes/2026-09-01_reaction_path_family_registry.md
+      - docs/lab_notes/2026-09-01_reaction_endpoints_and_dimer_state_audit.md
     reviewer: null
     decision: null
   - entry_id: ge2h5_neutral_quartet
@@ -69,6 +83,8 @@ entries:
     charge: 0
     multiplicity: 4
     status: pending_scientific_review
-    evidence: [docs/lab_notes/2026-09-01_reaction_path_family_registry.md]
+    evidence:
+      - docs/lab_notes/2026-09-01_reaction_path_family_registry.md
+      - docs/lab_notes/2026-09-01_reaction_endpoints_and_dimer_state_audit.md
     reviewer: null
     decision: null

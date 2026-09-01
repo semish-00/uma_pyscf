@@ -1,7 +1,7 @@
 # C0 reaction-path family registry
 
 - 実施日: 2026-09-01
-- 状態: familyとelectronic-state policyを固定。endpoint生成・path計算は未実施
+- 状態: endpoint生成とC0-S GPU audit完了。path計算は未実施
 - 詳細計画:
   [Teacher-data sampling, calibration, and oracle-pool plan](../plans/05_teacher_data_sampling_and_calibration.md#42-reaction-paths)
 
@@ -60,7 +60,18 @@ radical-fragment解離は生成物側のspin couplingを別途扱う必要があ
 5. endpoint、TS近傍、中間領域を含む9件/reactionをarc-lengthで固定する。
 6. geometry QC後、C0 36件とcoverage extension 36件を別manifestでlabelする。
 
-## 6. 参考にした反応・状態情報
+## 6. 実行状況
+
+2026-09-01に8 reactionのendpointをbase UMAで準備し、全24 fragmentが
+`fmax <= 0.01 eV/angstrom`へ収束した。続いてSi2H3、Si2H5、Ge2H3、Ge2H5の
+doublet/quartetを3 geometryずつGPU4PySCFで比較し、24/24 labelとQCが完了した。
+全12 pairでdoubletが2.47 eV以上低く、S2 deviationも0.009未満だった。
+
+結果、artifact hash、承認を保留する理由は
+[Reaction endpoint preparation and Si/Ge dimer state audit](2026-09-01_reaction_endpoints_and_dimer_state_audit.md)
+に固定した。次はC0 independent 4 familyのCI-NEB/stringである。
+
+## 7. 参考にした反応・状態情報
 
 - SiH4の単分子分解では、singlet SiH2 + H2への初期反応が報告されている:
   https://doi.org/10.1002/kin.550111104
