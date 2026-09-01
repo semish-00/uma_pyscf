@@ -1,0 +1,74 @@
+# C0-S review queue for the radical endpoints in the reaction-path extension.
+# No entry is approved until the 24-record multi-geometry GPU4PySCF audit is reviewed.
+schema: uma-pyscf-state-registry-v1
+registry_id: si_ge_dimer_states_v1
+created: "2026-09-01"
+description: >-
+  Pending neutral doublet/quartet states for Si2H3, Si2H5, Ge2H3, and Ge2H5.
+  The doublets are the reaction-path candidates and the quartets are comparison
+  states; this registry documents the review queue but approves neither.
+entries:
+  - entry_id: si2h3_neutral_doublet
+    composition: H3Si2
+    charge: 0
+    multiplicity: 2
+    status: pending_scientific_review
+    evidence: [docs/lab_notes/2026-09-01_reaction_path_family_registry.md]
+    reviewer: null
+    decision: null
+  - entry_id: si2h3_neutral_quartet
+    composition: H3Si2
+    charge: 0
+    multiplicity: 4
+    status: pending_scientific_review
+    evidence: [docs/lab_notes/2026-09-01_reaction_path_family_registry.md]
+    reviewer: null
+    decision: null
+  - entry_id: si2h5_neutral_doublet
+    composition: H5Si2
+    charge: 0
+    multiplicity: 2
+    status: pending_scientific_review
+    evidence: [docs/lab_notes/2026-09-01_reaction_path_family_registry.md]
+    reviewer: null
+    decision: null
+  - entry_id: si2h5_neutral_quartet
+    composition: H5Si2
+    charge: 0
+    multiplicity: 4
+    status: pending_scientific_review
+    evidence: [docs/lab_notes/2026-09-01_reaction_path_family_registry.md]
+    reviewer: null
+    decision: null
+  - entry_id: ge2h3_neutral_doublet
+    composition: Ge2H3
+    charge: 0
+    multiplicity: 2
+    status: pending_scientific_review
+    evidence: [docs/lab_notes/2026-09-01_reaction_path_family_registry.md]
+    reviewer: null
+    decision: null
+  - entry_id: ge2h3_neutral_quartet
+    composition: Ge2H3
+    charge: 0
+    multiplicity: 4
+    status: pending_scientific_review
+    evidence: [docs/lab_notes/2026-09-01_reaction_path_family_registry.md]
+    reviewer: null
+    decision: null
+  - entry_id: ge2h5_neutral_doublet
+    composition: Ge2H5
+    charge: 0
+    multiplicity: 2
+    status: pending_scientific_review
+    evidence: [docs/lab_notes/2026-09-01_reaction_path_family_registry.md]
+    reviewer: null
+    decision: null
+  - entry_id: ge2h5_neutral_quartet
+    composition: Ge2H5
+    charge: 0
+    multiplicity: 4
+    status: pending_scientific_review
+    evidence: [docs/lab_notes/2026-09-01_reaction_path_family_registry.md]
+    reviewer: null
+    decision: null

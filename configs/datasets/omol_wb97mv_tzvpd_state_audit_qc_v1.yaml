@@ -1,0 +1,59 @@
+schema_version: 1
+qc_id: omol_wb97mv_tzvpd_state_audit_qc_v1
+created: "2026-09-01"
+derived_from: docs/lab_notes/2026-09-01_reaction_path_family_registry.md
+description: >-
+  Integrity QC for C0-S open-shell evidence. State-registry approval is
+  intentionally not required because the purpose of this run is to measure
+  state ordering and spin contamination before an accountable review.
+release_status: state_audit_only_not_teacher_data_approved
+
+protocol:
+  protocol_id: omol_wb97mv_tzvpd_state_audit_v1
+  protocol_sha256: 75b23486cb1851d8a72284643c5781d9c19770aed5d11b03393c8c66e53a6242
+  engine_name: gpu4pyscf
+  required_versions:
+    python: "3.10.12"
+    pyscf: "2.14.0"
+    gpu4pyscf: "1.8.1"
+    cupy: "13.4.1"
+    cutensor: "2.2.0"
+  required_runtime_keys:
+    - cuda_runtime_version
+    - cuda_driver_version
+    - cuda_device_name
+    - container_image_sha256
+    - python_lock_sha256
+  allowed_elements: [H, Si, Ge, Cl]
+  max_atoms: 8
+  method:
+    functional: wb97m-v
+    basis: def2-tzvpd
+    ecp: null
+    aux_basis: null
+    grid_level: 5
+    nlc_grid_level: 5
+    grid_response: true
+    scf_conv_tol: 1.0e-10
+    scf_max_cycle: 250
+  allowed_density_fit: [true, false]
+  initial_density: minao
+  initial_density_generated_on: cpu_before_device_conversion
+  require_raw_checksum_sha256: true
+  require_state_registry_for_non_default: false
+  approved_state_provenance_prefix: "state_registry:"
+
+electronic:
+  require_converged: true
+  # Keep strongly contaminated states visible for review; the summarizer applies
+  # the tighter 0.05 review threshold without discarding the underlying label.
+  s2_max_abs_deviation: 1.0
+  require_s2_for_open_shell: true
+  gradient_max_abs_hartree_per_bohr: 1.0
+  gradient_norm_max_hartree_per_bohr: 2.0
+
+geometry:
+  covalent_factor: 0.65
+  bond_factor: 1.3
+  allow_fragments: false
+  duplicate_decimals: 3

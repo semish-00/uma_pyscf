@@ -1,0 +1,146 @@
+schema_version: 1
+endpoint_set_id: si_ge_reaction_endpoints_v1
+created: "2026-09-01"
+description: >-
+  Atom-mapped endpoint seeds for four independent C0 reaction families and four
+  requested Si/Ge hydride coverage families. Every disconnected product is
+  optimized fragment by fragment before being reassembled at the mapped seed
+  separation.
+
+model:
+  name: uma-s-1p2
+  task: omol
+  fairchem_core_version: "2.22.0"
+  seed: 47
+
+optimization:
+  coarse_fmax_ev_per_angstrom: 0.10
+  coarse_steps: 300
+  final_fmax_ev_per_angstrom: 0.01
+  final_steps: 1000
+  maxstep_angstrom: 0.05
+
+reactions:
+  - reaction_id: sihcl3_to_sicl2_hcl
+    tier: c0_independent
+    charge: 0
+    multiplicity: 1
+    reactant:
+      xyz_path: structures/sihcl3_reactant.xyz
+      fragments:
+        - {fragment_id: sihcl3, atom_indices: [0, 1, 2, 3, 4], charge: 0, multiplicity: 1}
+    product:
+      xyz_path: structures/sihcl3_to_sicl2_hcl_product.xyz
+      fragments:
+        - {fragment_id: sicl2, atom_indices: [0, 2, 3], charge: 0, multiplicity: 1}
+        - {fragment_id: hcl, atom_indices: [1, 4], charge: 0, multiplicity: 1}
+
+  - reaction_id: gehcl3_to_gecl2_hcl
+    tier: c0_independent
+    charge: 0
+    multiplicity: 1
+    reactant:
+      xyz_path: structures/gehcl3_reactant.xyz
+      fragments:
+        - {fragment_id: gehcl3, atom_indices: [0, 1, 2, 3, 4], charge: 0, multiplicity: 1}
+    product:
+      xyz_path: structures/gehcl3_to_gecl2_hcl_product.xyz
+      fragments:
+        - {fragment_id: gecl2, atom_indices: [0, 2, 3], charge: 0, multiplicity: 1}
+        - {fragment_id: hcl, atom_indices: [1, 4], charge: 0, multiplicity: 1}
+
+  - reaction_id: sih3cl_to_sihcl_h2
+    tier: c0_independent
+    charge: 0
+    multiplicity: 1
+    reactant:
+      xyz_path: ../sampling/structures/calibration_local_relaxed_v1/sih3cl.xyz
+      fragments:
+        - {fragment_id: sih3cl, atom_indices: [0, 1, 2, 3, 4], charge: 0, multiplicity: 1}
+    product:
+      xyz_path: structures/sih3cl_to_sihcl_h2_product.xyz
+      fragments:
+        - {fragment_id: sihcl, atom_indices: [0, 1, 4], charge: 0, multiplicity: 1}
+        - {fragment_id: h2, atom_indices: [2, 3], charge: 0, multiplicity: 1}
+
+  - reaction_id: geh3cl_to_gehcl_h2
+    tier: c0_independent
+    charge: 0
+    multiplicity: 1
+    reactant:
+      xyz_path: ../sampling/structures/calibration_local_relaxed_v1/geh3cl.xyz
+      fragments:
+        - {fragment_id: geh3cl, atom_indices: [0, 1, 2, 3, 4], charge: 0, multiplicity: 1}
+    product:
+      xyz_path: structures/geh3cl_to_gehcl_h2_product.xyz
+      fragments:
+        - {fragment_id: gehcl, atom_indices: [0, 1, 4], charge: 0, multiplicity: 1}
+        - {fragment_id: h2, atom_indices: [2, 3], charge: 0, multiplicity: 1}
+
+  - reaction_id: sih4_to_sih2_h2
+    tier: coverage_extension
+    charge: 0
+    multiplicity: 1
+    reactant:
+      xyz_path: ../sampling/structures/sih4_seed_example.xyz
+      fragments:
+        - {fragment_id: sih4, atom_indices: [0, 1, 2, 3, 4], charge: 0, multiplicity: 1}
+    product:
+      xyz_path: structures/sih4_to_sih2_h2_product.xyz
+      fragments:
+        - {fragment_id: sih2, atom_indices: [0, 1, 2], charge: 0, multiplicity: 1}
+        - {fragment_id: h2, atom_indices: [3, 4], charge: 0, multiplicity: 1}
+
+  - reaction_id: geh4_to_geh2_h2
+    tier: coverage_extension
+    charge: 0
+    multiplicity: 1
+    reactant:
+      xyz_path: ../sampling/structures/geh4_seed_engineering.xyz
+      fragments:
+        - {fragment_id: geh4, atom_indices: [0, 1, 2, 3, 4], charge: 0, multiplicity: 1}
+    product:
+      xyz_path: structures/geh4_to_geh2_h2_product.xyz
+      fragments:
+        - {fragment_id: geh2, atom_indices: [0, 1, 2], charge: 0, multiplicity: 1}
+        - {fragment_id: h2, atom_indices: [3, 4], charge: 0, multiplicity: 1}
+
+  - reaction_id: si2h5_to_si2h3_h2
+    tier: coverage_extension
+    charge: 0
+    multiplicity: 2
+    reactant:
+      xyz_path: structures/si2h5_reactant.xyz
+      fragments:
+        - {fragment_id: si2h5, atom_indices: [0, 1, 2, 3, 4, 5, 6], charge: 0, multiplicity: 2}
+    product:
+      xyz_path: structures/si2h5_to_si2h3_h2_product.xyz
+      fragments:
+        - {fragment_id: si2h3, atom_indices: [0, 1, 2, 3, 5], charge: 0, multiplicity: 2}
+        - {fragment_id: h2, atom_indices: [4, 6], charge: 0, multiplicity: 1}
+
+  - reaction_id: ge2h5_to_ge2h3_h2
+    tier: coverage_extension
+    charge: 0
+    multiplicity: 2
+    reactant:
+      xyz_path: structures/ge2h5_reactant.xyz
+      fragments:
+        - {fragment_id: ge2h5, atom_indices: [0, 1, 2, 3, 4, 5, 6], charge: 0, multiplicity: 2}
+    product:
+      xyz_path: structures/ge2h5_to_ge2h3_h2_product.xyz
+      fragments:
+        - {fragment_id: ge2h3, atom_indices: [0, 1, 2, 3, 5], charge: 0, multiplicity: 2}
+        - {fragment_id: h2, atom_indices: [4, 6], charge: 0, multiplicity: 1}
+
+state_audit:
+  sampling_id: si_ge_dimer_state_audit_v1
+  dimer_scale_factors: [0.95, 1.00, 1.05]
+  states:
+    - {charge: 0, multiplicity: 2}
+    - {charge: 0, multiplicity: 4}
+  sources:
+    - {source_id: si2h5, reaction_id: si2h5_to_si2h3_h2, endpoint: reactant, fragment_id: si2h5, dimer_atom_indices: [0, 1]}
+    - {source_id: si2h3, reaction_id: si2h5_to_si2h3_h2, endpoint: product, fragment_id: si2h3, dimer_atom_indices: [0, 1]}
+    - {source_id: ge2h5, reaction_id: ge2h5_to_ge2h3_h2, endpoint: reactant, fragment_id: ge2h5, dimer_atom_indices: [0, 1]}
+    - {source_id: ge2h3, reaction_id: ge2h5_to_ge2h3_h2, endpoint: product, fragment_id: ge2h3, dimer_atom_indices: [0, 1]}
