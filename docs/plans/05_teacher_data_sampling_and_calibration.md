@@ -121,6 +121,33 @@ P0とGate 3を通過した場合だけonline active learningへ進む。各sourc
 - endpoint、最高energy/climbing image、その前後を必ず保持できる将来拡張を許す。
 - 一つのreaction pathから近接frameがquotaを占有しないよう`max_per_trajectory`を使う。
 
+最初のreaction registryは8 familyとする。C0本体の36件はengineering-50と
+parent/reactionを共有しない前半4 familyから9件ずつ固定する。後半4 familyは
+ユーザー指定のreaction-coverage extension 36件とし、C0のacquisition calibrationや
+T0 fixed testには数えない。
+
+| tier | reaction family | charge / multiplicity | initial frames | handling |
+|---|---|---|---:|---|
+| C0 independent | SiHCl3 -> SiCl2 + HCl | 0 / 1 | 9 | C0 path quota |
+| C0 independent | GeHCl3 -> GeCl2 + HCl | 0 / 1 | 9 | C0 path quota |
+| C0 independent | SiH3Cl -> SiHCl + H2 | 0 / 1 | 9 | C0 path quota |
+| C0 independent | GeH3Cl -> GeHCl + H2 | 0 / 1 | 9 | C0 path quota |
+| coverage extension | SiH4 -> SiH2 + H2 | 0 / 1 | 9 | engineering-50 overlapを記録 |
+| coverage extension | GeH4 -> GeH2 + H2 | 0 / 1 | 9 | engineering-50 overlapを記録 |
+| coverage extension | Si2H5 -> Si2H3 + H2 | 0 / 2 | 9 | C0-Sでstate承認後にlabel |
+| coverage extension | Ge2H5 -> Ge2H3 + H2 | 0 / 2 | 9 | C0-Sでstate承認後にlabel |
+
+Si2H3/Ge2H3は奇数電子のラジカルなので、中性doubletを主状態とする。quartetは
+C0-Sのstate orderingを監査するが、承認前にteacher datasetへ入れない。
+Si2H5/Ge2H5からのH2脱離は、反応物とradical生成物を同じdoublet PESで扱える
+最初の経路として採用する。直接のSi2H4 -> Si2H3 + HとGe同族反応は、解離後の
+spin couplingが増えるため初回からは除外する。
+
+各pathは、反応物・生成物を同じelectronic stateで最適化し、原子対応を固定した上で
+CI-NEB/stringを実行する。endpointは原則`fmax < 0.01 eV/angstrom`、可能なら
+`0.001 eV/angstrom`を目標とし、endpoint、TS近傍、中間領域からmass-weighted
+arc lengthで9件を選ぶ。
+
 ### 4.3 Lightweight-model MD
 
 初回はneutral singletだけをPFP v9.0.0/R2SCAN_PLUS_D3で生成する。
