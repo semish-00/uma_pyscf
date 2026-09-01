@@ -26,7 +26,8 @@ neb:
   interpolation: idpp
   method: aseneb
   spring_constant_ev_per_angstrom2: 0.10
-  maxstep_angstrom: 0.08
+  coarse_maxstep_angstrom: 0.08
+  final_maxstep_angstrom: 0.03
   coarse_fmax_ev_per_angstrom: 0.10
   coarse_steps: 500
   final_fmax_ev_per_angstrom: 0.05

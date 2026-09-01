@@ -234,7 +234,7 @@ def _run_reaction(
     coarse = FIRE(
         neb,
         logfile=str(reaction_dir / "coarse.log"),
-        maxstep=_number(settings["maxstep_angstrom"], "neb.maxstep_angstrom"),
+        maxstep=_number(settings["coarse_maxstep_angstrom"], "neb.coarse_maxstep_angstrom"),
     )
     _attach_finite_force_guard(coarse, neb)
     coarse_converged = bool(
@@ -250,7 +250,7 @@ def _run_reaction(
     final = FIRE(
         neb,
         logfile=str(reaction_dir / "final.log"),
-        maxstep=_number(settings["maxstep_angstrom"], "neb.maxstep_angstrom"),
+        maxstep=_number(settings["final_maxstep_angstrom"], "neb.final_maxstep_angstrom"),
     )
     _attach_finite_force_guard(final, neb)
     final_converged = bool(
