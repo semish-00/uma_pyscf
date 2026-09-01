@@ -264,8 +264,9 @@ PFP clientをproduction packageへimportしない。Matlantis側はversioned tra
 3. [x] 180件配分を表すconfig fixtureとunit/CLI testsを追加する。
 4. [x] trajectory thinningへmass-weighted arc-length baselineを追加する。
 5. [ ] source-specific generatorを、local/scan、path、MD、graphの順で追加する。
-   PFP Langevin MD runnerとengineering preflight configは実装済み。C0用の独立parent、
-   normal-mode generator、review済みgraph editは未実装である。
+   C0 local 45件とinternal scan/dissociation 36件はlabel/QC完了。次はpathである。
+   PFP Langevin MD runnerとengineering preflight configは実装済みだが、C0用の独立
+   trajectoryとreview済みgraph editは未実装である。
 
 第一incrementは候補を実際に180件labelしたことを意味しない。実source manifestがquotaを
 満たさない限りportfolio assemblyはfail closedする。次の実行単位は500–1,000件の候補源生成と、
