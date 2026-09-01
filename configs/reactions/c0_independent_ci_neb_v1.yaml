@@ -18,12 +18,13 @@ model:
   name: uma-s-1p2
   task: omol
   fairchem_core_version: "2.22.0"
+  inference_settings: batch
   seed: 47
 
 neb:
   image_count: 17
   interpolation: idpp
-  method: improvedtangent
+  method: aseneb
   spring_constant_ev_per_angstrom2: 0.10
   maxstep_angstrom: 0.08
   coarse_fmax_ev_per_angstrom: 0.10

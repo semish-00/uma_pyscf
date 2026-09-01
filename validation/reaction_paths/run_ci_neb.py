@@ -5,7 +5,6 @@ from __future__ import annotations
 
 import argparse
 from collections.abc import Mapping, Sequence
-import gc
 from pathlib import Path
 from typing import Any
 
@@ -182,7 +181,16 @@ def _selected_indices(
 
 def _neb_fmax(neb: NEB) -> float:
     forces = np.asarray(neb.get_forces(), dtype=float)
+    if not np.isfinite(forces).all():
+        raise FloatingPointError("NEB produced a non-finite projected force")
     return float(np.linalg.norm(forces, axis=1).max())
+
+
+def _attach_finite_force_guard(optimizer: FIRE, neb: NEB) -> None:
+    def check() -> None:
+        _neb_fmax(neb)
+
+    optimizer.attach(check, interval=1)
 
 
 def _run_reaction(
@@ -228,6 +236,7 @@ def _run_reaction(
         logfile=str(reaction_dir / "coarse.log"),
         maxstep=_number(settings["maxstep_angstrom"], "neb.maxstep_angstrom"),
     )
+    _attach_finite_force_guard(coarse, neb)
     coarse_converged = bool(
         coarse.run(
             fmax=_number(settings["coarse_fmax_ev_per_angstrom"], "neb.coarse_fmax"),
@@ -243,6 +252,7 @@ def _run_reaction(
         logfile=str(reaction_dir / "final.log"),
         maxstep=_number(settings["maxstep_angstrom"], "neb.maxstep_angstrom"),
     )
+    _attach_finite_force_guard(final, neb)
     final_converged = bool(
         final.run(
             fmax=_number(settings["final_fmax_ev_per_angstrom"], "neb.final_fmax"),
@@ -251,6 +261,14 @@ def _run_reaction(
     )
     final_neb_fmax = _neb_fmax(neb)
     final_images, energies, max_forces = _snapshot(images)
+    if not np.isfinite(np.asarray(energies + max_forces, dtype=float)).all():
+        raise FloatingPointError(f"reaction {reaction_id} produced non-finite path data")
+    adjacent_displacements = [
+        float(np.linalg.norm(after.positions - before.positions))
+        for before, after in zip(final_images, final_images[1:], strict=False)
+    ]
+    if min(adjacent_displacements) <= 1.0e-8:
+        raise RuntimeError(f"reaction {reaction_id} contains duplicate adjacent images")
     final_path = reaction_dir / "final.traj"
     write(final_path, final_images)
     climbing_index = 1 + int(np.argmax(np.asarray(energies[1:-1], dtype=float)))
@@ -282,6 +300,7 @@ def _run_reaction(
         "coarse_energies_ev": coarse_energies,
         "final_energies_ev": energies,
         "final_image_max_forces_ev_per_angstrom": max_forces,
+        "adjacent_cartesian_displacements_angstrom": adjacent_displacements,
         "forward_barrier_ev": highest_energy - energies[0],
         "backward_barrier_ev": highest_energy - energies[-1],
         "reaction_energy_ev": energies[-1] - energies[0],
@@ -350,45 +369,29 @@ def run(
             raise ValueError(f"reaction {reaction_id!r} is not c0_independent")
 
     model = _mapping(config["model"], "config.model")
+    context = _initialize_uma(
+        model_name=str(model["name"]),
+        checkpoint_path=None,
+        model_cache_dir=model_cache_dir,
+        task=str(model["task"]),
+        device="cuda",
+        inference_settings=str(model["inference_settings"]),
+        seed=int(model["seed"]),
+        fairchem_core_version=str(model["fairchem_core_version"]),
+    )
     output_dir.mkdir(parents=True, exist_ok=True)
-    records: list[dict[str, Any]] = []
-    runtime: dict[str, str] | None = None
-    for reaction_id in reaction_ids:
-        # fairchem's compiled molecular fast path is composition-specific. Loading a
-        # fresh predictor per reaction keeps every NEB on that path and avoids a
-        # roughly threefold slowdown after the first composition.
-        context = _initialize_uma(
-            model_name=str(model["name"]),
-            checkpoint_path=None,
-            model_cache_dir=model_cache_dir,
-            task=str(model["task"]),
-            device="cuda",
-            inference_settings="default",
-            seed=int(model["seed"]),
-            fairchem_core_version=str(model["fairchem_core_version"]),
+    records = [
+        _run_reaction(
+            reaction_id=reaction_id,
+            reaction=endpoint_reactions[reaction_id],
+            endpoint_run_root=endpoint_run_root,
+            calculator=context["calculator"],
+            settings=_mapping(config["neb"], "config.neb"),
+            selection=_mapping(config["selection"], "config.selection"),
+            output_dir=output_dir,
         )
-        runtime = {
-            "ase": str(context["ase"].__version__),
-            "fairchem_core": context["installed_fairchem"],
-            "calculator_sharing": (
-                "one local UMA predictor per reaction; serial ASE NEB evaluation"
-            ),
-        }
-        records.append(
-            _run_reaction(
-                reaction_id=reaction_id,
-                reaction=endpoint_reactions[reaction_id],
-                endpoint_run_root=endpoint_run_root,
-                calculator=context["calculator"],
-                settings=_mapping(config["neb"], "config.neb"),
-                selection=_mapping(config["selection"], "config.selection"),
-                output_dir=output_dir,
-            )
-        )
-        torch = context["torch"]
-        del context
-        gc.collect()
-        torch.cuda.empty_cache()
+        for reaction_id in reaction_ids
+    ]
     import_config = _trajectory_import_config(config, records, output_dir)
     all_converged = all(bool(record["final_converged"]) for record in records)
     summary = {
@@ -404,7 +407,12 @@ def run(
             "sha256": sha256_of_file(endpoint_summary_path),
         },
         "model": model,
-        "runtime": runtime,
+        "runtime": {
+            "ase": str(context["ase"].__version__),
+            "fairchem_core": context["installed_fairchem"],
+            "inference_settings": str(model["inference_settings"]),
+            "calculator_sharing": "one local UMA predictor; serial ASE NEB evaluation",
+        },
         "all_paths_converged": all_converged,
         "reaction_count": len(records),
         "selected_candidate_count": sum(
