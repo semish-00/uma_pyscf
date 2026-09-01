@@ -19,7 +19,9 @@ CONTAINER_IMAGE="${CONTAINER_IMAGE:-/lustre/user140002/containers/nvidia-pytorch
 PACKAGE_ROOT="${PACKAGE_ROOT:-/lustre/user140002/python/gpu4pyscf-cu122-py310-v1.8.1}"
 DFT_CONFIG="${DFT_CONFIG:-$REPO_ROOT/configs/dft/omol_wb97mv_tzvpd_v1.yaml}"
 QC_CONFIG="${QC_CONFIG:-$REPO_ROOT/configs/datasets/omol_wb97mv_tzvpd_conditional_qc_v1.yaml}"
-RUN_ROOT="${RUN_ROOT:-/lustre/user140002/runs/label/calibration_local_45_v1/${SLURM_JOB_ID}}"
+MANIFEST_NAME="${CANDIDATE_MANIFEST##*/}"
+RUN_GROUP="${RUN_GROUP:-${MANIFEST_NAME%.json}}"
+RUN_ROOT="${RUN_ROOT:-/lustre/user140002/runs/label/${RUN_GROUP}/${SLURM_JOB_ID}}"
 
 mkdir -p "$RUN_ROOT/provenance" "$RUN_ROOT/input" /lustre/user140002/logs
 cp "$CANDIDATE_MANIFEST" "$RUN_ROOT/input/candidates.json"
