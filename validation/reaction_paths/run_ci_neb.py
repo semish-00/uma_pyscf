@@ -253,10 +253,16 @@ def _run_reaction(
         maxstep=_number(settings["final_maxstep_angstrom"], "neb.final_maxstep_angstrom"),
     )
     _attach_finite_force_guard(final, neb)
+    final_min_steps = _integer(settings.get("final_min_steps", 0), "neb.final_min_steps")
+    final_steps = _integer(settings["final_steps"], "neb.final_steps")
+    if final_min_steps > final_steps:
+        raise ValueError("neb.final_min_steps cannot exceed neb.final_steps")
+    if final_min_steps:
+        final.run(fmax=0.0, steps=final_min_steps)
     final_converged = bool(
         final.run(
             fmax=_number(settings["final_fmax_ev_per_angstrom"], "neb.final_fmax"),
-            steps=_integer(settings["final_steps"], "neb.final_steps"),
+            steps=final_steps - final_min_steps,
         )
     )
     final_neb_fmax = _neb_fmax(neb)
