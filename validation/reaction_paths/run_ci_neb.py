@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 from collections.abc import Mapping, Sequence
+import gc
 from pathlib import Path
 from typing import Any
 
@@ -349,29 +350,45 @@ def run(
             raise ValueError(f"reaction {reaction_id!r} is not c0_independent")
 
     model = _mapping(config["model"], "config.model")
-    context = _initialize_uma(
-        model_name=str(model["name"]),
-        checkpoint_path=None,
-        model_cache_dir=model_cache_dir,
-        task=str(model["task"]),
-        device="cuda",
-        inference_settings="default",
-        seed=int(model["seed"]),
-        fairchem_core_version=str(model["fairchem_core_version"]),
-    )
     output_dir.mkdir(parents=True, exist_ok=True)
-    records = [
-        _run_reaction(
-            reaction_id=reaction_id,
-            reaction=endpoint_reactions[reaction_id],
-            endpoint_run_root=endpoint_run_root,
-            calculator=context["calculator"],
-            settings=_mapping(config["neb"], "config.neb"),
-            selection=_mapping(config["selection"], "config.selection"),
-            output_dir=output_dir,
+    records: list[dict[str, Any]] = []
+    runtime: dict[str, str] | None = None
+    for reaction_id in reaction_ids:
+        # fairchem's compiled molecular fast path is composition-specific. Loading a
+        # fresh predictor per reaction keeps every NEB on that path and avoids a
+        # roughly threefold slowdown after the first composition.
+        context = _initialize_uma(
+            model_name=str(model["name"]),
+            checkpoint_path=None,
+            model_cache_dir=model_cache_dir,
+            task=str(model["task"]),
+            device="cuda",
+            inference_settings="default",
+            seed=int(model["seed"]),
+            fairchem_core_version=str(model["fairchem_core_version"]),
         )
-        for reaction_id in reaction_ids
-    ]
+        runtime = {
+            "ase": str(context["ase"].__version__),
+            "fairchem_core": context["installed_fairchem"],
+            "calculator_sharing": (
+                "one local UMA predictor per reaction; serial ASE NEB evaluation"
+            ),
+        }
+        records.append(
+            _run_reaction(
+                reaction_id=reaction_id,
+                reaction=endpoint_reactions[reaction_id],
+                endpoint_run_root=endpoint_run_root,
+                calculator=context["calculator"],
+                settings=_mapping(config["neb"], "config.neb"),
+                selection=_mapping(config["selection"], "config.selection"),
+                output_dir=output_dir,
+            )
+        )
+        torch = context["torch"]
+        del context
+        gc.collect()
+        torch.cuda.empty_cache()
     import_config = _trajectory_import_config(config, records, output_dir)
     all_converged = all(bool(record["final_converged"]) for record in records)
     summary = {
@@ -387,11 +404,7 @@ def run(
             "sha256": sha256_of_file(endpoint_summary_path),
         },
         "model": model,
-        "runtime": {
-            "ase": str(context["ase"].__version__),
-            "fairchem_core": context["installed_fairchem"],
-            "calculator_sharing": "one local UMA predictor; serial ASE NEB evaluation",
-        },
+        "runtime": runtime,
         "all_paths_converged": all_converged,
         "reaction_count": len(records),
         "selected_candidate_count": sum(
