@@ -83,6 +83,23 @@ def load_config(path: Path) -> dict[str, Any]:
     image_count = _integer(_required(neb, "image_count", "config.neb"), "neb.image_count")
     if image_count < 9 or image_count % 2 == 0:
         raise ValueError("config.neb.image_count must be an odd integer of at least nine")
+    final_mode = str(neb.get("final_mode", "converge"))
+    if final_mode not in {"fixed_steps", "converge"}:
+        raise ValueError("config.neb.final_mode must be 'fixed_steps' or 'converge'")
+    final_steps = _integer(_required(neb, "final_steps", "config.neb"), "neb.final_steps")
+    if final_steps <= 0:
+        raise ValueError("config.neb.final_steps must be positive")
+    if final_mode == "converge":
+        _number(
+            _required(neb, "final_fmax_ev_per_angstrom", "config.neb"),
+            "neb.final_fmax_ev_per_angstrom",
+        )
+    acceptance_ceiling = _number(
+        _required(neb, "final_acceptance_fmax_ev_per_angstrom", "config.neb"),
+        "neb.final_acceptance_fmax_ev_per_angstrom",
+    )
+    if acceptance_ceiling <= 0.0:
+        raise ValueError("config.neb.final_acceptance_fmax_ev_per_angstrom must be positive")
     selection = _mapping(config["selection"], "config.selection")
     count = _integer(
         _required(selection, "count_per_reaction", "config.selection"),
@@ -253,18 +270,20 @@ def _run_reaction(
         maxstep=_number(settings["final_maxstep_angstrom"], "neb.final_maxstep_angstrom"),
     )
     _attach_finite_force_guard(final, neb)
-    final_min_steps = _integer(settings.get("final_min_steps", 0), "neb.final_min_steps")
+    final_mode = str(settings.get("final_mode", "converge"))
     final_steps = _integer(settings["final_steps"], "neb.final_steps")
-    if final_min_steps > final_steps:
-        raise ValueError("neb.final_min_steps cannot exceed neb.final_steps")
-    if final_min_steps:
-        final.run(fmax=0.0, steps=final_min_steps)
-    final_converged = bool(
-        final.run(
-            fmax=_number(settings["final_fmax_ev_per_angstrom"], "neb.final_fmax"),
-            steps=final_steps - final_min_steps,
+    if final_mode == "fixed_steps":
+        final.run(fmax=0.0, steps=final_steps)
+        final_converged = False
+    elif final_mode == "converge":
+        final_converged = bool(
+            final.run(
+                fmax=_number(settings["final_fmax_ev_per_angstrom"], "neb.final_fmax"),
+                steps=final_steps,
+            )
         )
-    )
+    else:
+        raise ValueError("neb.final_mode must be 'fixed_steps' or 'converge'")
     final_neb_fmax = _neb_fmax(neb)
     final_images, energies, max_forces = _snapshot(images)
     if not np.isfinite(np.asarray(energies + max_forces, dtype=float)).all():
@@ -285,30 +304,45 @@ def _run_reaction(
     selected_path = reaction_dir / "selected9.traj"
     write(selected_path, [final_images[index] for index in selected_indices])
     highest_energy = max(energies)
-    target = _number(settings["final_fmax_ev_per_angstrom"], "neb.final_fmax")
+    selected_contains_climbing_neighbors = all(
+        index in selected_indices
+        for index in (climbing_index - 1, climbing_index, climbing_index + 1)
+    )
+    if final_mode == "converge":
+        target = _number(settings["final_fmax_ev_per_angstrom"], "neb.final_fmax")
+        final_converged = final_converged and final_neb_fmax <= target
+    acceptance_ceiling = _number(
+        settings["final_acceptance_fmax_ev_per_angstrom"],
+        "neb.final_acceptance_fmax_ev_per_angstrom",
+    )
+    sampling_accepted = (
+        coarse_converged
+        and final_neb_fmax <= acceptance_ceiling
+        and selected_contains_climbing_neighbors
+    )
     return {
         "reaction_id": reaction_id,
         "charge": charge,
         "multiplicity": multiplicity,
         "coarse_converged": coarse_converged,
         "coarse_steps": coarse.nsteps,
-        "final_converged": final_converged and final_neb_fmax <= target,
+        "final_mode": final_mode,
+        "final_converged": final_converged,
         "final_steps": final.nsteps,
         "final_neb_fmax_ev_per_angstrom": final_neb_fmax,
+        "final_acceptance_fmax_ev_per_angstrom": acceptance_ceiling,
+        "sampling_accepted": sampling_accepted,
         "climbing_image_index": climbing_index,
         "selected_image_indices": list(selected_indices),
-        "selected_contains_climbing_neighbors": all(
-            index in selected_indices
-            for index in (climbing_index - 1, climbing_index, climbing_index + 1)
-        ),
+        "selected_contains_climbing_neighbors": selected_contains_climbing_neighbors,
         "mass_weighted_arc_coordinates_angstrom": list(arc_coordinates),
         "initial_energies_ev": initial_energies,
         "coarse_energies_ev": coarse_energies,
         "final_energies_ev": energies,
         "final_image_max_forces_ev_per_angstrom": max_forces,
         "adjacent_cartesian_displacements_angstrom": adjacent_displacements,
-        "forward_barrier_ev": highest_energy - energies[0],
-        "backward_barrier_ev": highest_energy - energies[-1],
+        "forward_path_maximum_ev": highest_energy - energies[0],
+        "backward_path_maximum_ev": highest_energy - energies[-1],
         "reaction_energy_ev": energies[-1] - energies[0],
         "final_path": {
             "path": str(final_path.relative_to(output_dir)),
@@ -400,6 +434,7 @@ def run(
     ]
     import_config = _trajectory_import_config(config, records, output_dir)
     all_converged = all(bool(record["final_converged"]) for record in records)
+    all_accepted = all(bool(record["sampling_accepted"]) for record in records)
     summary = {
         "schema": "uma-pyscf-c0-ci-neb-v1",
         "path_set_id": config["path_set_id"],
@@ -420,6 +455,7 @@ def run(
             "calculator_sharing": "one local UMA predictor; serial ASE NEB evaluation",
         },
         "all_paths_converged": all_converged,
+        "all_paths_sampling_accepted": all_accepted,
         "reaction_count": len(records),
         "selected_candidate_count": sum(
             len(record["selected_image_indices"]) for record in records
@@ -431,8 +467,8 @@ def run(
         },
     }
     write_json_atomic(output_dir / "summary.json", summary)
-    if not all_converged:
-        raise RuntimeError("At least one CI-NEB path did not reach the final fmax target")
+    if not all_accepted:
+        raise RuntimeError("At least one CI-NEB sampling path failed acceptance")
 
 
 def build_parser() -> argparse.ArgumentParser:
