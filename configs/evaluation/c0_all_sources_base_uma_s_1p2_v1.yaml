@@ -1,0 +1,16 @@
+schema_version: 1
+prediction_id: c0_all_sources_base_uma_s_1p2_v1
+created: "2026-09-04"
+description: >-
+  Base UMA-S-1.2 predictions for each independently frozen C0 source manifest.
+  Runs remain source-separated and are used only for retrospective C0
+  cheap-signal calibration after teacher labeling; they do not alter C0 quotas
+  or authorize holdout-guided sampling.
+model_name: uma-s-1p2
+model_source: https://huggingface.co/facebook/UMA
+model_license: FAIR Chemistry License v1 (2025-05-14)
+task: omol
+device: cuda
+inference_settings: default
+seed: 41
+fairchem_core_version: "2.22.0"
