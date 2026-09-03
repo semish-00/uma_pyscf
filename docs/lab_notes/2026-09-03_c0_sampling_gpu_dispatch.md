@@ -44,6 +44,14 @@ threshold; jobs `1825484` and `1825485` produced one converged, QC-accepted
 label. The high-energy quota is therefore 18/18 accepted while retaining the
 original boundary raw label, and conservative C0 progress is 162/180.
 
+The final curated graph-edit tranche used six manually reviewed,
+valence-saturated neutral-singlet dimer topologies and positional isomers. Three
+fixed 0.03 angstrom Cartesian displacements per parent gave 18/18 geometry-QC
+candidates. Preparation job `1825503` froze the blind manifest and checksums;
+label array `1825504_[0-7]` completed all shards with 18 raw records, no failure
+files, and 18/18 provisional QC acceptance. C0 therefore reaches 180/180 while
+preserving all source quotas and without using acquisition scores.
+
 The independent-reaction comparison shows that the 10,000-step engineering
 model is overfit and is not a valid acquisition model. Holdout-guided follow-up
 will use base-UMA residuals only on diagnostic C0/P0 groups, preserve complete
@@ -52,6 +60,7 @@ point until a separate state/stability audit resolves it.
 
 ## Next actions
 
-1. Build the curated graph-edit/unknown-reaction 18-record C0 tranche.
-2. After C0 reaches 180/180, freeze a non-overlapping T0 before model-aware
-   acquisition or retraining.
+1. Freeze C0 exit evidence: aggregate label/failure accounting, CPU/GPU
+   sentinels, QC v2 distance/severity policy, and cheap-signal calibration.
+2. After the C0 exit checks pass, freeze a non-overlapping T0 before model-aware
+   acquisition or retraining. Do not start bulk P0/P1 before the plan gates.

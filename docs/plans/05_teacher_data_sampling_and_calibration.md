@@ -312,21 +312,21 @@ PFP clientをproduction packageへimportしない。Matlantis側はversioned tra
    - selected candidate manifestとversioned reportをatomic writeする
 3. [x] 180件配分を表すconfig fixtureとunit/CLI testsを追加する。
 4. [x] trajectory thinningへmass-weighted arc-length baselineを追加する。
-5. [ ] source-specific generatorを、local/scan、path、MD、graphの順で追加する。
+5. [x] source-specific generatorを、local/scan、path、MD、graphの順で追加する。
    C0 local 45件、internal scan/dissociation 36件、independent reaction path 36件は
    label/QC完了。strong-distortionは18/18 DFT収束、暂定QCで17 accepted、1件を
    gradient boundary監査へ保留した。閾値を変えず0.72圧縮replacementをlabel/QC acceptedとし、
    strong-distortion quotaは18/18 acceptedとなった。moderate-temperature MDは親バランス回復を含む27/27
-   label/QC accepted。C0は162/180で、残りはcurated graph-edit/unknown-reaction 18件である。
+   label/QC accepted。curated graph-edit/unknown-reactionもneutral-singletのreview済み6 parentから
+   score非依存に18件を固定し、18/18 label/QC acceptedとなった。C0は180/180で全source quotaを満たす。
    8 reactionのendpoint生成と、Si2H3/Si2H5/Ge2H3/Ge2H5に対する24件の
    doublet/quartet GPU4PySCF auditは完了した。全12 geometry pairでdoubletが低く
    S2も良好だが、state承認はCPU/direct stability sentinel後とする。
-   PFP Langevin MD runnerとengineering preflight configは実装済みだが、C0用の独立
-   parent/trajectoryとreview済みgraph editは未実装である。
+   PFP Langevin MD runnerとengineering preflight configも実装済みである。
 
-第一incrementは候補を実際に180件labelしたことを意味しない。実source manifestがquotaを
-満たさない限りportfolio assemblyはfail closedする。次の実行単位は500–1,000件の候補源生成と、
-そのmanifestを入力にしたC0 freezeである。
+全source manifestはquotaをfail closedで満たし、C0 180件のlabel/QCまで完了した。次の実行単位は
+C0 exit evidence（failure説明、CPU/GPU sentinel、QC v2、cheap-signal評価）の固定であり、これを
+飛ばしてP0/P1の大量投入は行わない。
 
 ## 11. Gates
 
