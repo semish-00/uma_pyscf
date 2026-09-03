@@ -153,11 +153,15 @@ def _load_manifest(path: Path) -> CandidateManifest:
 
 
 def _run_identity(
-    config: dict[str, Any], manifest: CandidateManifest, config_path: Path, manifest_path: Path
+    config: dict[str, Any],
+    manifest: CandidateManifest,
+    records: Sequence[CandidateRecord],
+    config_path: Path,
+    manifest_path: Path,
 ) -> dict[str, Any]:
     dynamics = config["dynamics"]
     runs = []
-    for record in manifest.records:
+    for record in records:
         parent_id = str(record.structure.parent_structure_id)
         for temperature in dynamics["temperatures_K"]:
             for seed in dynamics["seeds"]:
@@ -448,7 +452,27 @@ def _write_import_config(
 def run(args: argparse.Namespace) -> int:
     config = load_config(args.config)
     manifest = _load_manifest(args.manifest)
-    identity = _run_identity(config, manifest, args.config, args.manifest)
+    selected_records = manifest.records
+    if args.parent_id is not None:
+        selected_records = tuple(
+            record
+            for record in manifest.records
+            if record.structure.parent_structure_id == args.parent_id
+        )
+        if len(selected_records) != 1:
+            raise ValueError(f"--parent-id {args.parent_id!r} does not identify one parent")
+    identity = _run_identity(
+        config,
+        manifest,
+        selected_records,
+        args.config,
+        args.manifest,
+    )
+    minimum_completed = int(config["selection"].get("minimum_completed_trajectories", 27))
+    if minimum_completed > len(identity["runs"]):
+        raise ValueError(
+            "minimum_completed_trajectories exceeds the selected parent trajectories"
+        )
     args.output_dir.mkdir(parents=True, exist_ok=True)
     identity_path = args.output_dir / "run_identity.json"
     if identity_path.exists() and read_json(identity_path) != identity:
@@ -459,7 +483,7 @@ def run(args: argparse.Namespace) -> int:
         dynamics = config["dynamics"]
         steps_each = dynamics["equilibration_steps"] + dynamics["production_steps"]
         print(
-            f"dry-run parents={len(manifest.records)} trajectories={len(identity['runs'])} "
+            f"dry-run parents={len(selected_records)} trajectories={len(identity['runs'])} "
             f"steps_each={steps_each}"
         )
         return 0
@@ -478,7 +502,7 @@ def run(args: argparse.Namespace) -> int:
     calculator = context["calculator"]
     relaxed: dict[str, Atoms] = {}
     relaxation_summaries = []
-    for record in manifest.records:
+    for record in selected_records:
         atoms, summary = _relax_parent(record, calculator, config["optimization"], args.output_dir)
         relaxed[str(record.structure.parent_structure_id)] = atoms
         relaxation_summaries.append(summary)
@@ -515,7 +539,6 @@ def run(args: argparse.Namespace) -> int:
                 break
 
     completed_trajectories = counts["completed"] + counts["skipped"]
-    minimum_completed = int(config["selection"].get("minimum_completed_trajectories", 27))
     ready_for_import = completed_trajectories >= minimum_completed
     summary = {
         "schema": "uma-pyscf-base-uma-langevin-md-summary-v1",
@@ -550,6 +573,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--model-cache-dir", type=Path, required=True)
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--keep-going", action="store_true")
+    parser.add_argument("--parent-id")
     return parser
 
 
