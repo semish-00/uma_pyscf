@@ -81,6 +81,28 @@ The detached-H record alone has force RMSE 0.2248 eV/A. It remains
 largest trusted source-level gap in both relative energy and forces;
 strong-distortion and reaction-path forces are the next diagnostic targets.
 
+## Equal-budget diagnostic shell comparison
+
+Three 12-record arms used the same 0.02/0.05 angstrom shell budget, retained
+parent/reaction grouping, and stayed outside the blind C0 180 and T0. All 36
+teacher calculations converged. The random arm accepted 12/12; the residual arm
+accepted 10/12; the residual-plus-source-diversity arm accepted 11/12. The three
+QC rejections are Ge2H5Cl high-gradient boundary labels, not calculation or
+geometry failures; raw labels remain preserved and the global threshold was not
+changed.
+
+| arm | accepted/raw | mean record force RMSE (eV/A) | records >=0.1 eV/A | pair-centered relative-energy MAE (eV) |
+|---|---:|---:|---:|---:|
+| source-stratified random | 12/12 | 0.0262 | 0/12 | 0.0039 |
+| base-UMA residual | 10/12 | 0.2097 | 9/12 | 0.0252 |
+| residual + source diversity | 11/12 | 0.1105 | 5/12 | 0.0096 |
+
+The residual arm enriches the force-error tail by nine of twelve records versus
+zero of twelve for the random arm at the diagnostic 0.1 eV/A cutoff. This is
+retrospective C0 evidence, not a frozen production acquisition guarantee. The
+source-diverse arm excluded the entire SiHCl3 reaction group conservatively
+rather than sampling next to the known detached-H artifact.
+
 ## Next actions
 
 1. Freeze C0 exit evidence: aggregate label/failure accounting, CPU/GPU
