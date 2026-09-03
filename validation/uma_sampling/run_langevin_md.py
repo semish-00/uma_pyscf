@@ -125,7 +125,7 @@ def load_config(path: Path) -> dict[str, Any]:
         selection.get("frames_per_trajectory"), "config.selection.frames_per_trajectory"
     )
     minimum_completed = _positive_integer(
-        selection.get("minimum_completed_trajectories"),
+        selection.get("minimum_completed_trajectories", 27),
         "config.selection.minimum_completed_trajectories",
     )
     available = int(dynamics["production_steps"]) // interval + 1
@@ -515,7 +515,7 @@ def run(args: argparse.Namespace) -> int:
                 break
 
     completed_trajectories = counts["completed"] + counts["skipped"]
-    minimum_completed = int(config["selection"]["minimum_completed_trajectories"])
+    minimum_completed = int(config["selection"].get("minimum_completed_trajectories", 27))
     ready_for_import = completed_trajectories >= minimum_completed
     summary = {
         "schema": "uma-pyscf-base-uma-langevin-md-summary-v1",
