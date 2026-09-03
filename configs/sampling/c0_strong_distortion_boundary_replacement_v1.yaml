@@ -1,0 +1,27 @@
+schema_version: 1
+sampling_id: c0_strong_distortion_boundary_replacement_v1
+created: "2026-09-04"
+derived_from: c0_strong_distortion_pool_v1
+description: >-
+  One score-independent replacement for the Si2H5Cl 0.70 compression that
+  converged but exceeded the provisional maximum-gradient QC threshold by
+  0.67 percent. The 0.72 factor preserves a strongly repulsive geometry without
+  changing the global QC threshold; the original raw boundary label is kept.
+
+structures:
+  - {id: si2h5cl, xyz_path: structures/c0_moderate_md_seeds_v1/si2h5cl.xyz}
+
+operations:
+  - kind: bond_scan
+    structure: si2h5cl
+    charge: 0
+    multiplicity: 1
+    anchor_index: 0
+    moved_index: 2
+    factors: [0.72]
+
+filters:
+  covalent_factor: 0.65
+  bond_factor: 1.3
+  allow_fragments: false
+  duplicate_decimals: 3
