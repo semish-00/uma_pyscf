@@ -253,6 +253,28 @@ UMA latent hookはfairchem内部APIへ依存するためcritical pathにしな�
 descriptorと既存UMA/PFP予測でC0を実行できる状態を作り、latent extractionは並行experimental
 adapterとして追加する。
 
+### 8.1 Holdout-guided resampling without test contamination
+
+fixed T0の同じrecord、parent、reaction family周辺をtrainingへ追加した場合、T0はその後の
+generalization testとしては使わない。誤差駆動samplingにはC0/P0のdiagnostic partitionを使い、
+対象recordと新規候補は同じ`reaction_id` / `parent_id`のindivisible groupへ束ねる。
+
+最初のshadow experimentは次の3 armを同じlabel budgetで比較する。
+
+1. source-stratified random
+2. base UMAのrelative-energy/force residual上位の信頼できるgeometry周辺のlocal shell
+3. residual上位とgeometry diversityの複合
+
+local shellは一点への過集中を避け、例えばCartesian 0.02/0.05 angstrom、反応座標の
+小さな前後変位、及びpath上の隣接区間で構成する。各1 parent/reactionからの上限と
+duplicate QCを強制する。元holdoutのteacher labelに電子状態の疑いがある場合は、残差の大きさに
+関わらず`electronic_ambiguous`へ隔離し、state/stability監査で承認されるまでshell生成源に
+使わない。
+
+現在の10,000-step engineering modelは既知holdoutと未見反応経路の両方を悪化させているため、
+そのモデルの残差をacquisition scoreに使わない。base UMAと今後Gate 3を通過した複数seedモデルの
+共通苦手領域を優先し、一つの過学習model固有の誤差を増幅しない。
+
 ## 9. Repository design
 
 既存の一方向依存`core -> schemas -> sampling/inference/qc/datasets -> cli`を維持する。
@@ -292,7 +314,9 @@ PFP clientをproduction packageへimportしない。Matlantis側はversioned tra
 4. [x] trajectory thinningへmass-weighted arc-length baselineを追加する。
 5. [ ] source-specific generatorを、local/scan、path、MD、graphの順で追加する。
    C0 local 45件、internal scan/dissociation 36件、independent reaction path 36件は
-   label/QC完了。C0は117/180で、次はmoderate-temperature MD 27件である。
+   label/QC完了。strong-distortionは18/18 DFT収束、暂定QCで17 accepted、1件を
+   gradient boundary監査へ保留した。C0は保守的に134/180で、moderate-temperature MD
+   27件はSlurm job 1825031で生成中である。
    8 reactionのendpoint生成と、Si2H3/Si2H5/Ge2H3/Ge2H5に対する24件の
    doublet/quartet GPU4PySCF auditは完了した。全12 geometry pairでdoubletが低く
    S2も良好だが、state承認はCPU/direct stability sentinel後とする。
