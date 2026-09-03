@@ -21,15 +21,16 @@ optimization:
   maxstep_angstrom: 0.05
 
 dynamics:
-  timestep_fs: 0.5
+  timestep_fs: 0.25
   friction_per_fs: 0.02
-  equilibration_steps: 200
-  production_steps: 800
+  equilibration_steps: 400
+  production_steps: 1600
   save_interval_steps: 20
   temperatures_K: [300, 600, 900, 1200]
   seeds: [2026090301, 2026090302]
   force_temperature: true
   max_centered_radius_angstrom: 8.0
+  temperature_mean_ratio_bounds: [0.5, 1.75]
 
 selection:
   frames_per_trajectory: 5

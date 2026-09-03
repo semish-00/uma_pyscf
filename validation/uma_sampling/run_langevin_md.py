@@ -109,6 +109,16 @@ def load_config(path: Path) -> dict[str, Any]:
             _positive_integer(value, f"config.dynamics.{name}[]")
     if not isinstance(dynamics.get("force_temperature"), bool):
         raise ValueError("config.dynamics.force_temperature must be boolean")
+    temperature_bounds = _sequence(
+        dynamics.get("temperature_mean_ratio_bounds"),
+        "config.dynamics.temperature_mean_ratio_bounds",
+    )
+    if len(temperature_bounds) != 2:
+        raise ValueError("temperature_mean_ratio_bounds must contain lower and upper bounds")
+    lower = _positive_number(temperature_bounds[0], "temperature_mean_ratio_bounds[0]")
+    upper = _positive_number(temperature_bounds[1], "temperature_mean_ratio_bounds[1]")
+    if not lower < 1.0 < upper:
+        raise ValueError("temperature_mean_ratio_bounds must bracket 1.0")
 
     selection = _mapping(config["selection"], "config.selection")
     frames = _positive_integer(
@@ -370,9 +380,15 @@ def _run_trajectory(
         temporary.unlink(missing_ok=True)
         raise
     trajectory.close()
+    potentials, temperatures, max_forces, radii = zip(*samples, strict=True)
+    mean_temperature = sum(temperatures) / len(temperatures)
+    ratio = mean_temperature / temperature
+    lower, upper = (float(value) for value in settings["temperature_mean_ratio_bounds"])
+    if not lower <= ratio <= upper:
+        temporary.unlink(missing_ok=True)
+        raise RuntimeError(f"MD mean temperature ratio {ratio:.6g} is outside [{lower}, {upper}]")
     os.replace(temporary, trajectory_path)
 
-    potentials, temperatures, max_forces, radii = zip(*samples, strict=True)
     summary = {
         "schema": "uma-pyscf-base-uma-langevin-md-trajectory-v1",
         "run": dict(spec),
@@ -381,7 +397,8 @@ def _run_trajectory(
         "production_steps": int(settings["production_steps"]),
         "diagnostics": {
             "potential_energy_range_ev": max(potentials) - min(potentials),
-            "temperature_mean_K": sum(temperatures) / len(temperatures),
+            "temperature_mean_K": mean_temperature,
+            "temperature_mean_ratio": ratio,
             "temperature_range_K": [min(temperatures), max(temperatures)],
             "max_force_ev_per_angstrom": max(max_forces),
             "max_centered_radius_angstrom": max(radii),

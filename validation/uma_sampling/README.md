@@ -5,8 +5,9 @@
 The C0 runner uses six neutral-singlet parent compositions that are absent from
 engineering-50 and the first 117 C0 records. It relaxes each approximate parent
 with base UMA, then runs 48 short NVT Langevin trajectories: 300/600/900/1200 K,
-two seeds, and a 0.5 fs timestep. The first 200 steps are excluded as
-thermalization; 800 production steps are saved every 20 steps.
+two seeds, and a 0.25 fs timestep. The first 400 steps are excluded as
+thermalization; 1600 production steps are saved every 20 steps. A trajectory is
+rejected if its saved mean temperature falls outside 0.5–1.75 times its target.
 
 These trajectories generate finite-temperature candidates. They are not
 claimed to be equilibrated trajectories or physical-property simulations. Five
