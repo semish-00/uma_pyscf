@@ -315,8 +315,9 @@ PFP clientをproduction packageへimportしない。Matlantis側はversioned tra
 5. [ ] source-specific generatorを、local/scan、path、MD、graphの順で追加する。
    C0 local 45件、internal scan/dissociation 36件、independent reaction path 36件は
    label/QC完了。strong-distortionは18/18 DFT収束、暂定QCで17 accepted、1件を
-   gradient boundary監査へ保留した。C0は保守的に134/180で、moderate-temperature MD
-   27件はSlurm job 1825031で生成中である。
+   gradient boundary監査へ保留した。閾値を変えず0.72圧縮replacementをlabel/QC acceptedとし、
+   strong-distortion quotaは18/18 acceptedとなった。moderate-temperature MDは親バランス回復を含む27/27
+   label/QC accepted。C0は162/180で、残りはcurated graph-edit/unknown-reaction 18件である。
    8 reactionのendpoint生成と、Si2H3/Si2H5/Ge2H3/Ge2H5に対する24件の
    doublet/quartet GPU4PySCF auditは完了した。全12 geometry pairでdoubletが低く
    S2も良好だが、state承認はCPU/direct stability sentinel後とする。

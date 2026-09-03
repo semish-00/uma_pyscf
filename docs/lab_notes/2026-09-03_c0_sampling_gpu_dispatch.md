@@ -29,6 +29,21 @@ protocol, geometry, and gradient-norm checks pass. It is not silently promoted
 or discarded: the raw converged label remains available for the high-energy
 boundary audit, and the current accepted count excludes it.
 
+On 2026-09-04, the moderate-MD primary run retained 30 finite trajectories but
+could select only 21 records under the original five-per-parent cap because the
+Ge2H4Cl2 parent had no accepted temperature-ratio trajectory. A parent-specific
+recovery run (`1825383`) used lower thermostat targets and produced 8/8 finite
+trajectories and 40/40 candidate frames. The combined blind portfolio selected
+21 primary and 6 recovery records, kept all six parents, and capped each
+trajectory at one record. Label array `1825468_[0-7]` converged and provisional
+QC accepted all 27 records.
+
+The original Si2H5Cl 0.70 compression remains in the boundary ledger. A fixed
+0.72 compression replacement was generated without changing the global QC
+threshold; jobs `1825484` and `1825485` produced one converged, QC-accepted
+label. The high-energy quota is therefore 18/18 accepted while retaining the
+original boundary raw label, and conservative C0 progress is 162/180.
+
 The independent-reaction comparison shows that the 10,000-step engineering
 model is overfit and is not a valid acquisition model. Holdout-guided follow-up
 will use base-UMA residuals only on diagnostic C0/P0 groups, preserve complete
@@ -37,10 +52,6 @@ point until a separate state/stability audit resolves it.
 
 ## Next actions
 
-1. If at least 27 moderate-MD trajectories complete, freeze the 27-record
-   portfolio and dispatch it through the same multi-GPU label array.
-2. Fill or adjudicate the one-record strong-distortion boundary gap without
-   weakening the global QC threshold merely to pass one record.
-3. Build the curated graph-edit/unknown-reaction 18-record C0 tranche.
-4. After C0 reaches 180/180, freeze a non-overlapping T0 before model-aware
+1. Build the curated graph-edit/unknown-reaction 18-record C0 tranche.
+2. After C0 reaches 180/180, freeze a non-overlapping T0 before model-aware
    acquisition or retraining.
