@@ -1,0 +1,14 @@
+schema_version: 1
+portfolio_id: c0_curated_graph_edit_18_v1
+created: "2026-09-04"
+description: >-
+  Blind 18-record C0 graph-edit portfolio. Quota and equal parent allocation
+  are fixed before teacher labeling and do not use acquisition scores.
+seed: 2026090442
+strategy: parent_round_robin
+duplicate_decimals: 3
+max_per_parent: 3
+sources:
+  - category: curated_graph_edit_unknown_reaction
+    manifest: c0_curated_graph_edit_pool_v1_candidates.json
+    quota: 18
