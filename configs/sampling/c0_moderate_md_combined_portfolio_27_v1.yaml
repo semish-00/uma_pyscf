@@ -1,0 +1,19 @@
+schema_version: 1
+portfolio_id: c0_moderate_md_27_v1
+created: "2026-09-04"
+description: >-
+  Blind 27-record moderate-temperature MD tranche combining the 21 records
+  available under the original five-per-parent cap with six parent-recovery
+  records for Ge2H4Cl2. No model or teacher score enters selection.
+seed: 2026090317
+strategy: parent_round_robin
+duplicate_decimals: 3
+max_per_parent: 6
+max_per_trajectory: 1
+sources:
+  - category: moderate_temperature_md_primary
+    manifest: primary_candidates.json
+    quota: 21
+  - category: moderate_temperature_md_ge2h4cl2_recovery
+    manifest: ge2h4cl2_recovery_candidates.json
+    quota: 6
