@@ -26,3 +26,11 @@ Run on the SoftBank GPU host with:
 ```bash
 sbatch scripts/slurm/run_c0_moderate_md_softbank_slurm.sh
 ```
+
+## C0 strong-distortion tail
+
+The controlled high-energy tranche contains 18 neutral-singlet candidates:
+three fixed terminal-bond factors for each of six parents. Generate the frozen
+manifest on the compute host, then submit it to the multi-GPU label array. The
+label array may be submitted with an `afterok` dependency on the preparation
+job so no worker can start from a missing or partial manifest.
