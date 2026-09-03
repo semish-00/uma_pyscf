@@ -58,6 +58,29 @@ will use base-UMA residuals only on diagnostic C0/P0 groups, preserve complete
 reaction/parent grouping, and exclude the known ambiguous SiHCl3 detached-H
 point until a separate state/stability audit resolves it.
 
+## Base UMA retrospective signal
+
+Jobs `1825518`–`1825523` ran base UMA-S-1.2 independently on the six frozen C0
+source manifests. All jobs completed and produced 180 predictions with input
+checksums. Teacher gradients were converted to forces and relative-energy errors
+were centered within each parent/reaction group. The known detached-H record
+`c0_independent_reaction_paths_36_v1_sihcl3_to_sicl2_hcl_f00003` was reported
+separately and excluded from trusted acquisition diagnostics.
+
+| source | trusted records | relative-energy MAE (eV) | force RMSE (eV/A) |
+|---|---:|---:|---:|
+| local | 45 | 0.0051 | 0.0471 |
+| internal scan | 36 | 0.0478 | 0.1045 |
+| independent path | 35 | 0.0206 | 0.0825 |
+| moderate MD | 27 | 0.0049 | 0.0325 |
+| strong distortion | 18 | 0.0102 | 0.0878 |
+| curated graph edit | 18 | 0.0020 | 0.0316 |
+
+The detached-H record alone has force RMSE 0.2248 eV/A. It remains
+`electronic_ambiguous` and is not a resampling seed. Internal scans are the
+largest trusted source-level gap in both relative energy and forces;
+strong-distortion and reaction-path forces are the next diagnostic targets.
+
 ## Next actions
 
 1. Freeze C0 exit evidence: aggregate label/failure accounting, CPU/GPU
