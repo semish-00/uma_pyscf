@@ -3,8 +3,9 @@ md_set_id: c0_moderate_uma_md_v1
 created: "2026-09-03"
 description: >-
   Short base-UMA NVT Langevin trajectories for blind C0 candidate generation.
-  These trajectories sample finite-temperature distortions; they are not
-  claimed to be equilibrated trajectories or physical-property simulations.
+  The thermostat targets compensate for the effective heating measured in the
+  preflight. These trajectories sample finite-temperature distortions; they
+  are not equilibrated trajectories or physical-property simulations.
 
 model:
   name: uma-s-1p2
@@ -26,11 +27,11 @@ dynamics:
   equilibration_steps: 400
   production_steps: 1600
   save_interval_steps: 20
-  temperatures_K: [300, 600, 900, 1200]
+  temperatures_K: [180, 300, 450, 650]
   seeds: [2026090301, 2026090302]
   force_temperature: true
   max_centered_radius_angstrom: 8.0
-  temperature_mean_ratio_bounds: [0.5, 1.75]
+  temperature_mean_ratio_bounds: [0.5, 2.5]
 
 selection:
   frames_per_trajectory: 5
