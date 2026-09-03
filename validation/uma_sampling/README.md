@@ -10,6 +10,10 @@ effective heating measured in the 100/300/650 K preflight and aim at observed
 means of roughly 300–1100 K. The first 400 steps are excluded as thermalization;
 1600 production steps are saved every 20 steps. A trajectory is rejected if its
 saved mean temperature falls outside 0.5–2.5 times its target.
+Failed trajectories remain in the run summary. The runner continues through the
+full matrix and permits import only when at least 27 trajectories completed, so
+one small-system temperature fluctuation cannot discard an otherwise sufficient
+blind pool.
 
 These trajectories generate finite-temperature candidates. They are not
 claimed to be equilibrated trajectories or physical-property simulations. Five

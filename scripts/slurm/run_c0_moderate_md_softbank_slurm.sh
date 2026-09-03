@@ -44,7 +44,8 @@ srun \
       --config '$MD_CONFIG' \
       --manifest '$RUN_ROOT/seeds/c0_moderate_md_parent_seeds_v1_candidates.json' \
       --output-dir '$RUN_ROOT/md' \
-      --model-cache-dir '$MODEL_CACHE_DIR'
+      --model-cache-dir '$MODEL_CACHE_DIR' \
+      --keep-going
     '$PYTHON' -m uma_pyscf.cli.main import-trajectory \
       '$RUN_ROOT/md/trajectory_import_config.json' \
       --source-root '$RUN_ROOT/md' \

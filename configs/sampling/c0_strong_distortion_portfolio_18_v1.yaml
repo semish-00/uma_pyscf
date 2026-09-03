@@ -1,0 +1,14 @@
+schema_version: 1
+portfolio_id: c0_strong_distortion_18_v1
+created: "2026-09-03"
+description: >-
+  Blind 18-record controlled strong-distortion tranche for the C0 high-energy
+  tail. All six parents contribute the same three fixed bond factors.
+seed: 2026090341
+strategy: parent_round_robin
+duplicate_decimals: 3
+max_per_parent: 3
+sources:
+  - category: strong_distortion_high_temperature_md
+    manifest: c0_strong_distortion_pool_v1_candidates.json
+    quota: 18

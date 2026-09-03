@@ -35,6 +35,7 @@ dynamics:
 
 selection:
   frames_per_trajectory: 5
+  minimum_completed_trajectories: 27
 
 filters:
   covalent_factor: 0.65

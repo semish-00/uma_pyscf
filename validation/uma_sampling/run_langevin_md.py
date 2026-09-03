@@ -124,9 +124,16 @@ def load_config(path: Path) -> dict[str, Any]:
     frames = _positive_integer(
         selection.get("frames_per_trajectory"), "config.selection.frames_per_trajectory"
     )
+    minimum_completed = _positive_integer(
+        selection.get("minimum_completed_trajectories"),
+        "config.selection.minimum_completed_trajectories",
+    )
     available = int(dynamics["production_steps"]) // interval + 1
     if frames > available:
         raise ValueError("frames_per_trajectory exceeds the saved production frames")
+    planned = EXPECTED_PARENT_COUNT * len(temperatures) * len(seeds)
+    if minimum_completed > planned:
+        raise ValueError("minimum_completed_trajectories exceeds the planned trajectories")
     return config
 
 
@@ -410,7 +417,7 @@ def _run_trajectory(
 
 
 def _write_import_config(
-    config: Mapping[str, Any], identity: Mapping[str, Any], path: Path
+    config: Mapping[str, Any], trajectory_summaries: Sequence[Mapping[str, Any]], path: Path
 ) -> None:
     frames = int(config["selection"]["frames_per_trajectory"])
     artifact = {
@@ -430,7 +437,8 @@ def _write_import_config(
                 "count": frames,
                 "frame_selection": "mass_weighted_arc_length",
             }
-            for run in identity["runs"]
+            for summary in trajectory_summaries
+            for run in [_mapping(summary["run"], "trajectory summary run")]
         ],
         "filters": dict(config["filters"]),
     }
@@ -506,10 +514,15 @@ def run(args: argparse.Namespace) -> int:
             if not args.keep_going:
                 break
 
+    completed_trajectories = counts["completed"] + counts["skipped"]
+    minimum_completed = int(config["selection"]["minimum_completed_trajectories"])
+    ready_for_import = completed_trajectories >= minimum_completed
     summary = {
         "schema": "uma-pyscf-base-uma-langevin-md-summary-v1",
         "md_set_id": config["md_set_id"],
         "counts": counts,
+        "minimum_completed_trajectories": minimum_completed,
+        "ready_for_import": ready_for_import,
         "failures": failures,
         "runtime": {
             "ase": str(context["ase"].__version__),
@@ -519,9 +532,13 @@ def run(args: argparse.Namespace) -> int:
         "trajectory_summaries": trajectory_summaries,
     }
     write_json_atomic(args.output_dir / "summary.json", summary)
-    if failures:
+    if not ready_for_import:
         return 1
-    _write_import_config(config, identity, args.output_dir / "trajectory_import_config.json")
+    _write_import_config(
+        config,
+        trajectory_summaries,
+        args.output_dir / "trajectory_import_config.json",
+    )
     return 0
 
 
