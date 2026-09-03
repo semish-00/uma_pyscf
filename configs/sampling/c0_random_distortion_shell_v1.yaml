@@ -1,0 +1,22 @@
+schema_version: 1
+sampling_id: c0_random_distortion_shell_v1
+created: "2026-09-04"
+derived_from: c0_all_sources_base_uma_s_1p2_v1
+description: >-
+  Source-stratified random control arm for the C0 residual-shell diagnostic.
+  Three QC-accepted strong-distortion records were selected with seed
+  2026090471 and max one source record per parent, without using model
+  residuals. Each parent contributes fixed 0.02 and 0.05 angstrom shell points.
+  This batch is outside C0 180 and remains grouped with its source parent.
+structures:
+  - {id: ge2h4cl2, xyz_path: structures/c0_random_shell_seeds_v1/distort_ge2h4cl2.xyz}
+  - {id: si2h5cl, xyz_path: structures/c0_random_shell_seeds_v1/distort_si2h5cl.xyz}
+  - {id: ge2h5cl, xyz_path: structures/c0_random_shell_seeds_v1/distort_ge2h5cl.xyz}
+operations:
+  - {kind: cartesian_displacement, structure: ge2h4cl2, charge: 0, multiplicity: 1, sigma_angstrom: 0.02, count: 1, seed: 2026090481}
+  - {kind: cartesian_displacement, structure: ge2h4cl2, charge: 0, multiplicity: 1, sigma_angstrom: 0.05, count: 1, seed: 2026090482}
+  - {kind: cartesian_displacement, structure: si2h5cl, charge: 0, multiplicity: 1, sigma_angstrom: 0.02, count: 1, seed: 2026090483}
+  - {kind: cartesian_displacement, structure: si2h5cl, charge: 0, multiplicity: 1, sigma_angstrom: 0.05, count: 1, seed: 2026090484}
+  - {kind: cartesian_displacement, structure: ge2h5cl, charge: 0, multiplicity: 1, sigma_angstrom: 0.02, count: 1, seed: 2026090485}
+  - {kind: cartesian_displacement, structure: ge2h5cl, charge: 0, multiplicity: 1, sigma_angstrom: 0.05, count: 1, seed: 2026090486}
+filters: {covalent_factor: 0.65, bond_factor: 1.3, allow_fragments: false, duplicate_decimals: 3}
