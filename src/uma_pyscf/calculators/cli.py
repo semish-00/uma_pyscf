@@ -13,6 +13,7 @@ from ..schemas.candidate import CandidateManifest
 from ..states.registry import load_state_registry
 from .config import load_dft_config
 from .runner import build_label_plan, run_label_batch
+from .sharding import shard_candidate_manifest
 from .subprocess_adapter import SubprocessGpu4PyscfAdapter
 
 __all__ = ["configure_label", "run_label"]
@@ -50,6 +51,20 @@ def configure_label(parser: argparse.ArgumentParser) -> None:
         metavar="<registry>",
         help="Versioned state registry required when the manifest has non-default states.",
     )
+    parser.add_argument(
+        "--shard-count",
+        type=int,
+        default=1,
+        metavar="<count>",
+        help="Split execution deterministically across this many independent GPU workers.",
+    )
+    parser.add_argument(
+        "--shard-index",
+        type=int,
+        default=0,
+        metavar="<index>",
+        help="Zero-based execution shard handled by this process.",
+    )
 
 
 def run_label(args: argparse.Namespace) -> int:
@@ -57,6 +72,12 @@ def run_label(args: argparse.Namespace) -> int:
     try:
         config = load_dft_config(Path(args.config))
         manifest = CandidateManifest.from_dict(read_json(Path(args.manifest)))
+        if args.shard_count != 1 or args.shard_index != 0:
+            manifest = shard_candidate_manifest(
+                manifest,
+                shard_index=int(args.shard_index),
+                shard_count=int(args.shard_count),
+            )
         state_registry = (
             load_state_registry(Path(args.state_registry)) if args.state_registry else None
         )

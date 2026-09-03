@@ -79,6 +79,28 @@ raw label、ledger、QC reportは削除しない。SoftBank GPU機では `/raid`
 directoryを作成できないため、現行のSlurm jobは各candidateの一時ファイルに
 compute nodeのcontainer-local `/tmp`を使う。`TemporaryDirectory`がworker終了時に自動削除する。
 
+## Multi-GPU execution shards
+
+大きいimmutable manifestは、科学的splitとは独立なexecution shardへ分けてSlurm arrayで
+並列labelできる。各taskは候補の原子数と電子数から作る固定cost proxyで決定論的に担当を
+選び、独立したlabel ledgerとQC record directoryへ書く。parent/reaction/trajectory単位の
+train/test groupingは後段のsplit manifestで引き続き強制する。
+
+```bash
+export CANDIDATE_MANIFEST=/lustre/user140002/runs/calibration/example/portfolio/candidates.json
+sbatch --array=0-7 scripts/slurm/run_label_manifest_array_softbank_slurm.sh
+```
+
+GPU数を変える場合はarray範囲と`SHARD_COUNT`を一致させる。
+
+```bash
+SHARD_COUNT=4 sbatch --array=0-3 scripts/slurm/run_label_manifest_array_softbank_slurm.sh
+```
+
+成果物は`runs/label/<manifest>_array/<array-job-id>/shards/shard_<index>/`に分かれる。
+`qc`、`dataset`、`verify-dataset`の`--records`は複数directoryを受け取れるので、後段では
+全shardの`qc/records`を明示して統合する。shard数が候補数を超える投入はfail closedする。
+
 ## 50構造engineering set
 
 ```bash
