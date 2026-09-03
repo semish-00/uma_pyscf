@@ -291,13 +291,13 @@ PFP clientをproduction packageへimportしない。Matlantis側はversioned tra
 3. [x] 180件配分を表すconfig fixtureとunit/CLI testsを追加する。
 4. [x] trajectory thinningへmass-weighted arc-length baselineを追加する。
 5. [ ] source-specific generatorを、local/scan、path、MD、graphの順で追加する。
-   C0 local 45件とinternal scan/dissociation 36件はlabel/QC完了。次はpathである。
+   C0 local 45件、internal scan/dissociation 36件、independent reaction path 36件は
+   label/QC完了。C0は117/180で、次はmoderate-temperature MD 27件である。
    8 reactionのendpoint生成と、Si2H3/Si2H5/Ge2H3/Ge2H5に対する24件の
    doublet/quartet GPU4PySCF auditは完了した。全12 geometry pairでdoubletが低く
    S2も良好だが、state承認はCPU/direct stability sentinel後とする。
-   次の実行単位はC0 independent 4 reactionのCI-NEB/stringと9件/pathの固定である。
    PFP Langevin MD runnerとengineering preflight configは実装済みだが、C0用の独立
-   trajectoryとreview済みgraph editは未実装である。
+   parent/trajectoryとreview済みgraph editは未実装である。
 
 第一incrementは候補を実際に180件labelしたことを意味しない。実source manifestがquotaを
 満たさない限りportfolio assemblyはfail closedする。次の実行単位は500–1,000件の候補源生成と、

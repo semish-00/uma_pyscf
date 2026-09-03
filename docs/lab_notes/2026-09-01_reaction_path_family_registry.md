@@ -1,7 +1,7 @@
 # C0 reaction-path family registry
 
 - 実施日: 2026-09-01
-- 状態: endpoint生成とC0-S GPU audit完了。path計算は未実施
+- 状態: endpointとC0-S GPU audit完了。C0 independent 4 path / 36 label完了
 - 詳細計画:
   [Teacher-data sampling, calibration, and oracle-pool plan](../plans/05_teacher_data_sampling_and_calibration.md#42-reaction-paths)
 
@@ -69,7 +69,17 @@ doublet/quartetを3 geometryずつGPU4PySCFで比較し、24/24 labelとQCが完
 
 結果、artifact hash、承認を保留する理由は
 [Reaction endpoint preparation and Si/Ge dimer state audit](2026-09-01_reaction_endpoints_and_dimer_state_audit.md)
-に固定した。次はC0 independent 4 familyのCI-NEB/stringである。
+に固定した。
+
+2026-09-01にC0 independent 4 familyをbase UMAのNEBでsamplingし、9件/pathの
+36構造を固定した。trajectory geometry QCは36/36 accepted、続く
+GPU4PySCF job `1824441`は36/36をprimary density-fitで1回目に完了し、label QCも
+36/36 acceptedだった。C0は117/180へ進んだ。
+
+経路は教師候補採取用のcoarse NEB + 固定100-step climbing refinementであり、
+精密TS/障壁とは解釈しない。設定、失敗runの切り分け、artifact hashは
+[C0 independent reaction paths and GPU4PySCF labels](2026-09-03_c0_independent_reaction_paths.md)
+に固定した。次のC0 quotaはmoderate-temperature MD 27件である。
 
 ## 7. 参考にした反応・状態情報
 
