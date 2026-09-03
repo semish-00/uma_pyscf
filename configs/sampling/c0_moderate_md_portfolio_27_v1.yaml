@@ -1,0 +1,15 @@
+schema_version: 1
+portfolio_id: c0_moderate_md_27_v1
+created: "2026-09-03"
+description: >-
+  Blind 27-record moderate-temperature MD tranche for C0. The caps spread the
+  quota across all six parents and 27 distinct temperature/seed trajectories.
+seed: 2026090317
+strategy: parent_round_robin
+duplicate_decimals: 3
+max_per_parent: 5
+max_per_trajectory: 1
+sources:
+  - category: moderate_temperature_md
+    manifest: c0_moderate_md_pool_v1_candidates.json
+    quota: 27
