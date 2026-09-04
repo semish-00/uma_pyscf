@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections import defaultdict
 from copy import deepcopy
+import math
 from pathlib import Path
 import random
 from typing import Any
@@ -40,6 +41,7 @@ PORTFOLIO_SKIP_REASONS = (
     "trajectory_limit",
     "quota_reached",
 )
+PORTFOLIO_STRATEGIES = ("parent_round_robin", "d_optimal")
 
 _CONFIG_KEYS = (
     "schema_version",
@@ -90,8 +92,11 @@ def load_portfolio_config(path: str | Path) -> dict[str, Any]:
         require_str(config["description"], "portfolio_config.description")
     require_int(config["seed"], "portfolio_config.seed")
     strategy = require_str(config["strategy"], "portfolio_config.strategy")
-    if strategy != "parent_round_robin":
-        raise ValidationError("portfolio_config.strategy must be 'parent_round_robin'.")
+    if strategy not in PORTFOLIO_STRATEGIES:
+        raise ValidationError(
+            "portfolio_config.strategy must be one of "
+            f"{', '.join(repr(value) for value in PORTFOLIO_STRATEGIES)}."
+        )
     decimals = require_int(config["duplicate_decimals"], "portfolio_config.duplicate_decimals")
     if decimals < 0:
         raise ValidationError("portfolio_config.duplicate_decimals must not be negative.")
@@ -182,6 +187,116 @@ def _parent_round_robin(
     return ordered
 
 
+def _d_optimal_descriptor(record: CandidateRecord) -> list[float]:
+    """Return a model-independent composition and pair-distance descriptor."""
+    elements = (1, 14, 17, 32)
+    element_index = {atomic_number: index for index, atomic_number in enumerate(elements)}
+    numbers = record.structure.atomic_numbers
+    if any(atomic_number not in element_index for atomic_number in numbers):
+        raise ValidationError(
+            f"Candidate {record.record_id!r} contains an element outside H/Si/Cl/Ge."
+        )
+    composition = [numbers.count(atomic_number) / len(numbers) for atomic_number in elements]
+    pair_types = [
+        (left, right)
+        for left_index, left in enumerate(elements)
+        for right in elements[left_index:]
+    ]
+    centers = (0.8, 1.3, 1.8, 2.3, 2.8, 3.3, 3.8, 4.3)
+    width = 0.35
+    pair_features = [0.0] * (len(pair_types) * len(centers))
+    type_index = {pair: index for index, pair in enumerate(pair_types)}
+    positions = record.structure.positions_angstrom
+    for left in range(len(numbers)):
+        for right in range(left + 1, len(numbers)):
+            pair = tuple(sorted((numbers[left], numbers[right])))
+            distance = math.dist(positions[left], positions[right])
+            offset = type_index[pair] * len(centers)
+            for center_index, center in enumerate(centers):
+                pair_features[offset + center_index] += math.exp(
+                    -0.5 * ((distance - center) / width) ** 2
+                )
+    pair_count = max(1, len(numbers) * (len(numbers) - 1) // 2)
+    pair_features = [value / pair_count for value in pair_features]
+    return [
+        1.0,
+        *composition,
+        *pair_features,
+        float(record.state.charge),
+        float(record.state.multiplicity - 1),
+    ]
+
+
+def _d_optimal_order(
+    records: tuple[CandidateRecord, ...], *, seed: int, category: str
+) -> list[CandidateRecord]:
+    """Greedy pivoted Gram-Schmidt ordering for approximate D-optimal design."""
+    if not records:
+        return []
+    descriptors = [_d_optimal_descriptor(record) for record in records]
+    dimension = len(descriptors[0])
+    means = [
+        math.fsum(row[column] for row in descriptors) / len(descriptors)
+        for column in range(dimension)
+    ]
+    scales = []
+    for column in range(dimension):
+        variance = math.fsum(
+            (row[column] - means[column]) ** 2 for row in descriptors
+        ) / len(descriptors)
+        scales.append(math.sqrt(variance) if variance > 1e-24 else 1.0)
+    standardized = [
+        [
+            1.0 if column == 0 else (row[column] - means[column]) / scales[column]
+            for column in range(dimension)
+        ]
+        for row in descriptors
+    ]
+    rng = random.Random(f"{seed}:{category}:d_optimal")
+    tie_order = list(range(len(records)))
+    rng.shuffle(tie_order)
+    tie_rank = {index: rank for rank, index in enumerate(tie_order)}
+    residuals = [list(row) for row in standardized]
+    remaining = set(range(len(records)))
+    selected_indices: list[int] = []
+    tolerance = 1e-20
+    while remaining:
+        pivot = min(
+            remaining,
+            key=lambda index: (
+                -math.fsum(value * value for value in residuals[index]),
+                tie_rank[index],
+            ),
+        )
+        selected_indices.append(pivot)
+        remaining.remove(pivot)
+        norm_squared = math.fsum(value * value for value in residuals[pivot])
+        if norm_squared <= tolerance:
+            continue
+        norm = math.sqrt(norm_squared)
+        basis = [value / norm for value in residuals[pivot]]
+        for index in remaining:
+            projection = math.fsum(
+                value * direction
+                for value, direction in zip(residuals[index], basis, strict=True)
+            )
+            residuals[index] = [
+                value - projection * direction
+                for value, direction in zip(residuals[index], basis, strict=True)
+            ]
+    return [records[index] for index in selected_indices]
+
+
+def _ordered_candidates(
+    records: tuple[CandidateRecord, ...], *, strategy: str, seed: int, category: str
+) -> list[CandidateRecord]:
+    if strategy == "parent_round_robin":
+        return _parent_round_robin(records, seed=seed, category=category)
+    if strategy == "d_optimal":
+        return _d_optimal_order(records, seed=seed, category=category)
+    raise AssertionError(f"validated strategy is unsupported: {strategy}")
+
+
 def _enrich_record(
     record: CandidateRecord, *, category: str, source_id: str, source_sha256: str
 ) -> CandidateRecord:
@@ -249,6 +364,7 @@ def assemble_portfolio(
         int(config["max_per_trajectory"]) if "max_per_trajectory" in config else None
     )
     seed = int(config["seed"])
+    strategy = str(config["strategy"])
     selected_records: list[CandidateRecord] = []
     selected_fingerprints: set[tuple[Any, ...]] = set()
     parent_counts: dict[str, int] = defaultdict(int)
@@ -258,7 +374,9 @@ def assemble_portfolio(
     for source, manifest, manifest_sha256 in loaded_sources:
         category = str(source["category"])
         quota = int(source["quota"])
-        ordered = _parent_round_robin(manifest.records, seed=seed, category=category)
+        ordered = _ordered_candidates(
+            manifest.records, strategy=strategy, seed=seed, category=category
+        )
         selected: list[CandidateRecord] = []
         skipped = {reason: 0 for reason in PORTFOLIO_SKIP_REASONS}
         for index, record in enumerate(ordered):

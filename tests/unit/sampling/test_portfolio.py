@@ -55,13 +55,15 @@ def write_manifest(path: Path, sampling_id: str, records: tuple[CandidateRecord,
     write_json_atomic(path, manifest.to_dict())
 
 
-def write_config(path: Path, *, second_quota: int = 2) -> None:
+def write_config(
+    path: Path, *, second_quota: int = 2, strategy: str = "parent_round_robin"
+) -> None:
     path.write_text(
         f"""\
 schema_version: 1
 portfolio_id: calibration_test_v1
 seed: 42
-strategy: parent_round_robin
+strategy: {strategy}
 duplicate_decimals: 3
 max_per_parent: 1
 max_per_trajectory: 1
@@ -168,6 +170,34 @@ class PortfolioAssemblyTests(unittest.TestCase):
         )
         self.assertEqual(path_summary["skipped_counts"]["duplicate_geometry_state"], 1)
         self.assertIn("path_triplet", tuple(record.record_id for record in manifest.records))
+
+    def test_d_optimal_is_deterministic_and_selects_distance_extremes(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            write_config(root / "portfolio.yaml", second_quota=1, strategy="d_optimal")
+            write_manifest(
+                root / "local.json",
+                "local_pool",
+                tuple(
+                    candidate(f"local_p{index}", f"p{index}", distance)
+                    for index, distance in enumerate((0.60, 0.75, 0.90, 1.05, 1.20), start=1)
+                ),
+            )
+            write_manifest(
+                root / "path.json",
+                "path_pool",
+                (candidate("path_p6", "p6", 1.40, trajectory_id="t6"),),
+            )
+            first, _ = assemble_portfolio(root / "portfolio.yaml", root)
+            second, _ = assemble_portfolio(root / "portfolio.yaml", root)
+
+        self.assertEqual(first.to_dict(), second.to_dict())
+        local_distances = {
+            record.structure.positions_angstrom[1][0]
+            for record in first.records
+            if record.generation_parameters["portfolio_source_category"] == "local"
+        }
+        self.assertEqual(local_distances, {0.60, 1.20})
 
     def test_impossible_quota_and_missing_parent_fail_closed(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
