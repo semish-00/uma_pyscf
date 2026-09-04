@@ -50,8 +50,29 @@ ASE XYZ write/read round trip、`pbc=False`、組成、原子数、最小原子�
 XYZはcommit `712c1af`で固定した。blind base-UMA Langevin candidate generationをSlurm job
 `1826995`として開始した。T0 parentはtrainingとacquisition-guided resamplingへ使用しない。
 
+T0の非MD sourceは次の固定quotaで生成した。
+
+- local Cartesian displacement: 40
+- controlled M-X scan/dissociation: 48
+- connected high-energy tail: 18
+- HCl-elimination linear interpolation: 18
+- blind finite-temperature MD: 76（job `1826995`完了後）
+
+deterministic source job `1827105`は106/106、HCl interpolation job `1827104`は18/18を
+生成QC通過した。MD完了後、dependency job `1827106`が合計200件をfreezeし、job
+`1827107_[0-7]`が8-way GPU4PySCF label/QCを開始する。
+
 ## D-optimal arm
 
 random/source-stratified baselineと同一quotaで比較できるよう、組成と元素対距離RBFだけを使う
 model-independent greedy D-optimal orderingを追加した。teacher label、T0 error、UMA residualは
 入力しない。既存のsource quota、parent cap、trajectory cap、state-aware duplicate除去は維持する。
+
+12 training-side parentから192件を提案し、189件がgeometry QCを通過した。random 24件と
+D-optimal 24件の重複4件を一度だけ計算する44-record unionをfreezeし、Slurm array job
+`1827008`で44/44 label、44/44 QC acceptedとなった。T0 parentとの共有はない。
+
+- union manifest SHA-256: `d9d6b20347654d892f68c935cfdb6dc2bc478d0165539b25d3b60e17efca073b`
+- arm-membership report SHA-256: `63ee98f1e58d3a1a5b424dd981c4ee659f1b915778674331c1a7afbc1bf65d1e`
+- label/QC audit SHA-256: `0802a1386e8013591c0e2e8ee02ae8cbea8b31945f4ea68dca48859e407c4a7d`
+- QC-record checksum ledger SHA-256: `0f9736e1dda1e04c074f820e20d7ec4baa54ead596d9dc935ac154c04f464ed5`
