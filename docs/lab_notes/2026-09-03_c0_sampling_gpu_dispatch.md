@@ -103,6 +103,20 @@ retrospective C0 evidence, not a frozen production acquisition guarantee. The
 source-diverse arm excluded the entire SiHCl3 reaction group conservatively
 rather than sampling next to the known detached-H artifact.
 
+## GPU direct-SCF sentinel
+
+Six source-stratified neutral-singlet records were recomputed without density
+fitting in Slurm jobs `1826000` and `1826001`. All six direct calculations
+converged on the first attempt. Against the frozen production density-fit
+records at the same coordinates, the largest absolute energy difference was
+1.7521 meV, the largest gradient-component RMSE was 0.0009374 eV/angstrom, and
+the largest absolute gradient-component difference was 0.0017927
+eV/angstrom. Raw records, attempt ledgers, protocol/input checksums, and the
+non-release status are retained under
+`/lustre/user140002/runs/calibration/c0_direct_sentinel_v1/20260904_v1`.
+These descriptive results do not relax or newly freeze any global QC
+threshold.
+
 ## Next actions
 
 1. Freeze C0 exit evidence: aggregate label/failure accounting, CPU/GPU
