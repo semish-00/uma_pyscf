@@ -318,15 +318,21 @@ PFP clientをproduction packageへimportしない。Matlantis側はversioned tra
    gradient boundary監査へ保留した。閾値を変えず0.72圧縮replacementをlabel/QC acceptedとし、
    strong-distortion quotaは18/18 acceptedとなった。moderate-temperature MDは親バランス回復を含む27/27
    label/QC accepted。curated graph-edit/unknown-reactionもneutral-singletのreview済み6 parentから
-   score非依存に18件を固定し、18/18 label/QC acceptedとなった。C0は180/180で全source quotaを満たす。
+   score非依存に18件を固定し、18/18 label/QC acceptedとなった。C0は180件のsource quotaを満たしたが、
+   既知のSiHCl3 detached-H artifact 1件を`electronic_ambiguous`として学習対象から隔離したため、
+   2026-09-05時点のC0 training-eligible baselineは179件である。QC `accepted`だけを数えて180件と
+   表示してはならない。
    8 reactionのendpoint生成と、Si2H3/Si2H5/Ge2H3/Ge2H5に対する24件の
    doublet/quartet GPU4PySCF auditは完了した。全12 geometry pairでdoubletが低く
    S2も良好だが、state承認はCPU/direct stability sentinel後とする。
    PFP Langevin MD runnerとengineering preflight configも実装済みである。
 
-全source manifestはquotaをfail closedで満たし、C0 180件のlabel/QCまで完了した。次の実行単位は
-C0 exit evidence（failure説明、CPU/GPU sentinel、QC v2、cheap-signal評価）の固定であり、これを
-飛ばしてP0/P1の大量投入は行わない。
+全source manifestはquotaをfail closedで満たし、C0 180件のlabel/QCまで完了した。追加のblind
+shell/hard-source 45件を含む横断監査では、重複geometry 0、training-eligible 224件となった。
+C0-S 24件のGPU direct sentinelは24/24収束し、density-fitとの差は最大2.61 meV、gradient RMSE
+最大0.00793 eV/angstrom、12 state pairのorderingは全件保持された。ただしstateは引き続き
+nonreleaseであり、学習件数へ加えない。次の実行単位は独立T0 200件のfreeze/labelとC0 exit evidence
+（failure説明、QC v2、cheap-signal評価）の固定であり、これを飛ばしてP0/P1の大量投入は行わない。
 
 ## 11. Gates
 
