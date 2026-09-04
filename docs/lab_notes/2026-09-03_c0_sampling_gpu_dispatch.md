@@ -117,6 +117,21 @@ non-release status are retained under
 These descriptive results do not relax or newly freeze any global QC
 threshold.
 
+The direct comparison was then extended to the frozen 12-record base-UMA
+residual shell, concentrating the audit on internal-scan and strong-distortion
+boundaries without changing a C0 source quota. Slurm arrays `1826591` and
+`1826592` completed all 12 records on the first direct attempt with no failure.
+The largest absolute density-fit difference was 3.2235 meV in energy, 0.001124
+eV/angstrom in gradient-component RMSE, and 0.003194 eV/angstrom in the largest
+gradient component. The raw direct and density-fit record checksums and the
+descriptive comparison are retained at
+`/lustre/user140002/runs/calibration/c0_direct_boundary_sentinel_v1`; the
+comparison report SHA-256 is
+`c4a924190b3d6e41c51cccef9baf57957711d9aefbdf52e6c3b943677a96a490`.
+The two high-gradient Ge2H5Cl density-fit labels remain preserved as boundary
+records; direct parity does not convert their existing QC disposition into
+automatic acceptance.
+
 ## Next actions
 
 1. Freeze C0 exit evidence: aggregate label/failure accounting, CPU/GPU
