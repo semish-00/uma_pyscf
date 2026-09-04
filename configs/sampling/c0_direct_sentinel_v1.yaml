@@ -1,0 +1,23 @@
+schema_version: 1
+sampling_id: c0_direct_sentinel_v1
+created: "2026-09-04"
+description: >-
+  Six neutral-singlet C0 geometries spanning local, dissociation scan,
+  independent path, moderate MD, strong distortion, and graph-edit sources.
+  The source geometries were already teacher-labeled with production density
+  fitting. This frozen diagnostic manifest is for direct-SCF comparison only.
+structures:
+  - {id: local_ge2h6, xyz_path: structures/c0_source_diverse_shell_seeds_v1/local_ge2h6.xyz}
+  - {id: scan_sih2cl2, xyz_path: structures/c0_residual_shell_seeds_v1/scan_sih2cl2.xyz}
+  - {id: path_geh3cl_to_gehcl_h2, xyz_path: structures/c0_source_diverse_shell_seeds_v1/path_geh3cl_to_gehcl_h2.xyz}
+  - {id: md_ge2h4cl2, xyz_path: structures/c0_source_diverse_shell_seeds_v1/md_ge2h4cl2.xyz}
+  - {id: distortion_si2h4cl2, xyz_path: structures/c0_residual_shell_seeds_v1/distort_si2h4cl2.xyz}
+  - {id: graph_ge2h4cl2_geminal, xyz_path: structures/c0_source_diverse_shell_seeds_v1/graph_ge2h4cl2_geminal.xyz}
+operations:
+  - {kind: state_expansion, structure: local_ge2h6, states: [{charge: 0, multiplicity: 1}]}
+  - {kind: state_expansion, structure: scan_sih2cl2, states: [{charge: 0, multiplicity: 1}]}
+  - {kind: state_expansion, structure: path_geh3cl_to_gehcl_h2, states: [{charge: 0, multiplicity: 1}]}
+  - {kind: state_expansion, structure: md_ge2h4cl2, states: [{charge: 0, multiplicity: 1}]}
+  - {kind: state_expansion, structure: distortion_si2h4cl2, states: [{charge: 0, multiplicity: 1}]}
+  - {kind: state_expansion, structure: graph_ge2h4cl2_geminal, states: [{charge: 0, multiplicity: 1}]}
+filters: {covalent_factor: 0.65, bond_factor: 1.3, allow_fragments: true, duplicate_decimals: 3}
