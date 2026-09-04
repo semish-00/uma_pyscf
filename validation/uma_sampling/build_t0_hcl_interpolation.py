@@ -11,7 +11,7 @@ from typing import Any
 from uma_pyscf.core.ids import canonical_json_fingerprint, sha256_of_file
 from uma_pyscf.core.io import write_json_atomic
 from uma_pyscf.sampling.filters import minimum_distance_violation
-from uma_pyscf.sampling.geometry import read_xyz_structure
+from uma_pyscf.sampling.generate import read_xyz_structure
 from uma_pyscf.schemas.candidate import CandidateManifest, CandidateRecord
 from uma_pyscf.schemas.label_record import ElectronicState, Structure
 

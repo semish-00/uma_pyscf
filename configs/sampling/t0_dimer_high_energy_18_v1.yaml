@@ -12,7 +12,7 @@ structures:
   - {id: t0_sigeh3cl3_si1_ge2, xyz_path: structures/t0_dimer_parents_v1/t0_sigeh3cl3_si1_ge2.xyz}
   - {id: t0_sigeh2cl4_si1_ge3, xyz_path: structures/t0_dimer_parents_v1/t0_sigeh2cl4_si1_ge3.xyz}
 operations:
-  - &tail {kind: bond_scan, structure: t0_si2h3cl3_split12, charge: 0, multiplicity: 1, anchor_index: 0, moved_index: 3, factors: [0.78, 0.86, 1.30]}
+  - &tail {kind: bond_scan, structure: t0_si2h3cl3_split12, charge: 0, multiplicity: 1, anchor_index: 0, moved_index: 3, factors: [0.78, 0.86, 1.22]}
   - {<<: *tail, structure: t0_si2h2cl4_split13}
   - {<<: *tail, structure: t0_ge2h3cl3_split12}
   - {<<: *tail, structure: t0_ge2h2cl4_split13}
