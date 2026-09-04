@@ -1,0 +1,18 @@
+schema_version: 1
+portfolio_id: t0_fixed_200_v1
+created: "2026-09-05"
+description: >-
+  Fixed score-blind T0 test assembled only from six reserved parents. This
+  manifest and all parent/reaction/trajectory descendants are forbidden from
+  training and acquisition-guided resampling.
+seed: 2026090500
+strategy: parent_round_robin
+duplicate_decimals: 3
+max_per_parent: 34
+max_per_trajectory: 2
+sources:
+  - {category: t0_local, manifest: t0_dimer_local_40_v1_candidates.json, quota: 40}
+  - {category: t0_scan, manifest: t0_dimer_scan_48_v1_candidates.json, quota: 48}
+  - {category: t0_high_energy, manifest: t0_dimer_high_energy_18_v1_candidates.json, quota: 18}
+  - {category: t0_reaction_interpolation, manifest: t0_hcl_interpolation_18_v1_candidates.json, quota: 18}
+  - {category: t0_moderate_temperature_md, manifest: t0_dimer_md_76_v1_candidates.json, quota: 76}

@@ -1,0 +1,25 @@
+schema_version: 1
+sampling_id: t0_dimer_scan_48_v1
+created: "2026-09-05"
+description: >-
+  Blind controlled terminal M-X scans on T0-only parents, including connected
+  and dissociative distances. Fragment geometries are intentional test cases.
+structures:
+  - {id: t0_si2h3cl3_split12, xyz_path: structures/t0_dimer_parents_v1/t0_si2h3cl3_split12.xyz}
+  - {id: t0_si2h2cl4_split13, xyz_path: structures/t0_dimer_parents_v1/t0_si2h2cl4_split13.xyz}
+  - {id: t0_ge2h3cl3_split12, xyz_path: structures/t0_dimer_parents_v1/t0_ge2h3cl3_split12.xyz}
+  - {id: t0_ge2h2cl4_split13, xyz_path: structures/t0_dimer_parents_v1/t0_ge2h2cl4_split13.xyz}
+  - {id: t0_sigeh3cl3_si1_ge2, xyz_path: structures/t0_dimer_parents_v1/t0_sigeh3cl3_si1_ge2.xyz}
+  - {id: t0_sigeh2cl4_si1_ge3, xyz_path: structures/t0_dimer_parents_v1/t0_sigeh2cl4_si1_ge3.xyz}
+operations:
+  - &scan {kind: bond_scan, structure: t0_si2h3cl3_split12, charge: 0, multiplicity: 1, anchor_index: 0, moved_index: 2, factors: [0.82, 0.92, 1.06, 1.20, 1.40, 1.65, 1.90, 2.20]}
+  - {<<: *scan, structure: t0_si2h2cl4_split13}
+  - {<<: *scan, structure: t0_ge2h3cl3_split12}
+  - {<<: *scan, structure: t0_ge2h2cl4_split13}
+  - {<<: *scan, structure: t0_sigeh3cl3_si1_ge2}
+  - {<<: *scan, structure: t0_sigeh2cl4_si1_ge3}
+filters:
+  covalent_factor: 0.65
+  bond_factor: 1.3
+  allow_fragments: true
+  duplicate_decimals: 3

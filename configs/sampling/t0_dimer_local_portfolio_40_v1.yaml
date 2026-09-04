@@ -1,0 +1,12 @@
+schema_version: 1
+portfolio_id: t0_dimer_local_40_v1
+created: "2026-09-05"
+description: Blind T0 local tranche with at most seven records per parent.
+seed: 2026090540
+strategy: parent_round_robin
+duplicate_decimals: 3
+max_per_parent: 7
+sources:
+  - category: t0_local
+    manifest: t0_dimer_local_pool_v1_candidates.json
+    quota: 40
