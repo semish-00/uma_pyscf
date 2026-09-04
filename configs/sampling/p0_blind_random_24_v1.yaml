@@ -1,0 +1,14 @@
+schema_version: 1
+portfolio_id: p0_blind_random_24_v1
+created: "2026-09-05"
+description: >-
+  Source-stratified random baseline arm for the P0 pilot. Two records per
+  training-side parent; T0 parents and all model/teacher scores are excluded.
+seed: 2026090524
+strategy: parent_round_robin
+duplicate_decimals: 3
+max_per_parent: 2
+sources:
+  - category: p0_blind_pilot
+    manifest: p0_blind_pilot_pool_v1_candidates.json
+    quota: 24

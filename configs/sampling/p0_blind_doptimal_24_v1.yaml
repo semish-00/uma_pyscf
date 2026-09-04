@@ -1,0 +1,15 @@
+schema_version: 1
+portfolio_id: p0_blind_doptimal_24_v1
+created: "2026-09-05"
+description: >-
+  Equal-budget model-independent D-optimal arm for the P0 pilot. It uses only
+  composition and pair-distance descriptors, with the same two-per-parent cap
+  as the random baseline and no T0/model/teacher signal.
+seed: 2026090524
+strategy: d_optimal
+duplicate_decimals: 3
+max_per_parent: 2
+sources:
+  - category: p0_blind_pilot
+    manifest: p0_blind_pilot_pool_v1_candidates.json
+    quota: 24
