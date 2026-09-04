@@ -1,0 +1,30 @@
+schema_version: 1
+sampling_id: t0_dimer_parent_seeds_v1
+created: "2026-09-05"
+description: >-
+  Six neutral closed-shell eight-atom dimer parents reserved exclusively for
+  the fixed T0 test. Their compositions/topologies and parent IDs are absent
+  from C0, engineering-50, and the P0 training pool. They must never be used
+  for training or acquisition-guided resampling.
+
+structures:
+  - {id: t0_si2h3cl3_split12, xyz_path: structures/t0_dimer_parents_v1/t0_si2h3cl3_split12.xyz}
+  - {id: t0_si2h2cl4_split13, xyz_path: structures/t0_dimer_parents_v1/t0_si2h2cl4_split13.xyz}
+  - {id: t0_ge2h3cl3_split12, xyz_path: structures/t0_dimer_parents_v1/t0_ge2h3cl3_split12.xyz}
+  - {id: t0_ge2h2cl4_split13, xyz_path: structures/t0_dimer_parents_v1/t0_ge2h2cl4_split13.xyz}
+  - {id: t0_sigeh3cl3_si1_ge2, xyz_path: structures/t0_dimer_parents_v1/t0_sigeh3cl3_si1_ge2.xyz}
+  - {id: t0_sigeh2cl4_si1_ge3, xyz_path: structures/t0_dimer_parents_v1/t0_sigeh2cl4_si1_ge3.xyz}
+
+operations:
+  - {kind: state_expansion, structure: t0_si2h3cl3_split12, states: [{charge: 0, multiplicity: 1}]}
+  - {kind: state_expansion, structure: t0_si2h2cl4_split13, states: [{charge: 0, multiplicity: 1}]}
+  - {kind: state_expansion, structure: t0_ge2h3cl3_split12, states: [{charge: 0, multiplicity: 1}]}
+  - {kind: state_expansion, structure: t0_ge2h2cl4_split13, states: [{charge: 0, multiplicity: 1}]}
+  - {kind: state_expansion, structure: t0_sigeh3cl3_si1_ge2, states: [{charge: 0, multiplicity: 1}]}
+  - {kind: state_expansion, structure: t0_sigeh2cl4_si1_ge3, states: [{charge: 0, multiplicity: 1}]}
+
+filters:
+  covalent_factor: 0.65
+  bond_factor: 1.3
+  allow_fragments: false
+  duplicate_decimals: 3
