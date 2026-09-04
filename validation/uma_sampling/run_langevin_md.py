@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Generate a score-blind C0 pool with short base-UMA Langevin trajectories."""
+"""Generate a score-blind pool with short base-UMA Langevin trajectories."""
 
 from __future__ import annotations
 
@@ -424,9 +424,15 @@ def _write_import_config(
     config: Mapping[str, Any], trajectory_summaries: Sequence[Mapping[str, Any]], path: Path
 ) -> None:
     frames = int(config["selection"]["frames_per_trajectory"])
+    md_set_id = str(config["md_set_id"])
+    sampling_id = (
+        "c0_moderate_md_pool_v1"
+        if md_set_id == "c0_moderate_uma_md_v1"
+        else f"{md_set_id}_pool"
+    )
     artifact = {
         "schema_version": 1,
-        "sampling_id": "c0_moderate_md_pool_v1",
+        "sampling_id": sampling_id,
         "created": str(config["created"]),
         "description": (
             "Mass-weighted thinning of short base-UMA finite-temperature trajectories; "
