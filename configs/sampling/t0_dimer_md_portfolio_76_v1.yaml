@@ -1,0 +1,15 @@
+schema_version: 1
+portfolio_id: t0_dimer_md_76_v1
+created: "2026-09-05"
+description: >-
+  Blind 76-record finite-temperature tranche for the fixed T0 test. Parent and
+  trajectory caps prevent a single molecule or trajectory from dominating.
+seed: 2026090576
+strategy: parent_round_robin
+duplicate_decimals: 3
+max_per_parent: 13
+max_per_trajectory: 2
+sources:
+  - category: t0_moderate_temperature_md
+    manifest: t0_dimer_uma_md_v1_pool_candidates.json
+    quota: 76
